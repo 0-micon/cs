@@ -4,13 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace MasterP
 {
-    class Program
+    class Program : Form
     {
+        public Program()
+        {
+            var t = new TextBox();
+
+            t.Parent = this;
+        }
+
         static void Main(string[] args)
         {
+            Application.Run(new Program());
+
             Console.Write("word #1: ");
             var w1 = Console.ReadLine();
 
