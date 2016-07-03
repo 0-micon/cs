@@ -16,5 +16,16 @@ namespace MasterP
         {
             InitializeComponent();
         }
+
+        private void buttonClipboard_Click(object sender, EventArgs e)
+        {
+            // todo: put content to the clipboard
+        }
+
+        private void buttonReset_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = string.Empty;
+            textBox2.Text = string.Empty;
+        }
     }
 }
