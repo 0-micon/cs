@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
@@ -43,6 +45,7 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.checkBoxResult = new System.Windows.Forms.CheckBox();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             this.SuspendLayout();
@@ -175,12 +178,13 @@
             // 
             this.checkBox1.Appearance = System.Windows.Forms.Appearance.Button;
             this.checkBox1.AutoSize = true;
-            this.checkBox1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.checkBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.checkBox1.ImageIndex = 0;
+            this.checkBox1.ImageList = this.imageList1;
             this.checkBox1.Location = new System.Drawing.Point(173, 38);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(42, 23);
+            this.checkBox1.Size = new System.Drawing.Size(22, 22);
             this.checkBox1.TabIndex = 14;
-            this.checkBox1.Text = "show";
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
@@ -188,12 +192,13 @@
             // 
             this.checkBox2.Appearance = System.Windows.Forms.Appearance.Button;
             this.checkBox2.AutoSize = true;
-            this.checkBox2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.checkBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.checkBox2.ImageIndex = 0;
+            this.checkBox2.ImageList = this.imageList1;
             this.checkBox2.Location = new System.Drawing.Point(173, 65);
             this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(42, 23);
+            this.checkBox2.Size = new System.Drawing.Size(22, 22);
             this.checkBox2.TabIndex = 15;
-            this.checkBox2.Text = "show";
             this.checkBox2.UseVisualStyleBackColor = true;
             this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
@@ -201,14 +206,22 @@
             // 
             this.checkBoxResult.Appearance = System.Windows.Forms.Appearance.Button;
             this.checkBoxResult.AutoSize = true;
-            this.checkBoxResult.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.checkBoxResult.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.checkBoxResult.ImageIndex = 0;
+            this.checkBoxResult.ImageList = this.imageList1;
             this.checkBoxResult.Location = new System.Drawing.Point(199, 176);
             this.checkBoxResult.Name = "checkBoxResult";
-            this.checkBoxResult.Size = new System.Drawing.Size(42, 23);
+            this.checkBoxResult.Size = new System.Drawing.Size(22, 22);
             this.checkBoxResult.TabIndex = 16;
-            this.checkBoxResult.Text = "show";
             this.checkBoxResult.UseVisualStyleBackColor = true;
             this.checkBoxResult.CheckedChanged += new System.EventHandler(this.checkBoxResult_CheckedChanged);
+            // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList1.Images.SetKeyName(0, "locked.png");
+            this.imageList1.Images.SetKeyName(1, "view.png");
             // 
             // MainForm
             // 
@@ -256,6 +269,7 @@
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.CheckBox checkBoxResult;
+        private System.Windows.Forms.ImageList imageList1;
     }
 }
 

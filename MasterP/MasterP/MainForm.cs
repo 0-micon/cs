@@ -62,16 +62,19 @@ namespace MasterP
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             textBox1.UseSystemPasswordChar = !checkBox1.Checked;
+            checkBox1.ImageIndex = checkBox1.Checked ? 1 : 0;
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
             textBox2.UseSystemPasswordChar = !checkBox2.Checked;
+            checkBox2.ImageIndex = checkBox2.Checked ? 1 : 0;
         }
 
         private void checkBoxResult_CheckedChanged(object sender, EventArgs e)
         {
             textBoxResult.UseSystemPasswordChar = !checkBoxResult.Checked;
+            checkBoxResult.ImageIndex = checkBoxResult.Checked ? 1 : 0;
         }
     }
 }
