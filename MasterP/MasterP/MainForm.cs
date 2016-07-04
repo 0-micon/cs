@@ -52,6 +52,26 @@ namespace MasterP
         {
             textBox1.Text = string.Empty;
             textBox2.Text = string.Empty;
+
+            numericUpDown1.Value = 1;
+            numericUpDown2.Value = 1;
+
+            textBoxResult.Text = string.Empty;
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            textBox1.UseSystemPasswordChar = !checkBox1.Checked;
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            textBox2.UseSystemPasswordChar = !checkBox2.Checked;
+        }
+
+        private void checkBoxResult_CheckedChanged(object sender, EventArgs e)
+        {
+            textBoxResult.UseSystemPasswordChar = !checkBoxResult.Checked;
         }
     }
 }
