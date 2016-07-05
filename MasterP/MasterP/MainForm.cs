@@ -63,18 +63,26 @@ namespace MasterP
         {
             textBox1.UseSystemPasswordChar = !checkBox1.Checked;
             checkBox1.ImageIndex = checkBox1.Checked ? 1 : 0;
+            toolTip1.SetToolTip(checkBox1, checkBox1.Checked ? "Lock" : "View");
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
             textBox2.UseSystemPasswordChar = !checkBox2.Checked;
             checkBox2.ImageIndex = checkBox2.Checked ? 1 : 0;
+            toolTip1.SetToolTip(checkBox2, checkBox2.Checked ? "Lock" : "View");
         }
 
         private void checkBoxResult_CheckedChanged(object sender, EventArgs e)
         {
             textBoxResult.UseSystemPasswordChar = !checkBoxResult.Checked;
             checkBoxResult.ImageIndex = checkBoxResult.Checked ? 1 : 0;
+            toolTip1.SetToolTip(checkBoxResult, checkBoxResult.Checked ? "Lock" : "View");
+        }
+
+        private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {
+
         }
     }
 }

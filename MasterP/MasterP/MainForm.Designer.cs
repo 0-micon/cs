@@ -43,9 +43,10 @@
             this.buttonReset = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.checkBoxResult = new System.Windows.Forms.CheckBox();
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             this.SuspendLayout();
@@ -143,6 +144,7 @@
             this.buttonClipboard.Size = new System.Drawing.Size(75, 23);
             this.buttonClipboard.TabIndex = 10;
             this.buttonClipboard.Text = "&To Clipboard";
+            this.toolTip1.SetToolTip(this.buttonClipboard, "Copy result to clipboard");
             this.buttonClipboard.UseVisualStyleBackColor = true;
             this.buttonClipboard.Click += new System.EventHandler(this.buttonClipboard_Click);
             // 
@@ -162,6 +164,7 @@
             this.buttonReset.Size = new System.Drawing.Size(75, 23);
             this.buttonReset.TabIndex = 12;
             this.buttonReset.Text = "&Reset";
+            this.toolTip1.SetToolTip(this.buttonReset, "Reset content");
             this.buttonReset.UseVisualStyleBackColor = true;
             this.buttonReset.Click += new System.EventHandler(this.buttonReset_Click);
             // 
@@ -185,8 +188,16 @@
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(22, 22);
             this.checkBox1.TabIndex = 14;
+            this.toolTip1.SetToolTip(this.checkBox1, "View");
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
+            // imageList1
+            // 
+            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
+            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageList1.Images.SetKeyName(0, "locked.png");
+            this.imageList1.Images.SetKeyName(1, "view.png");
             // 
             // checkBox2
             // 
@@ -199,6 +210,7 @@
             this.checkBox2.Name = "checkBox2";
             this.checkBox2.Size = new System.Drawing.Size(22, 22);
             this.checkBox2.TabIndex = 15;
+            this.toolTip1.SetToolTip(this.checkBox2, "View");
             this.checkBox2.UseVisualStyleBackColor = true;
             this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
@@ -213,15 +225,13 @@
             this.checkBoxResult.Name = "checkBoxResult";
             this.checkBoxResult.Size = new System.Drawing.Size(22, 22);
             this.checkBoxResult.TabIndex = 16;
+            this.toolTip1.SetToolTip(this.checkBoxResult, "View");
             this.checkBoxResult.UseVisualStyleBackColor = true;
             this.checkBoxResult.CheckedChanged += new System.EventHandler(this.checkBoxResult_CheckedChanged);
             // 
-            // imageList1
+            // toolTip1
             // 
-            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
-            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList1.Images.SetKeyName(0, "locked.png");
-            this.imageList1.Images.SetKeyName(1, "view.png");
+            this.toolTip1.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTip1_Popup);
             // 
             // MainForm
             // 
@@ -270,6 +280,7 @@
         private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.CheckBox checkBoxResult;
         private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
 
