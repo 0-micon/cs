@@ -16,8 +16,13 @@ namespace MagicCube
         uint[] middle_elements = new uint[COUNT];
         uint[] corner_elements = new uint[COUNT];
         Face[] neighbours = new Face[COUNT];       // adjoining faces
-        uint[] directions = new uint[COUNT];         // neighbours directions
+        uint[] directions = new uint[COUNT];       // neighbours directions
 
+        public Face(uint color)
+        {
+            this.color = color;
+            direction = 0;
+        }
 
         public struct Edge
         {
