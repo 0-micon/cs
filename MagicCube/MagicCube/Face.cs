@@ -8,21 +8,21 @@ namespace MagicCube
 {
     class Face
     {
-        const int COUNT = Direction.TURN_COUNT;
+        const uint COUNT = Direction.TURN_COUNT;
 
-        int color;
-        int direction;
+        uint color;
+        uint direction;
 
-        int[] middle_elements = new int[COUNT];
-        int[] corner_elements = new int[COUNT];
+        uint[] middle_elements = new uint[COUNT];
+        uint[] corner_elements = new uint[COUNT];
         Face[] neighbours = new Face[COUNT];       // adjoining faces
-        int[] directions = new int[COUNT];         // neighbours directions
+        uint[] directions = new uint[COUNT];         // neighbours directions
 
 
         public struct Edge
         {
-            public int left, middle, right;
-            public Edge(int left, int middle, int right)
+            public uint left, middle, right;
+            public Edge(uint left, uint middle, uint right)
             {
                 this.left = left;
                 this.middle = middle;
@@ -30,28 +30,28 @@ namespace MagicCube
             }
         }
 
-        public int MiddleColor(int direction)
+        public uint MiddleColor(uint direction)
         {
             return middle_elements[Direction.Sum(this.direction, direction)];
         }
 
-        public void MiddleColor(int direction, int color)
+        public void MiddleColor(uint direction, uint color)
         {
             middle_elements[Direction.Sum(this.direction, direction)] = color;
         }
 
-        public int CornerColor(int direction)
+        public uint CornerColor(uint direction)
         {
             return corner_elements[Direction.Sum(this.direction, direction)];
         }
 
-        public void CornerColor(int direction, int color)
+        public void CornerColor(uint direction, uint color)
         {
             corner_elements[Direction.Sum(this.direction, direction)] = color;
         }
 
 
-        Edge EdgeColors(int direction)
+        Edge EdgeColors(uint direction)
         {
             return new Edge(
                 CornerColor(Direction.TurnLeft(direction)),
@@ -60,7 +60,7 @@ namespace MagicCube
                 );
         }
 
-        void EdgeColors(int direction, Edge edge)
+        void EdgeColors(uint direction, Edge edge)
         {
             CornerColor(Direction.TurnLeft(direction), edge.left);
             MiddleColor(direction, edge.middle);
@@ -74,14 +74,15 @@ namespace MagicCube
             direction = Direction.TurnRight(direction);
 
             // neighbours rotation
-            int last = COUNT - 1;
-            Edge edge = neighbours[last].EdgeColors(directions[last]);
-            for (int i = 1; i < COUNT; i++)
+            uint i = COUNT - 1;
+            Edge edge = neighbours[i].EdgeColors(directions[i]);
+            while (i > 0)
             {
                 neighbours[i].EdgeColors(directions[i],
                     neighbours[i - 1].EdgeColors(directions[i - 1]));
+                i--;
             }
-            neighbours[0].EdgeColors(directions[0], edge);
+            neighbours[i].EdgeColors(directions[i], edge);
         }
 
         // Rotate counterclockwise: 0,1,2,3 => 1,2,3,0
@@ -91,14 +92,15 @@ namespace MagicCube
             direction = Direction.TurnLeft(direction);
 
             // neighbours rotation
-            int last = COUNT - 1;
-            Edge edge = neighbours[0].EdgeColors(directions[0]);
-            for (int i = 1; i < COUNT; i++)
+            uint i = 0;
+            Edge edge = neighbours[i].EdgeColors(directions[i]);
+            while (i < COUNT - 1)
             {
-                neighbours[i - 1].EdgeColors(directions[i - 1],
-                    neighbours[i].EdgeColors(directions[i]));
+                neighbours[i].EdgeColors(directions[i],
+                    neighbours[i + 1].EdgeColors(directions[i + 1]));
+                i++;
             }
-            neighbours[last].EdgeColors(directions[last], edge);
+            neighbours[i].EdgeColors(directions[i], edge);
         }
     }
 }
