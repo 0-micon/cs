@@ -65,14 +65,14 @@ namespace MagicCube
             5, 5, 5, 5, // Right
         };
 
-        uint MiddleElementAt(uint face, uint direction)
+        public uint MiddleElementAt(uint face, uint direction)
         {
             uint pos = FaceIndex(face) + direction;
             uint mel = middle_elements[pos];
             return mel;
         }
 
-        uint MiddleElementAt(uint face, uint direction, uint value)
+        public uint MiddleElementAt(uint face, uint direction, uint value)
         {
             uint pos = FaceIndex(face) + direction;
             uint mel = middle_elements[pos];
@@ -80,13 +80,13 @@ namespace MagicCube
             return mel;
         }
 
-        uint NeighbourMiddleElementAt(uint face, uint direction)
+        public uint NeighbourMiddleElementAt(uint face, uint direction)
         {
             uint neighbour = LAYOUT[face, direction];
             return MiddleElementAt(neighbour, NEIGHBOUR_POS[neighbour, face]);
         }
 
-        uint NeighbourMiddleElementAt(uint face, uint direction, uint value)
+        public uint NeighbourMiddleElementAt(uint face, uint direction, uint value)
         {
             uint neighbour = LAYOUT[face, direction];
             return MiddleElementAt(neighbour, NEIGHBOUR_POS[neighbour, face], value);
@@ -97,7 +97,7 @@ namespace MagicCube
             return face * Direction.TURN_COUNT;
         }
 
-        void RotateRight(uint face)
+        public void RotateRight(uint face)
         {
             // Rotate clockwise: 0,1,2,3 => 3,0,1,2
             uint m = MiddleElementAt(face, Direction.TURN_COUNT - 1);

@@ -1,6 +1,6 @@
 ﻿namespace MagicCube
 {
-    partial class Form1
+    partial class Form_Main
     {
         /// <summary>
         /// Required designer variable.
@@ -28,12 +28,79 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.panel_Cube = new System.Windows.Forms.Panel();
+            this.textBox_Log = new System.Windows.Forms.TextBox();
+            this.button_RotateLeft = new System.Windows.Forms.Button();
+            this.button_RotateRight = new System.Windows.Forms.Button();
+            this.SuspendLayout();
+            // 
+            // panel_Cube
+            // 
+            this.panel_Cube.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel_Cube.Location = new System.Drawing.Point(12, 12);
+            this.panel_Cube.Name = "panel_Cube";
+            this.panel_Cube.Size = new System.Drawing.Size(360, 320);
+            this.panel_Cube.TabIndex = 0;
+            this.panel_Cube.Paint += new System.Windows.Forms.PaintEventHandler(this.panel_Cube_Paint);
+            this.panel_Cube.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel_Cube_MouseUp);
+            // 
+            // button_RotateRight
+            // 
+            this.button_RotateRight.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button_RotateRight.Location = new System.Drawing.Point(282, 338);
+            this.button_RotateRight.Name = "button_RotateRight";
+            this.button_RotateRight.Size = new System.Drawing.Size(90, 23);
+            this.button_RotateRight.TabIndex = 1;
+            this.button_RotateRight.Text = "Rotate &Right =>";
+            this.button_RotateRight.UseVisualStyleBackColor = true;
+            this.button_RotateRight.Click += new System.EventHandler(this.button_RotateRight_Click);
+            // 
+            // textBox_Log
+            // 
+            this.textBox_Log.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_Log.Location = new System.Drawing.Point(378, 12);
+            this.textBox_Log.Multiline = true;
+            this.textBox_Log.Name = "textBox_Log";
+            this.textBox_Log.ReadOnly = true;
+            this.textBox_Log.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBox_Log.Size = new System.Drawing.Size(194, 320);
+            this.textBox_Log.TabIndex = 2;
+            // 
+            // button_RotateLeft
+            // 
+            this.button_RotateLeft.Location = new System.Drawing.Point(12, 338);
+            this.button_RotateLeft.Name = "button_RotateLeft";
+            this.button_RotateLeft.Size = new System.Drawing.Size(90, 23);
+            this.button_RotateLeft.TabIndex = 3;
+            this.button_RotateLeft.Text = "<= Rotate &Left";
+            this.button_RotateLeft.UseVisualStyleBackColor = true;
+            this.button_RotateLeft.Click += new System.EventHandler(this.button_RotateLeft_Click);
+            // 
+            // Form_Main
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "Form1";
+            this.ClientSize = new System.Drawing.Size(584, 362);
+            this.Controls.Add(this.button_RotateLeft);
+            this.Controls.Add(this.textBox_Log);
+            this.Controls.Add(this.button_RotateRight);
+            this.Controls.Add(this.panel_Cube);
+            this.Name = "Form_Main";
+            this.Text = "Magic Cube";
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion
+
+        private System.Windows.Forms.Panel panel_Cube;
+        private System.Windows.Forms.TextBox textBox_Log;
+        private System.Windows.Forms.Button button_RotateLeft;
+        private System.Windows.Forms.Button button_RotateRight;
     }
 }
 
