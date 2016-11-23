@@ -29,18 +29,19 @@ namespace MagicCube
         };
 
         static readonly uint[,] NEIGHBOUR_POS;
-/*//
-        =
-        {
-        //    F  B  U  D  L  R
-            { 8, 8, 0, 2, 3, 1 },   // F
-            { 8, 8, 2, 0, 3, 1 },   // B
-            { 1, 3, 8, 8, 2, 0 },   // U
-            { 1, 3, 8, 8, 0, 2 },   // D
-            { 0, 2, 3, 1, 8, 8 },   // L
-            { 2, 0, 3, 1, 8, 8 },   // R
-        };
-//*/
+        static uint[,,] middle_element_pairs;
+        /*//
+                =
+                {
+                //    F  B  U  D  L  R
+                    { 8, 8, 0, 2, 3, 1 },   // F
+                    { 8, 8, 2, 0, 3, 1 },   // B
+                    { 1, 3, 8, 8, 2, 0 },   // U
+                    { 1, 3, 8, 8, 0, 2 },   // D
+                    { 0, 2, 3, 1, 8, 8 },   // L
+                    { 2, 0, 3, 1, 8, 8 },   // R
+                };
+        //*/
         static Cube()
         {
             uint[,] np = new uint[FACE_NUM, FACE_NUM];
@@ -53,23 +54,64 @@ namespace MagicCube
                 }
             }
             NEIGHBOUR_POS = np;
+
+            middle_element_pairs = new uint[FACE_NUM, Direction.TURN_COUNT, 2];
+            for(uint face = 0; face < FACE_NUM; face++)
+            {
+                foreach(uint direction in Direction.Items())
+                {
+                    middle_element_pairs[face, direction, 0] = FaceIndex(face) + direction;
+
+                    uint neighbour_face = LAYOUT[face, direction];
+                    uint neighbour_pos = NEIGHBOUR_POS[neighbour_face, face];
+
+                    middle_element_pairs[face, direction, 1] = FaceIndex(neighbour_face) + neighbour_pos;
+                }
+            }
         }
 
         uint[] middle_elements =
         {
-            0, 0, 0, 0, // Front
-            1, 1, 1, 1, // Back
-            2, 2, 2, 2, // Up
-            3, 3, 3, 3, // Down
-            4, 4, 4, 4, // Left
-            5, 5, 5, 5, // Right
+            F, F, F, F, // Front
+            B, B, B, B, // Back
+            U, U, U, U, // Up
+            D, D, D, D, // Down
+            L, L, L, L, // Left
+            R, R, R, R, // Right
         };
+
+        
+        public ulong MiddleKey
+        {
+            get
+            {
+                ulong key = 0;
+                foreach (uint me in middle_elements)
+                {
+                    key *= FACE_NUM;
+                    key += me;
+                }
+                return key;
+            }
+            set
+            {
+                int i = middle_elements.Length;
+                while(i-- > 0)
+                {
+                    middle_elements[i] = (uint)(value % FACE_NUM);
+                    value /= FACE_NUM;
+                }
+            }
+        }
+
 
         public uint MiddleElementAt(uint face, uint direction)
         {
             uint pos = FaceIndex(face) + direction;
             uint mel = middle_elements[pos];
             return mel;
+
+            //mel = middle_elements[middle_element_pairs[face, direction, 0]];
         }
 
         public uint MiddleElementAt(uint face, uint direction, uint value)
@@ -78,18 +120,26 @@ namespace MagicCube
             uint mel = middle_elements[pos];
             middle_elements[pos] = value;
             return mel;
+
+            //mel = middle_elements[middle_element_pairs[face, direction, 0]];
+            //middle_elements[middle_element_pairs[face, direction, 0]] = value;
         }
 
         public uint NeighbourMiddleElementAt(uint face, uint direction)
         {
             uint neighbour = LAYOUT[face, direction];
             return MiddleElementAt(neighbour, NEIGHBOUR_POS[neighbour, face]);
+            //uint mel = middle_elements[middle_element_pairs[face, direction, 1]];
+            //return mel;
         }
 
         public uint NeighbourMiddleElementAt(uint face, uint direction, uint value)
         {
             uint neighbour = LAYOUT[face, direction];
             return MiddleElementAt(neighbour, NEIGHBOUR_POS[neighbour, face], value);
+            //uint mel = NeighbourMiddleElementAt(face, direction);
+            //middle_elements[middle_element_pairs[face, direction, 1]] = value;
+            //return mel;
         }
 
         static uint FaceIndex(uint face)
@@ -114,16 +164,6 @@ namespace MagicCube
             }
         }
 
-        static uint[,] MIDDLE_ELEMENTS =
-        {
-            { 0,  0,  1,  2,  3,  4 },
-            { 0,  0,  5,  6,  7,  8 },
-            { 1,  5,  0,  0,  9, 10 },
-            { 2,  6,  0,  0, 11, 12 },
-            { 3,  7,  9, 11,  0,  0 },
-            { 4,  8, 10, 12,  0,  0 },
-        };
-
-        Face[] faces = { new Face(F), new Face(B), new Face(U), new Face(D), new Face(L), new Face(R) };
+        //Face[] faces = { new Face(F), new Face(B), new Face(U), new Face(D), new Face(L), new Face(R) };
     }
 }
