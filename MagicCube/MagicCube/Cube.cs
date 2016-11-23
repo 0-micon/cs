@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Diagnostics;
+
 namespace MagicCube
 {
     class Cube
@@ -68,6 +70,20 @@ namespace MagicCube
                     middle_element_pairs[face, direction, 1] = FaceIndex(neighbour_face) + neighbour_pos;
                 }
             }
+
+            uint i = FACE_NUM * Direction.TURN_COUNT;
+            denominators = new ulong[i];
+            while (i-- > 0)
+            {
+                if(i + 1 < denominators.Length)
+                {
+                    denominators[i] = FACE_NUM * denominators[i + 1];
+                }
+                else
+                {
+                    denominators[i] = 1;
+                }
+            }
         }
 
         uint[] middle_elements =
@@ -80,7 +96,9 @@ namespace MagicCube
             R, R, R, R, // Right
         };
 
-        
+        static ulong[] denominators;
+
+
         public ulong MiddleKey
         {
             get
@@ -104,11 +122,15 @@ namespace MagicCube
             }
         }
 
-
         public uint MiddleElementAt(uint face, uint direction)
         {
             uint pos = FaceIndex(face) + direction;
             uint mel = middle_elements[pos];
+
+            ulong key = MiddleKey;
+            key /= denominators[pos];
+            key %= FACE_NUM;
+            Debug.Assert(mel == (uint)(key));
             return mel;
 
             //mel = middle_elements[middle_element_pairs[face, direction, 0]];

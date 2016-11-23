@@ -51,14 +51,6 @@ namespace MagicCube
 
         private void panel_Cube_Paint(object sender, PaintEventArgs e)
         {
-
-            Control ctrl = sender as Control;
-            if(ctrl == null)
-            {
-                // no control => no paint
-                return;
-            }
-
             Graphics g = e.Graphics;
             //g.ResetTransform();
             //g.TranslateTransform(ctrl.Width / 3f, ctrl.Height / 2f);
@@ -148,6 +140,13 @@ namespace MagicCube
             {
                 cube.MiddleKey = key;
                 RepaintCube();
+            }
+
+            var sln = new Solution().Run();
+            foreach(var ring in sln)
+            {
+                textBox_Log.Text += "\r\n*****\r\n";
+                textBox_Log.Text += ring.Count.ToString() + ":" + ring.Last().ToString() + "\r\n";
             }
         }
     }
