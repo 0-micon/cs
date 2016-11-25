@@ -31,5 +31,20 @@ namespace MagicCube
             new FaceInfo("Left",  "Orange", Direction.LEFT,  new Point(0, 1)),
             new FaceInfo("Right", "Red",    Direction.LEFT,  new Point(2, 1))
         };
+
+        public static string MoveInfo(ulong src_key, ulong dst_key)
+        {
+            int count = 0;
+            foreach(ulong key in Cube.Moves(src_key))
+            {
+                if(key == dst_key)
+                {
+                    uint face = (uint)count / 3;
+                    return items[face].color + " rotate clockwise " + ((count % 3) + 1) + " time(s)";
+                }
+                count++;
+            }
+            return string.Empty;
+        }
     }
 }

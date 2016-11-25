@@ -35,6 +35,7 @@
             this.button_MiddleKey = new System.Windows.Forms.Button();
             this.button_SetMiddleKey = new System.Windows.Forms.Button();
             this.textBox_MiddleKey = new System.Windows.Forms.TextBox();
+            this.button_Solve = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel_Cube
@@ -44,7 +45,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel_Cube.Location = new System.Drawing.Point(12, 12);
             this.panel_Cube.Name = "panel_Cube";
-            this.panel_Cube.Size = new System.Drawing.Size(360, 320);
+            this.panel_Cube.Size = new System.Drawing.Size(440, 320);
             this.panel_Cube.TabIndex = 0;
             this.panel_Cube.Paint += new System.Windows.Forms.PaintEventHandler(this.panel_Cube_Paint);
             this.panel_Cube.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel_Cube_MouseUp);
@@ -53,7 +54,7 @@
             // 
             this.textBox_Log.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_Log.Location = new System.Drawing.Point(378, 12);
+            this.textBox_Log.Location = new System.Drawing.Point(458, 12);
             this.textBox_Log.Multiline = true;
             this.textBox_Log.Name = "textBox_Log";
             this.textBox_Log.ReadOnly = true;
@@ -86,7 +87,7 @@
             // button_MiddleKey
             // 
             this.button_MiddleKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_MiddleKey.Location = new System.Drawing.Point(204, 338);
+            this.button_MiddleKey.Location = new System.Drawing.Point(284, 338);
             this.button_MiddleKey.Name = "button_MiddleKey";
             this.button_MiddleKey.Size = new System.Drawing.Size(75, 23);
             this.button_MiddleKey.TabIndex = 4;
@@ -97,7 +98,7 @@
             // button_SetMiddleKey
             // 
             this.button_SetMiddleKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_SetMiddleKey.Location = new System.Drawing.Point(285, 338);
+            this.button_SetMiddleKey.Location = new System.Drawing.Point(365, 338);
             this.button_SetMiddleKey.Name = "button_SetMiddleKey";
             this.button_SetMiddleKey.Size = new System.Drawing.Size(87, 23);
             this.button_SetMiddleKey.TabIndex = 5;
@@ -107,19 +108,32 @@
             // 
             // textBox_MiddleKey
             // 
+            this.textBox_MiddleKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_MiddleKey.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.textBox_MiddleKey.Location = new System.Drawing.Point(378, 338);
+            this.textBox_MiddleKey.Location = new System.Drawing.Point(458, 338);
             this.textBox_MiddleKey.Name = "textBox_MiddleKey";
             this.textBox_MiddleKey.Size = new System.Drawing.Size(194, 20);
             this.textBox_MiddleKey.TabIndex = 6;
             this.textBox_MiddleKey.TextChanged += new System.EventHandler(this.textBox_MiddleKey_TextChanged);
             this.textBox_MiddleKey.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_MiddleKey_KeyPress);
             // 
+            // button_Solve
+            // 
+            this.button_Solve.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button_Solve.Location = new System.Drawing.Point(204, 338);
+            this.button_Solve.Name = "button_Solve";
+            this.button_Solve.Size = new System.Drawing.Size(75, 23);
+            this.button_Solve.TabIndex = 7;
+            this.button_Solve.Text = "&Solve";
+            this.button_Solve.UseVisualStyleBackColor = true;
+            this.button_Solve.Click += new System.EventHandler(this.button_Solve_Click);
+            // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(584, 362);
+            this.ClientSize = new System.Drawing.Size(664, 362);
+            this.Controls.Add(this.button_Solve);
             this.Controls.Add(this.textBox_MiddleKey);
             this.Controls.Add(this.button_SetMiddleKey);
             this.Controls.Add(this.button_MiddleKey);
@@ -143,6 +157,7 @@
         private System.Windows.Forms.Button button_MiddleKey;
         private System.Windows.Forms.Button button_SetMiddleKey;
         private System.Windows.Forms.TextBox textBox_MiddleKey;
+        private System.Windows.Forms.Button button_Solve;
     }
 }
 

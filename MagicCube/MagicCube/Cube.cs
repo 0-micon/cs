@@ -122,6 +122,30 @@ namespace MagicCube
             }
         }
 
+        public IEnumerable<ulong> Moves()
+        {
+            for (uint face = 0; face < FACE_NUM; face++)
+            {
+                RotateRight(face);
+                yield return MiddleKey;
+
+                RotateRight(face);
+                yield return MiddleKey;
+
+                RotateRight(face);
+                yield return MiddleKey;
+
+                RotateRight(face); // restore
+            }
+        }
+
+        public static IEnumerable<ulong> Moves(ulong middle_key)
+        {
+            Cube c = new Cube();
+            c.MiddleKey = middle_key;
+            return c.Moves();
+        }
+
         public uint MiddleElementAt(uint face, uint direction)
         {
             uint pos = FaceIndex(face) + direction;

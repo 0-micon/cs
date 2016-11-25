@@ -14,6 +14,17 @@ namespace MagicCube
     {
         Cube cube = new Cube();
 
+        public const float cx = 24f;
+        public const float cy = 24f;
+
+        static readonly Point[] element_positions =
+        {
+            new Point(1, 0), // Up
+            new Point(2, 1), // Right
+            new Point(1, 2), // Down
+            new Point(0, 1), // Left
+        };
+
         uint selected_face;
 
         public Form_Main()
@@ -35,17 +46,11 @@ namespace MagicCube
                 g.DrawRectangle(Pens.Black, x + cx, y + cy, cx - 1, cy - 1);
             }
 
-            br = new SolidBrush(Color.FromName(FaceInfo.items[cube.MiddleElementAt(face, Direction.Sum(direction, Direction.UP))].color));
-            g.FillRectangle(br, x + cx, y, cx, cy);
-
-            br = new SolidBrush(Color.FromName(FaceInfo.items[cube.MiddleElementAt(face, Direction.Sum(direction, Direction.DOWN))].color));
-            g.FillRectangle(br, x + cx, y + 2 * cy, cx, cy);
-
-            br = new SolidBrush(Color.FromName(FaceInfo.items[cube.MiddleElementAt(face, Direction.Sum(direction, Direction.LEFT))].color));
-            g.FillRectangle(br, x, y + cy, cx, cy);
-
-            br = new SolidBrush(Color.FromName(FaceInfo.items[cube.MiddleElementAt(face, Direction.Sum(direction, Direction.RIGHT))].color));
-            g.FillRectangle(br, x + 2 * cx, y + cy, cx, cy);
+            foreach(uint i in Direction.Items())
+            {
+                br = new SolidBrush(Color.FromName(FaceInfo.items[cube.MiddleElementAt(face, Direction.Sum(direction, i))].color));
+                g.FillRectangle(br, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx, cy);
+            }
         }
 
 
@@ -54,9 +59,6 @@ namespace MagicCube
             Graphics g = e.Graphics;
             //g.ResetTransform();
             //g.TranslateTransform(ctrl.Width / 3f, ctrl.Height / 2f);
-
-            float cx = 24f;
-            float cy = 24f;
 
             for(uint face = 0; face < Cube.FACE_NUM; face++)
             {
@@ -69,9 +71,6 @@ namespace MagicCube
 
         private void panel_Cube_MouseUp(object sender, MouseEventArgs e)
         {
-            float cx = 24f;
-            float cy = 24f;
-
             for (uint face = 0; face < Cube.FACE_NUM; face++)
             {
                 float x = 3 * cx * FaceInfo.items[face].location.X;
@@ -79,8 +78,28 @@ namespace MagicCube
                 RectangleF rc = new RectangleF(x, y, 3 * cx, 3 * cy);
                 if (rc.Contains(e.Location))
                 {
-                    selected_face = face;
-                    RepaintCube();
+                    if (e.Button == MouseButtons.Right)
+                    {
+                        foreach (uint i in Direction.Items())
+                        {
+                            RectangleF rc_elem = new RectangleF(x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx, cy);
+                            if (rc_elem.Contains(e.Location))
+                            {
+                                using (var frm = new FaceColorForm())
+                                {
+                                    frm.selection = cube.MiddleElementAt(face, Direction.Sum(FaceInfo.items[face].direction, i));
+                                    frm.ShowDialog(this);
+                                    cube.MiddleElementAt(face, Direction.Sum(FaceInfo.items[face].direction, i), frm.selection);
+                                    RepaintCube();
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        selected_face = face;
+                        RepaintCube();
+                    }
                 }
             }
         }
@@ -141,12 +160,15 @@ namespace MagicCube
                 cube.MiddleKey = key;
                 RepaintCube();
             }
+        }
 
-            var sln = new Solution().Run();
-            foreach(var ring in sln)
+        private void button_Solve_Click(object sender, EventArgs e)
+        {
+            var rings = Solution.Run(731796345686735UL);
+            var solution = Solution.RunTo(cube.MiddleKey, rings);
+            for (int i = 1; i < solution.Count; i++)
             {
-                textBox_Log.Text += "\r\n*****\r\n";
-                textBox_Log.Text += ring.Count.ToString() + ":" + ring.Last().ToString() + "\r\n";
+                textBox_Log.Text += solution[i].ToString() + ": " + FaceInfo.MoveInfo(solution[i - 1], solution[i]) + "\r\n";
             }
         }
     }

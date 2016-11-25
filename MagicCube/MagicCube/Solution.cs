@@ -8,82 +8,152 @@ namespace MagicCube
 {
     class Solution
     {
-        Cube cube = new Cube();
-
-        public delegate bool ContainsDelegate(ulong key);
-
-        public List<HashSet<ulong>> Run()
+        public struct Move
         {
-            List<HashSet<ulong>> solution = new List<HashSet<ulong>>();
+            public uint face;
+            public int count;
+            public ulong key;
+            public Move(uint face, int count, ulong key)
+            {
+                this.face = face;
+                this.count = count;
+                this.key = key;
+            }
+        }
 
-            var ring = FirstIteration();
+
+        public Move? FindMove(HashSet<ulong> ring, ulong middle_key)
+        {
+            Cube cube = new Cube();
+            cube.MiddleKey = middle_key;
+            int count = 0;
+            foreach(ulong next_key in cube.Moves())
+            {
+                if (ring.Contains(next_key))
+                {
+                    uint face = (uint)count / 3;
+                    return new Move(face, count % 3 + 1, next_key);
+                }
+                count++;
+            }
+            return null;
+        }
+
+        public List<Move> Path(List<HashSet<ulong>> rings, ulong middle_key)
+        {
+            List<Move> path = new List<Move>();
+
+            return path;
+        }
+
+        public static List<HashSet<ulong>> Run(ulong middle_key)
+        {
+            HashSet<ulong> ring = new HashSet<ulong>();
+            ring.Add(middle_key);
+
+            List<HashSet<ulong>> solution = new List<HashSet<ulong>>();
             solution.Add(ring);
 
-            ContainsDelegate test = key =>
+            Cube cube = new Cube();
+            for (int i = 0; i < 6; i++)
             {
-                foreach(var set in solution)
+                HashSet<ulong> next_ring = new HashSet<ulong>();
+                foreach (ulong key in ring)
                 {
-                    if (set.Contains(key))
+                    cube.MiddleKey = key;
+                    foreach (ulong next_key in cube.Moves())
                     {
-                        return true;
+                        if (TestKey(next_key, solution) < 0)
+                        {
+                            next_ring.Add(next_key);
+                        }
                     }
                 }
-                return false;
-            };
-
-            for (int i = 0; i < 5; i++)
-            {
-                solution.Add(NextIteration(solution.Last(), test));
+                solution.Add(next_ring);
+                ring = next_ring;
             }
             return solution;
         }
 
-        public IEnumerable<ulong> Moves()
+        public static int TestKey(ulong key, List<HashSet<ulong>> solution)
         {
-            for (uint face = 0; face < Cube.FACE_NUM; face++)
-            {
-                cube.RotateRight(face);
-                yield return cube.MiddleKey;
-
-                cube.RotateRight(face);
-                yield return cube.MiddleKey;
-
-                cube.RotateRight(face);
-                yield return cube.MiddleKey;
-
-                cube.RotateRight(face); // restore
-            }
+            int i = solution.Count;
+            while (i-- > 0 && !solution[i].Contains(key));
+            return i;
         }
 
-        public HashSet<ulong> FirstIteration()
+        public static List<ulong> RunTo(ulong middle_key, List<HashSet<ulong>> r_rings)
         {
-            HashSet<ulong> next_ring = new HashSet<ulong>();
+            HashSet<ulong> ring = new HashSet<ulong>();
+            ring.Add(middle_key);
 
-            foreach (ulong next_key in Moves())
+            List<HashSet<ulong>> l_rings = new List<HashSet<ulong>>();
+            l_rings.Add(ring);
+
+            Cube cube = new Cube();
+
+            while (true)
             {
-                next_ring.Add(next_key);
-            }
-
-            return next_ring;
-        }
-
-        public HashSet<ulong> NextIteration(HashSet<ulong> ring, ContainsDelegate test)
-        {
-            HashSet<ulong> next_ring = new HashSet<ulong>();
-
-            foreach (ulong key in ring)
-            {
-                cube.MiddleKey = key;
-                foreach(ulong next_key in Moves())
+                HashSet<ulong> next_ring = new HashSet<ulong>();
+                foreach (ulong key in ring)
                 {
-                    if (!test(next_key))
+                    cube.MiddleKey = key;
+                    foreach (ulong next_key in cube.Moves())
                     {
-                        next_ring.Add(next_key);
+                        int i = TestKey(next_key, r_rings);
+                        if (i >= 0)
+                        {
+                            List<ulong> solution = new List<ulong>();
+                            solution.Add(next_key);
+
+                            for(int l = l_rings.Count; l-- > 0;)
+                            {
+                                foreach (ulong prev_key in Cube.Moves(solution.Last()))
+                                {
+                                    if (l_rings[l].Contains(prev_key))
+                                    {
+                                        solution.Add(prev_key);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            solution.Reverse();
+                            for(int r = i; r-- > 0;)
+                            {
+                                foreach (ulong prev_key in Cube.Moves(solution.Last()))
+                                {
+                                    if (r_rings[r].Contains(prev_key))
+                                    {
+                                        solution.Add(prev_key);
+                                        break;
+                                    }
+                                }
+                            }
+                            return solution;
+                        }
+                        else if (TestKey(next_key, l_rings) < 0)
+                        {
+                            next_ring.Add(next_key);
+                        }
                     }
                 }
+                l_rings.Add(next_ring);
+                ring = next_ring;
+            }        
+        }
+
+        public HashSet<ulong> GetMoveKeys(ulong middle_key)
+        {
+            HashSet<ulong> ring = new HashSet<ulong>();
+            Cube cube = new Cube();
+            cube.MiddleKey = middle_key;
+            foreach (ulong next_key in cube.Moves())
+            {
+                ring.Add(next_key);
             }
-            
-            return next_ring;
+
+            return ring;
         }
     }
 }
