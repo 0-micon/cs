@@ -164,7 +164,7 @@ namespace MagicCube
 
         private void button_Solve_Click(object sender, EventArgs e)
         {
-            //var rings = Solution.Run(731796345686735UL);
+            //Solution.PrecomputeMoves(7);
             var solution = Solution.RunTo(cube.MiddleKey);
             for (int i = 1; i < solution.Count; i++)
             {
