@@ -99,6 +99,62 @@ namespace MagicCube
         static ulong[] denominators;
 
 
+        public struct Move
+        {
+            uint move;
+
+            public Move(uint face, uint turn)
+            {
+                move = face;
+                Turn = turn;
+            }
+
+            public uint Face
+            {
+                get
+                {
+                    return move % FACE_NUM;
+                }
+                set
+                {
+                    move = value;
+                }
+            }
+
+            public uint Turn
+            {
+                get
+                {
+                    return (move / FACE_NUM) % Direction.TURN_COUNT;
+                }
+                set
+                {
+                    move = Face + FACE_NUM * (value % Direction.TURN_COUNT);
+                }
+            }
+
+            public override string ToString()
+            {
+                return FaceInfo.items[Face].color + ", " + Turn + " time(s)";
+            }
+
+            public static Move GetMove(ulong src_key, ulong dst_key)
+            {
+                int count = 0;
+                foreach (ulong key in Cube.Moves(src_key))
+                {
+                    if (key == dst_key)
+                    {
+                        uint face = (uint) (count / 3);
+                        uint turn = (uint) (1 + (count % 3));
+                        return new Move(face, turn);
+                    }
+                    count++;
+                }
+                return new Move(0, 0);
+            }
+        }
+
         public ulong MiddleKey
         {
             get

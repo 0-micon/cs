@@ -107,15 +107,40 @@ namespace MagicCube
         private void button_RotateLeft_Click(object sender, EventArgs e)
         {
             textBox_Log.Text += FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Left\r\n";
+
+            UpdateUndoMove(selected_face, Direction.RIGHT);
+
             cube.RotateRight(selected_face);
             cube.RotateRight(selected_face);
             cube.RotateRight(selected_face);
             RepaintCube();
         }
 
+        private void UpdateUndoMove(uint face, uint turn)
+        {
+            if (comboBox_MoveUndo.Items.Count > 0 && ((Cube.Move)comboBox_MoveUndo.Items[0]).Face == face)
+            {
+                turn = Direction.Sum(turn, ((Cube.Move)comboBox_MoveUndo.Items[0]).Turn);
+                comboBox_MoveUndo.Items.RemoveAt(0);
+            }
+            if (turn > 0)
+            {
+                comboBox_MoveUndo.Items.Insert(0, new Cube.Move(selected_face, turn));
+            }
+            if (comboBox_MoveUndo.Items.Count > 0)
+            {
+                comboBox_MoveUndo.SelectedIndex = 0;
+            }
+
+            comboBox_MoveRedo.Items.Clear();
+        }
+
         private void button_RotateRight_Click(object sender, EventArgs e)
         {
             textBox_Log.Text += FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Right\r\n";
+
+            UpdateUndoMove(selected_face, Direction.LEFT);
+
             cube.RotateRight(selected_face);
             RepaintCube();
         }
@@ -166,10 +191,65 @@ namespace MagicCube
         {
             //Solution.PrecomputeMoves(7);
             var solution = Solution.RunTo(cube.MiddleKey);
+
+            comboBox_MoveUndo.Items.Clear();
+            comboBox_MoveRedo.Items.Clear();
             for (int i = 1; i < solution.Count; i++)
             {
-                textBox_Log.Text += solution[i].ToString() + ": " + FaceInfo.MoveInfo(solution[i - 1], solution[i]) + "\r\n";
+                Cube.Move move = Cube.Move.GetMove(solution[i - 1], solution[i]);
+                textBox_Log.Text += solution[i].ToString() + ": " + move.ToString() + "\r\n";
+
+                comboBox_MoveUndo.Items.Add(move);
             }
+            comboBox_MoveUndo.SelectedIndex = 0;
+        }
+
+        private void button_RandomMove_Click(object sender, EventArgs e)
+        {
+            Random rnd = new Random();
+            selected_face = (uint) rnd.Next(0, (int)Cube.FACE_NUM);
+            for (int i = rnd.Next(1, (int)Direction.TURN_COUNT); i-- > 0;)
+            {
+                button_RotateRight_Click(sender, e);
+            }
+        }
+
+        private void OnMoveUndo(ComboBox undoBox, ComboBox redoBox)
+        {
+            if (undoBox.Items.Count > 0)
+            {
+                Cube.Move undo_move = (Cube.Move)undoBox.Items[0];
+                uint turn = undo_move.Turn;
+                if (turn == Direction.RIGHT || turn == Direction.LEFT)
+                {
+                    turn = Direction.TurnAround(turn);
+                }
+
+                undoBox.Items.RemoveAt(0);
+                if (undoBox.Items.Count > 0)
+                {
+                    undoBox.SelectedIndex = 0;
+                }
+
+                redoBox.Items.Insert(0, new Cube.Move(undo_move.Face, turn));
+                redoBox.SelectedIndex = 0;
+
+                for (uint i = 0; i < undo_move.Turn; i++)
+                {
+                    cube.RotateRight(undo_move.Face);
+                }
+                RepaintCube();
+            }
+        }
+
+        private void button_MoveUndo_Click(object sender, EventArgs e)
+        {
+            OnMoveUndo(comboBox_MoveUndo, comboBox_MoveRedo);
+        }
+
+        private void button_MoveRedo_Click(object sender, EventArgs e)
+        {
+            OnMoveUndo(comboBox_MoveRedo, comboBox_MoveUndo);
         }
     }
 }
