@@ -41,6 +41,7 @@
             this.button_MoveUndo = new System.Windows.Forms.Button();
             this.button_MoveRedo = new System.Windows.Forms.Button();
             this.button_RandomMove = new System.Windows.Forms.Button();
+            this.button_SolveCorners = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel_Cube
@@ -50,7 +51,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel_Cube.Location = new System.Drawing.Point(12, 32);
             this.panel_Cube.Name = "panel_Cube";
-            this.panel_Cube.Size = new System.Drawing.Size(440, 380);
+            this.panel_Cube.Size = new System.Drawing.Size(400, 300);
             this.panel_Cube.TabIndex = 0;
             this.panel_Cube.Paint += new System.Windows.Forms.PaintEventHandler(this.panel_Cube_Paint);
             this.panel_Cube.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panel_Cube_MouseUp);
@@ -59,18 +60,18 @@
             // 
             this.textBox_Log.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_Log.Location = new System.Drawing.Point(458, 32);
+            this.textBox_Log.Location = new System.Drawing.Point(418, 32);
             this.textBox_Log.Multiline = true;
             this.textBox_Log.Name = "textBox_Log";
             this.textBox_Log.ReadOnly = true;
             this.textBox_Log.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBox_Log.Size = new System.Drawing.Size(194, 380);
+            this.textBox_Log.Size = new System.Drawing.Size(234, 398);
             this.textBox_Log.TabIndex = 2;
             // 
             // button_RotateLeft
             // 
             this.button_RotateLeft.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_RotateLeft.Location = new System.Drawing.Point(12, 418);
+            this.button_RotateLeft.Location = new System.Drawing.Point(12, 338);
             this.button_RotateLeft.Name = "button_RotateLeft";
             this.button_RotateLeft.Size = new System.Drawing.Size(90, 23);
             this.button_RotateLeft.TabIndex = 3;
@@ -81,7 +82,7 @@
             // button_RotateRight
             // 
             this.button_RotateRight.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_RotateRight.Location = new System.Drawing.Point(108, 418);
+            this.button_RotateRight.Location = new System.Drawing.Point(108, 338);
             this.button_RotateRight.Name = "button_RotateRight";
             this.button_RotateRight.Size = new System.Drawing.Size(90, 23);
             this.button_RotateRight.TabIndex = 1;
@@ -92,7 +93,7 @@
             // button_GetKeys
             // 
             this.button_GetKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_GetKeys.Location = new System.Drawing.Point(284, 418);
+            this.button_GetKeys.Location = new System.Drawing.Point(204, 338);
             this.button_GetKeys.Name = "button_GetKeys";
             this.button_GetKeys.Size = new System.Drawing.Size(75, 23);
             this.button_GetKeys.TabIndex = 4;
@@ -103,7 +104,7 @@
             // button_SetMiddleKey
             // 
             this.button_SetMiddleKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_SetMiddleKey.Location = new System.Drawing.Point(365, 418);
+            this.button_SetMiddleKey.Location = new System.Drawing.Point(12, 396);
             this.button_SetMiddleKey.Name = "button_SetMiddleKey";
             this.button_SetMiddleKey.Size = new System.Drawing.Size(87, 23);
             this.button_SetMiddleKey.TabIndex = 5;
@@ -115,9 +116,9 @@
             // 
             this.textBox_MiddleKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_MiddleKey.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.textBox_MiddleKey.Location = new System.Drawing.Point(458, 418);
+            this.textBox_MiddleKey.Location = new System.Drawing.Point(105, 398);
             this.textBox_MiddleKey.Name = "textBox_MiddleKey";
-            this.textBox_MiddleKey.Size = new System.Drawing.Size(194, 20);
+            this.textBox_MiddleKey.Size = new System.Drawing.Size(138, 20);
             this.textBox_MiddleKey.TabIndex = 6;
             this.textBox_MiddleKey.TextChanged += new System.EventHandler(this.textBox_MiddleKey_TextChanged);
             this.textBox_MiddleKey.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_MiddleKey_KeyPress);
@@ -125,11 +126,11 @@
             // button_Solve
             // 
             this.button_Solve.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_Solve.Location = new System.Drawing.Point(204, 418);
+            this.button_Solve.Location = new System.Drawing.Point(12, 367);
             this.button_Solve.Name = "button_Solve";
-            this.button_Solve.Size = new System.Drawing.Size(75, 23);
+            this.button_Solve.Size = new System.Drawing.Size(90, 23);
             this.button_Solve.TabIndex = 7;
-            this.button_Solve.Text = "&Solve";
+            this.button_Solve.Text = "&Solve Middle";
             this.button_Solve.UseVisualStyleBackColor = true;
             this.button_Solve.Click += new System.EventHandler(this.button_Solve_Click);
             // 
@@ -188,11 +189,22 @@
             this.button_RandomMove.UseVisualStyleBackColor = true;
             this.button_RandomMove.Click += new System.EventHandler(this.button_RandomMove_Click);
             // 
+            // button_SolveCorners
+            // 
+            this.button_SolveCorners.Location = new System.Drawing.Point(108, 367);
+            this.button_SolveCorners.Name = "button_SolveCorners";
+            this.button_SolveCorners.Size = new System.Drawing.Size(90, 23);
+            this.button_SolveCorners.TabIndex = 13;
+            this.button_SolveCorners.Text = "Solve &Corners";
+            this.button_SolveCorners.UseVisualStyleBackColor = true;
+            this.button_SolveCorners.Click += new System.EventHandler(this.button_SolveCorners_Click);
+            // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(664, 442);
+            this.Controls.Add(this.button_SolveCorners);
             this.Controls.Add(this.button_RandomMove);
             this.Controls.Add(this.button_MoveRedo);
             this.Controls.Add(this.button_MoveUndo);
@@ -228,6 +240,7 @@
         private System.Windows.Forms.Button button_MoveUndo;
         private System.Windows.Forms.Button button_MoveRedo;
         private System.Windows.Forms.Button button_RandomMove;
+        private System.Windows.Forms.Button button_SolveCorners;
     }
 }
 

@@ -35,7 +35,7 @@ namespace MagicCube
         public static string MoveInfo(ulong src_key, ulong dst_key)
         {
             int count = 0;
-            foreach(ulong key in Cube.Moves(src_key))
+            foreach(ulong key in Cube.NextMiddleKeys(src_key))
             {
                 if(key == dst_key)
                 {

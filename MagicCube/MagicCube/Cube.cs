@@ -151,12 +151,28 @@ namespace MagicCube
             public static Move GetMove(ulong src_key, ulong dst_key)
             {
                 int count = 0;
-                foreach (ulong key in Cube.Moves(src_key))
+                foreach (ulong key in Cube.NextMiddleKeys(src_key))
                 {
                     if (key == dst_key)
                     {
                         uint face = (uint) (count / 3);
                         uint turn = (uint) (1 + (count % 3));
+                        return new Move(face, turn);
+                    }
+                    count++;
+                }
+                return new Move(0, 0);
+            }
+
+            public static Move CornerKeysToMove(ulong src_key, ulong dst_key)
+            {
+                int count = 0;
+                foreach (ulong key in Cube.NextCornerKeys(src_key))
+                {
+                    if (key == dst_key)
+                    {
+                        uint face = (uint)(count / 3);
+                        uint turn = (uint)(1 + (count % 3));
                         return new Move(face, turn);
                     }
                     count++;
@@ -211,7 +227,57 @@ namespace MagicCube
             }
         }
 
-        public IEnumerable<ulong> Moves()
+        public IEnumerable<uint> Moves()
+        {
+            uint move = 0;
+            for (uint face = 0; face < FACE_NUM; face++)
+            {
+                RotateRight(face);
+                yield return move++;
+
+                RotateRight(face);
+                yield return move++;
+
+                RotateRight(face);
+                yield return move++;
+
+                RotateRight(face); // restore
+            }
+        }
+
+        public static IEnumerable<uint> Moves(ulong middle_key, ulong corner_key)
+        {
+            Cube c = new Cube();
+            c.MiddleKey = middle_key;
+            c.CornerKey = corner_key;
+            return c.Moves();
+        }
+
+        public IEnumerable<ulong> NextCornerKeys()
+        {
+            for (uint face = 0; face < FACE_NUM; face++)
+            {
+                RotateRight(face);
+                yield return CornerKey;
+
+                RotateRight(face);
+                yield return CornerKey;
+
+                RotateRight(face);
+                yield return CornerKey;
+
+                RotateRight(face); // restore
+            }
+        }
+
+        public static IEnumerable<ulong> NextCornerKeys(ulong corner_key)
+        {
+            Cube c = new Cube();
+            c.CornerKey = corner_key;
+            return c.NextCornerKeys();
+        }
+
+        public IEnumerable<ulong> NextMiddleKeys()
         {
             for (uint face = 0; face < FACE_NUM; face++)
             {
@@ -228,11 +294,11 @@ namespace MagicCube
             }
         }
 
-        public static IEnumerable<ulong> Moves(ulong middle_key)
+        public static IEnumerable<ulong> NextMiddleKeys(ulong middle_key)
         {
             Cube c = new Cube();
             c.MiddleKey = middle_key;
-            return c.Moves();
+            return c.NextMiddleKeys();
         }
 
         public uint CornerElementAt(uint face, uint direction)

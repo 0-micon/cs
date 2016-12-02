@@ -203,7 +203,7 @@ namespace MagicCube
         private void button_Solve_Click(object sender, EventArgs e)
         {
             button_Solve.Enabled = false;
-            //Solution.PrecomputeMoves(7);
+            //Solution.PrecomputeCornerMoves(7);
             var path = solution.SolveMiddle(cube.MiddleKey);
 
             comboBox_MoveUndo.Items.Clear();
@@ -266,6 +266,26 @@ namespace MagicCube
         private void button_MoveRedo_Click(object sender, EventArgs e)
         {
             OnMoveUndo(comboBox_MoveRedo, comboBox_MoveUndo);
+        }
+
+        private void button_SolveCorners_Click(object sender, EventArgs e)
+        {
+            button_SolveCorners.Enabled = false;
+            //Solution.PrecomputeMoves(6);
+            var path = solution.SolveCorners(cube.CornerKey);
+
+            comboBox_MoveUndo.Items.Clear();
+            comboBox_MoveRedo.Items.Clear();
+            for (int i = 1; i < path.Count; i++)
+            {
+                Cube.Move move = Cube.Move.CornerKeysToMove(path[i - 1], path[i]);
+                textBox_Log.Text += path[i].ToString() + ": " + move.ToString() + "\r\n";
+
+                comboBox_MoveUndo.Items.Add(move);
+            }
+            comboBox_MoveUndo.SelectedIndex = 0;
+
+            button_SolveCorners.Enabled = true;
         }
     }
 }
