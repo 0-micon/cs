@@ -96,6 +96,16 @@ namespace MagicCube
             R, R, R, R, // Right
         };
 
+        uint[] corner_elements =
+        {
+            F, F, F, F, // Front
+            B, B, B, B, // Back
+            U, U, U, U, // Up
+            D, D, D, D, // Down
+            L, L, L, L, // Left
+            R, R, R, R, // Right
+        };
+
         static ulong[] denominators;
 
 
@@ -178,6 +188,29 @@ namespace MagicCube
             }
         }
 
+        public ulong CornerKey
+        {
+            get
+            {
+                ulong key = 0;
+                foreach (uint ce in corner_elements)
+                {
+                    key *= FACE_NUM;
+                    key += ce;
+                }
+                return key;
+            }
+            set
+            {
+                int i = corner_elements.Length;
+                while (i-- > 0)
+                {
+                    corner_elements[i] = (uint)(value % FACE_NUM);
+                    value /= FACE_NUM;
+                }
+            }
+        }
+
         public IEnumerable<ulong> Moves()
         {
             for (uint face = 0; face < FACE_NUM; face++)
@@ -201,6 +234,46 @@ namespace MagicCube
             c.MiddleKey = middle_key;
             return c.Moves();
         }
+
+        public uint CornerElementAt(uint face, uint direction)
+        {
+            uint pos = FaceIndex(face) + direction;
+            uint cel = corner_elements[pos];
+            return cel;
+        }
+
+        public uint CornerElementAt(uint face, uint direction, uint value)
+        {
+            uint pos = FaceIndex(face) + direction;
+            uint cel = corner_elements[pos];
+            corner_elements[pos] = value;
+            return cel;
+        }
+
+        public uint NeighbourCornerElementAt(uint face, uint direction)
+        {
+            uint neighbour = LAYOUT[face, direction];
+            return CornerElementAt(neighbour, NEIGHBOUR_POS[neighbour, face]);
+        }
+
+        public uint NeighbourCornerElementAt(uint face, uint direction, uint value)
+        {
+            uint neighbour = LAYOUT[face, direction];
+            return CornerElementAt(neighbour, NEIGHBOUR_POS[neighbour, face], value);
+        }
+
+        public uint SecondNeighbourCornerElementAt(uint face, uint direction)
+        {
+            uint neighbour = LAYOUT[face, direction];
+            return CornerElementAt(neighbour, Direction.TurnLeft(NEIGHBOUR_POS[neighbour, face]));
+        }
+
+        public uint SecondNeighbourCornerElementAt(uint face, uint direction, uint value)
+        {
+            uint neighbour = LAYOUT[face, direction];
+            return CornerElementAt(neighbour, Direction.TurnLeft(NEIGHBOUR_POS[neighbour, face]), value);
+        }
+
 
         public uint MiddleElementAt(uint face, uint direction)
         {
@@ -253,16 +326,22 @@ namespace MagicCube
         {
             // Rotate clockwise: 0,1,2,3 => 3,0,1,2
             uint m = MiddleElementAt(face, Direction.TURN_COUNT - 1);
+            uint c = CornerElementAt(face, Direction.TURN_COUNT - 1);
             foreach (uint i in Direction.Items())
             {
                 m = MiddleElementAt(face, i, m);
+                c = CornerElementAt(face, i, c);
             }
 
             // neighbours rotation
             m = NeighbourMiddleElementAt(face, Direction.TURN_COUNT - 1);
+            c = NeighbourCornerElementAt(face, Direction.TURN_COUNT - 1);
+            uint s = SecondNeighbourCornerElementAt(face, Direction.TURN_COUNT - 1);
             foreach (uint i in Direction.Items())
             {
                 m = NeighbourMiddleElementAt(face, i, m);
+                c = NeighbourCornerElementAt(face, i, c);
+                s = SecondNeighbourCornerElementAt(face, i, s);
             }
         }
 

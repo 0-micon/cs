@@ -10,6 +10,14 @@ namespace MagicCube
 {
     class Solution
     {
+
+        List<List<ulong>> r_rings;
+        
+        public Solution()
+        {
+            r_rings = LoadRings(7, "middle_key_ring_", "ulong");
+        }
+        
         public struct Move
         {
             public uint face;
@@ -172,9 +180,9 @@ namespace MagicCube
             return i;
         }
 
-        public static List<ulong> RunTo(ulong middle_key)
+        public List<ulong> SolveMiddle(ulong middle_key)
         {
-            List<List<ulong>> r_rings = LoadRings(7, "middle_key_ring_", "ulong");
+            //List<List<ulong>> r_rings = LoadRings(7, "middle_key_ring_", "ulong");
 
             List<ulong> ring = new List<ulong>();
             ring.Add(middle_key);

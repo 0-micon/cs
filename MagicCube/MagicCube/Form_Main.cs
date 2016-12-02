@@ -13,6 +13,7 @@ namespace MagicCube
     public partial class Form_Main : Form
     {
         Cube cube = new Cube();
+        Solution solution = new Solution();
 
         public const float cx = 24f;
         public const float cy = 24f;
@@ -23,6 +24,14 @@ namespace MagicCube
             new Point(2, 1), // Right
             new Point(1, 2), // Down
             new Point(0, 1), // Left
+        };
+
+        static readonly Point[] corner_positions =
+        {
+            new Point(2, 0), // Up
+            new Point(2, 2), // Right
+            new Point(0, 2), // Down
+            new Point(0, 0), // Left
         };
 
         uint selected_face;
@@ -40,16 +49,19 @@ namespace MagicCube
         private void DrawFace(Graphics g, uint face, uint direction, float x, float y, float cx, float cy, bool selected)
         {
             SolidBrush br = new SolidBrush(Color.FromName(FaceInfo.items[face].color));
-            g.FillRectangle(br, x + cx, y + cy, cx, cy);
+            g.FillRectangle(br, x + cx, y + cy, cx - 1, cy - 1);
             if (selected)
             {
-                g.DrawRectangle(Pens.Black, x + cx, y + cy, cx - 1, cy - 1);
+                g.DrawRectangle(Pens.Black, x + cx - 1, y + cy - 1, cx, cy);
             }
 
             foreach(uint i in Direction.Items())
             {
                 br = new SolidBrush(Color.FromName(FaceInfo.items[cube.MiddleElementAt(face, Direction.Sum(direction, i))].color));
-                g.FillRectangle(br, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx, cy);
+                g.FillRectangle(br, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx - 1, cy - 1);
+
+                br = new SolidBrush(Color.FromName(FaceInfo.items[cube.CornerElementAt(face, Direction.Sum(direction, i))].color));
+                g.FillRectangle(br, x + cx * corner_positions[i].X, y + cy * corner_positions[i].Y, cx - 1, cy - 1);
             }
         }
 
@@ -145,9 +157,10 @@ namespace MagicCube
             RepaintCube();
         }
 
-        private void button_MiddleKey_Click(object sender, EventArgs e)
+        private void button_GetKeys_Click(object sender, EventArgs e)
         {
             textBox_Log.Text += "Middle Key: " + cube.MiddleKey + "\r\n";
+            textBox_Log.Text += "Corner Key: " + cube.CornerKey + "\r\n";
         }
 
         private void textBox_MiddleKey_KeyPress(object sender, KeyPressEventArgs e)
@@ -189,19 +202,22 @@ namespace MagicCube
 
         private void button_Solve_Click(object sender, EventArgs e)
         {
+            button_Solve.Enabled = false;
             //Solution.PrecomputeMoves(7);
-            var solution = Solution.RunTo(cube.MiddleKey);
+            var path = solution.SolveMiddle(cube.MiddleKey);
 
             comboBox_MoveUndo.Items.Clear();
             comboBox_MoveRedo.Items.Clear();
-            for (int i = 1; i < solution.Count; i++)
+            for (int i = 1; i < path.Count; i++)
             {
-                Cube.Move move = Cube.Move.GetMove(solution[i - 1], solution[i]);
-                textBox_Log.Text += solution[i].ToString() + ": " + move.ToString() + "\r\n";
+                Cube.Move move = Cube.Move.GetMove(path[i - 1], path[i]);
+                textBox_Log.Text += path[i].ToString() + ": " + move.ToString() + "\r\n";
 
                 comboBox_MoveUndo.Items.Add(move);
             }
             comboBox_MoveUndo.SelectedIndex = 0;
+
+            button_Solve.Enabled = true;
         }
 
         private void button_RandomMove_Click(object sender, EventArgs e)

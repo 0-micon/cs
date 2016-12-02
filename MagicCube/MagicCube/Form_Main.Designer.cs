@@ -32,7 +32,7 @@
             this.textBox_Log = new System.Windows.Forms.TextBox();
             this.button_RotateLeft = new System.Windows.Forms.Button();
             this.button_RotateRight = new System.Windows.Forms.Button();
-            this.button_MiddleKey = new System.Windows.Forms.Button();
+            this.button_GetKeys = new System.Windows.Forms.Button();
             this.button_SetMiddleKey = new System.Windows.Forms.Button();
             this.textBox_MiddleKey = new System.Windows.Forms.TextBox();
             this.button_Solve = new System.Windows.Forms.Button();
@@ -89,16 +89,16 @@
             this.button_RotateRight.UseVisualStyleBackColor = true;
             this.button_RotateRight.Click += new System.EventHandler(this.button_RotateRight_Click);
             // 
-            // button_MiddleKey
+            // button_GetKeys
             // 
-            this.button_MiddleKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_MiddleKey.Location = new System.Drawing.Point(284, 418);
-            this.button_MiddleKey.Name = "button_MiddleKey";
-            this.button_MiddleKey.Size = new System.Drawing.Size(75, 23);
-            this.button_MiddleKey.TabIndex = 4;
-            this.button_MiddleKey.Text = "&Middle Key";
-            this.button_MiddleKey.UseVisualStyleBackColor = true;
-            this.button_MiddleKey.Click += new System.EventHandler(this.button_MiddleKey_Click);
+            this.button_GetKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button_GetKeys.Location = new System.Drawing.Point(284, 418);
+            this.button_GetKeys.Name = "button_GetKeys";
+            this.button_GetKeys.Size = new System.Drawing.Size(75, 23);
+            this.button_GetKeys.TabIndex = 4;
+            this.button_GetKeys.Text = "&Get Keys";
+            this.button_GetKeys.UseVisualStyleBackColor = true;
+            this.button_GetKeys.Click += new System.EventHandler(this.button_GetKeys_Click);
             // 
             // button_SetMiddleKey
             // 
@@ -201,7 +201,7 @@
             this.Controls.Add(this.button_Solve);
             this.Controls.Add(this.textBox_MiddleKey);
             this.Controls.Add(this.button_SetMiddleKey);
-            this.Controls.Add(this.button_MiddleKey);
+            this.Controls.Add(this.button_GetKeys);
             this.Controls.Add(this.button_RotateLeft);
             this.Controls.Add(this.textBox_Log);
             this.Controls.Add(this.button_RotateRight);
@@ -219,7 +219,7 @@
         private System.Windows.Forms.TextBox textBox_Log;
         private System.Windows.Forms.Button button_RotateLeft;
         private System.Windows.Forms.Button button_RotateRight;
-        private System.Windows.Forms.Button button_MiddleKey;
+        private System.Windows.Forms.Button button_GetKeys;
         private System.Windows.Forms.Button button_SetMiddleKey;
         private System.Windows.Forms.TextBox textBox_MiddleKey;
         private System.Windows.Forms.Button button_Solve;
