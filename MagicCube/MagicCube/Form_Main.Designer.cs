@@ -35,13 +35,15 @@
             this.button_GetKeys = new System.Windows.Forms.Button();
             this.button_SetMiddleKey = new System.Windows.Forms.Button();
             this.textBox_MiddleKey = new System.Windows.Forms.TextBox();
-            this.button_Solve = new System.Windows.Forms.Button();
+            this.button_Solve_Middle = new System.Windows.Forms.Button();
             this.comboBox_MoveUndo = new System.Windows.Forms.ComboBox();
             this.comboBox_MoveRedo = new System.Windows.Forms.ComboBox();
             this.button_MoveUndo = new System.Windows.Forms.Button();
             this.button_MoveRedo = new System.Windows.Forms.Button();
             this.button_RandomMove = new System.Windows.Forms.Button();
             this.button_SolveCorners = new System.Windows.Forms.Button();
+            this.button_Solve = new System.Windows.Forms.Button();
+            this.button_ShowNext = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel_Cube
@@ -123,16 +125,16 @@
             this.textBox_MiddleKey.TextChanged += new System.EventHandler(this.textBox_MiddleKey_TextChanged);
             this.textBox_MiddleKey.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_MiddleKey_KeyPress);
             // 
-            // button_Solve
+            // button_Solve_Middle
             // 
-            this.button_Solve.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_Solve.Location = new System.Drawing.Point(12, 367);
-            this.button_Solve.Name = "button_Solve";
-            this.button_Solve.Size = new System.Drawing.Size(90, 23);
-            this.button_Solve.TabIndex = 7;
-            this.button_Solve.Text = "&Solve Middle";
-            this.button_Solve.UseVisualStyleBackColor = true;
-            this.button_Solve.Click += new System.EventHandler(this.button_Solve_Click);
+            this.button_Solve_Middle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button_Solve_Middle.Location = new System.Drawing.Point(12, 367);
+            this.button_Solve_Middle.Name = "button_Solve_Middle";
+            this.button_Solve_Middle.Size = new System.Drawing.Size(90, 23);
+            this.button_Solve_Middle.TabIndex = 7;
+            this.button_Solve_Middle.Text = "&Solve Middle";
+            this.button_Solve_Middle.UseVisualStyleBackColor = true;
+            this.button_Solve_Middle.Click += new System.EventHandler(this.button_SolveMiddle_Click);
             // 
             // comboBox_MoveUndo
             // 
@@ -199,18 +201,40 @@
             this.button_SolveCorners.UseVisualStyleBackColor = true;
             this.button_SolveCorners.Click += new System.EventHandler(this.button_SolveCorners_Click);
             // 
+            // button_Solve
+            // 
+            this.button_Solve.Location = new System.Drawing.Point(204, 367);
+            this.button_Solve.Name = "button_Solve";
+            this.button_Solve.Size = new System.Drawing.Size(75, 23);
+            this.button_Solve.TabIndex = 14;
+            this.button_Solve.Text = "Solve";
+            this.button_Solve.UseVisualStyleBackColor = true;
+            this.button_Solve.Click += new System.EventHandler(this.button_Solve_Click);
+            // 
+            // button_ShowNext
+            // 
+            this.button_ShowNext.Location = new System.Drawing.Point(496, 3);
+            this.button_ShowNext.Name = "button_ShowNext";
+            this.button_ShowNext.Size = new System.Drawing.Size(75, 23);
+            this.button_ShowNext.TabIndex = 15;
+            this.button_ShowNext.Text = "Show Next";
+            this.button_ShowNext.UseVisualStyleBackColor = true;
+            this.button_ShowNext.Click += new System.EventHandler(this.button_ShowNext_Click);
+            // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(664, 442);
+            this.Controls.Add(this.button_ShowNext);
+            this.Controls.Add(this.button_Solve);
             this.Controls.Add(this.button_SolveCorners);
             this.Controls.Add(this.button_RandomMove);
             this.Controls.Add(this.button_MoveRedo);
             this.Controls.Add(this.button_MoveUndo);
             this.Controls.Add(this.comboBox_MoveRedo);
             this.Controls.Add(this.comboBox_MoveUndo);
-            this.Controls.Add(this.button_Solve);
+            this.Controls.Add(this.button_Solve_Middle);
             this.Controls.Add(this.textBox_MiddleKey);
             this.Controls.Add(this.button_SetMiddleKey);
             this.Controls.Add(this.button_GetKeys);
@@ -234,13 +258,15 @@
         private System.Windows.Forms.Button button_GetKeys;
         private System.Windows.Forms.Button button_SetMiddleKey;
         private System.Windows.Forms.TextBox textBox_MiddleKey;
-        private System.Windows.Forms.Button button_Solve;
+        private System.Windows.Forms.Button button_Solve_Middle;
         private System.Windows.Forms.ComboBox comboBox_MoveUndo;
         private System.Windows.Forms.ComboBox comboBox_MoveRedo;
         private System.Windows.Forms.Button button_MoveUndo;
         private System.Windows.Forms.Button button_MoveRedo;
         private System.Windows.Forms.Button button_RandomMove;
         private System.Windows.Forms.Button button_SolveCorners;
+        private System.Windows.Forms.Button button_Solve;
+        private System.Windows.Forms.Button button_ShowNext;
     }
 }
 

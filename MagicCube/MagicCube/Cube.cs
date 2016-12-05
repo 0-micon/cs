@@ -148,7 +148,25 @@ namespace MagicCube
                 return FaceInfo.items[Face].color + ", " + Turn + " time(s)";
             }
 
-            public static Move GetMove(ulong src_key, ulong dst_key)
+            public static Move KeysToMove(Solution.Key src_key, Solution.Key dst_key)
+            {
+                Cube c = new Cube();
+                c.MiddleKey = src_key.middles;
+                c.CornerKey = src_key.corners;
+
+                foreach (uint move in c.Moves())
+                {
+                    if (c.CornerKey == dst_key.corners && c.MiddleKey == dst_key.middles)
+                    {
+                        uint face = move / 3;
+                        uint turn = 1 + (move % 3);
+                        return new Move(face, turn);
+                    }
+                }
+                return new Move(0, 0);
+            }
+
+            public static Move MiddleKeysToMove(ulong src_key, ulong dst_key)
             {
                 int count = 0;
                 foreach (ulong key in Cube.NextMiddleKeys(src_key))

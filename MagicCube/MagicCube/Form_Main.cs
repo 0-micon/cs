@@ -34,7 +34,8 @@ namespace MagicCube
             new Point(0, 0), // Left
         };
 
-        uint selected_face;
+        uint selected_face = 0;
+        int selected_cube = 0;
 
         public Form_Main()
         {
@@ -79,6 +80,8 @@ namespace MagicCube
                 DrawFace(g, face, FaceInfo.items[face].direction,
                     x, y, cx, cy, selected_face == face);
             }
+
+            g.DrawString(selected_cube.ToString(), Font, Brushes.Black, 0f, 0f);
         }
 
         private void panel_Cube_MouseUp(object sender, MouseEventArgs e)
@@ -200,9 +203,9 @@ namespace MagicCube
             }
         }
 
-        private void button_Solve_Click(object sender, EventArgs e)
+        private void button_SolveMiddle_Click(object sender, EventArgs e)
         {
-            button_Solve.Enabled = false;
+            button_Solve_Middle.Enabled = false;
             //Solution.PrecomputeCornerMoves(7);
             var path = solution.SolveMiddle(cube.MiddleKey);
 
@@ -210,14 +213,14 @@ namespace MagicCube
             comboBox_MoveRedo.Items.Clear();
             for (int i = 1; i < path.Count; i++)
             {
-                Cube.Move move = Cube.Move.GetMove(path[i - 1], path[i]);
+                Cube.Move move = Cube.Move.MiddleKeysToMove(path[i - 1], path[i]);
                 textBox_Log.Text += path[i].ToString() + ": " + move.ToString() + "\r\n";
 
                 comboBox_MoveUndo.Items.Add(move);
             }
             comboBox_MoveUndo.SelectedIndex = 0;
 
-            button_Solve.Enabled = true;
+            button_Solve_Middle.Enabled = true;
         }
 
         private void button_RandomMove_Click(object sender, EventArgs e)
@@ -271,6 +274,7 @@ namespace MagicCube
         private void button_SolveCorners_Click(object sender, EventArgs e)
         {
             button_SolveCorners.Enabled = false;
+
             //Solution.PrecomputeMoves(6);
             var path = solution.SolveCorners(cube.CornerKey);
 
@@ -286,6 +290,42 @@ namespace MagicCube
             comboBox_MoveUndo.SelectedIndex = 0;
 
             button_SolveCorners.Enabled = true;
+        }
+
+        private void button_Solve_Click(object sender, EventArgs e)
+        {
+            button_Solve.Enabled = false;
+
+            var path = solution.Solve(new Solution.Key(cube));
+
+            comboBox_MoveUndo.Items.Clear();
+            comboBox_MoveRedo.Items.Clear();
+            for (int i = 1; i < path.Count; i++)
+            {
+                Cube.Move move = Cube.Move.KeysToMove(path[i - 1], path[i]);
+                textBox_Log.Text += path[i].ToString() + ": " + move.ToString() + "\r\n";
+
+                comboBox_MoveUndo.Items.Add(move);
+            }
+            comboBox_MoveUndo.SelectedIndex = 0;
+
+            button_Solve.Enabled = true;
+        }
+
+        private void button_ShowNext_Click(object sender, EventArgs e)
+        {
+            var last = solution.cube_rings.Last();
+            if (++selected_cube >= last.Count)
+            {
+                selected_cube = 0;
+            }
+
+            Random rnd = new Random();
+            selected_cube = rnd.Next(0, last.Count);
+
+            cube.MiddleKey = last[selected_cube].middles;
+            cube.CornerKey = last[selected_cube].corners;
+            RepaintCube();
         }
     }
 }

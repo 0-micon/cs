@@ -13,11 +13,14 @@ namespace MagicCube
 
         List<List<ulong>> middle_rings;
         List<List<ulong>> corner_rings;
+        internal List<List<Key>> cube_rings;
+
 
         public Solution()
         {
             middle_rings = LoadRings(7, "middle_key_ring_", "ulong");
             corner_rings = LoadRings(7, "corner_key_ring_", "ulong");
+            cube_rings = LoadKeyRings(6, "key_ring_", "ulong");
         }
         
         public struct Move
@@ -97,12 +100,45 @@ namespace MagicCube
             return list;
         }
 
+        public delegate T ElementWriter<T>(BinaryWriter bw);
+        public delegate T ElementReader<T>(BinaryReader br);
+
+        public static List<T> LoadList<T>(string fname, ElementReader<T> reader, int element_size)
+        {
+            List<T> list = null;
+            using (BinaryReader br = new BinaryReader(File.Open(fname, FileMode.Open)))
+            {
+                long flength = (new FileInfo(fname)).Length;
+                int count = (int)(flength / element_size);
+                list = new List<T>(count);
+                while (count-- > 0)
+                {
+                    list.Add(reader(br));
+                }
+            }
+            return list;
+        }
+
         public static List<List<ulong>> LoadRings(int capacity, string fname, string extension)
         {
             List<List<ulong>> rings = new List<List<ulong>>(capacity);
+            ElementReader<ulong> reader = (br) => { return br.ReadUInt64(); };
+
             for(int i = 0; i < capacity; i++)
             {
-                rings.Add(LoadList(fname + i + "." + extension));
+                rings.Add(LoadList(fname + i + "." + extension, reader, sizeof(ulong)));
+            }
+            return rings;
+        }
+
+        public static List<List<Key>> LoadKeyRings(int capacity, string fname, string extension)
+        {
+            List<List<Key>> rings = new List<List<Key>>(capacity);
+            ElementReader<Key> reader = (br) => { return new Key { corners = br.ReadUInt64(), middles = br.ReadUInt64() }; };
+
+            for (int i = 0; i < capacity; i++)
+            {
+                rings.Add(LoadList(fname + i + "." + extension, reader, sizeof(ulong) * 2));
             }
             return rings;
         }
@@ -468,6 +504,82 @@ namespace MagicCube
                 l_rings.Add(next_ring);
                 ring = next_ring;
             }        
+        }
+
+        public List<Key> Solve(Key start_key)
+        {
+            List<Key> ring = new List<Key>();
+            ring.Add(start_key);
+
+            List<List<Key>> l_rings = new List<List<Key>>();
+            l_rings.Add(ring);
+
+            Cube cube = new Cube();
+
+            int reserved = 18;
+            while (true)
+            {
+                List<Key> next_ring = new List<Key>(reserved);
+                foreach (Key key in ring)
+                {
+                    cube.MiddleKey = key.middles;
+                    cube.CornerKey = key.corners;
+
+                    foreach (uint next_move in cube.Moves())
+                    {
+                        Key next_key = new Key(cube);
+
+                        int pos = TestKey(next_key, cube_rings);
+                        if (pos >= 0)
+                        {
+                            List<Key> solution = new List<Key>();
+                            solution.Add(next_key);
+
+                            for (int l = l_rings.Count; l-- > 0;)
+                            {
+                                Cube c = new Cube();
+                                c.MiddleKey = solution.Last().middles;
+                                c.CornerKey = solution.Last().corners;
+                                foreach (uint prev_move in c.Moves())
+                                {
+                                    Key prev_key = new Key(c);
+                                    if (l_rings[l].BinarySearch(prev_key) >= 0)
+                                    {
+                                        solution.Add(prev_key);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            solution.Reverse();
+                            for (int r = pos; r-- > 0;)
+                            {
+                                Cube c = new Cube();
+                                c.MiddleKey = solution.Last().middles;
+                                c.CornerKey = solution.Last().corners;
+                                foreach (uint prev_move in c.Moves())
+                                {
+                                    Key prev_key = new Key(c);
+                                    if (cube_rings[r].BinarySearch(prev_key) >= 0)
+                                    {
+                                        solution.Add(prev_key);
+                                        break;
+                                    }
+                                }
+                            }
+                            return solution;
+                        }
+                        else if (TestKey(next_key, l_rings) < 0)
+                        {
+                            next_ring.Add(next_key);
+                        }
+                    }
+                }
+                reserved = next_ring.Count * 13;
+                DistinctValues(next_ring);
+                l_rings.Add(next_ring);
+                ring = next_ring;
+            }
         }
 
         public HashSet<ulong> GetMoveKeys(ulong middle_key)
