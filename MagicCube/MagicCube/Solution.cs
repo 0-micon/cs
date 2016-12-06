@@ -11,8 +11,8 @@ namespace MagicCube
     class Solution
     {
 
-        List<List<ulong>> middle_rings;
-        List<List<ulong>> corner_rings;
+        internal List<List<ulong>> middle_rings;
+        internal List<List<ulong>> corner_rings;
         internal List<List<Key>> cube_rings;
 
 

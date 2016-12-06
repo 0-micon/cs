@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace MagicCube
 {
@@ -108,6 +109,17 @@ namespace MagicCube
                                     RepaintCube();
                                 }
                             }
+                            rc_elem = new RectangleF(x + cx * corner_positions[i].X, y + cy * corner_positions[i].Y, cx, cy);
+                            if (rc_elem.Contains(e.Location))
+                            {
+                                using (var frm = new FaceColorForm())
+                                {
+                                    frm.selection = cube.CornerElementAt(face, Direction.Sum(FaceInfo.items[face].direction, i));
+                                    frm.ShowDialog(this);
+                                    cube.CornerElementAt(face, Direction.Sum(FaceInfo.items[face].direction, i), frm.selection);
+                                    RepaintCube();
+                                }
+                            }
                         }
                     }
                     else
@@ -166,7 +178,7 @@ namespace MagicCube
             textBox_Log.Text += "Corner Key: " + cube.CornerKey + "\r\n";
         }
 
-        private void textBox_MiddleKey_KeyPress(object sender, KeyPressEventArgs e)
+        private void digitTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!Char.IsDigit(e.KeyChar) && !Char.IsControl(e.KeyChar))
             {
@@ -175,21 +187,25 @@ namespace MagicCube
             }
         }
 
-        private void textBox_MiddleKey_TextChanged(object sender, EventArgs e)
+        private void digitTextBox_TextChanged(object sender, EventArgs e)
         {
-            string text = textBox_MiddleKey.Text;
-            StringBuilder sb = new StringBuilder(text.Length);
-            foreach(char ch in text)
+            TextBox textBox = sender as TextBox;
+            if(textBox != null)
             {
-                if (Char.IsDigit(ch))
+                string text = textBox.Text;
+                StringBuilder sb = new StringBuilder(text.Length);
+                foreach (char ch in text)
                 {
-                    sb.Append(ch);
+                    if (Char.IsDigit(ch))
+                    {
+                        sb.Append(ch);
+                    }
                 }
-            }
-            string str = sb.ToString();
-            if(text != str)
-            {
-                textBox_MiddleKey.Text = str;
+                string str = sb.ToString();
+                if (text != str)
+                {
+                    textBox.Text = str;
+                }
             }
         }
 
@@ -202,6 +218,17 @@ namespace MagicCube
                 RepaintCube();
             }
         }
+
+        private void button_SetCornerKey_Click(object sender, EventArgs e)
+        {
+            ulong key;
+            if (UInt64.TryParse(textBox_CornerKey.Text, out key))
+            {
+                cube.CornerKey = key;
+                RepaintCube();
+            }
+        }
+
 
         private void button_SolveMiddle_Click(object sender, EventArgs e)
         {
@@ -221,6 +248,30 @@ namespace MagicCube
             comboBox_MoveUndo.SelectedIndex = 0;
 
             button_Solve_Middle.Enabled = true;
+
+/*//
+            Cube c = new Cube();
+            var ring = solution.middle_rings[1];
+            List<ulong> test_ring = new List<ulong>();
+            foreach (ulong key in ring)
+            {
+                c.MiddleKey = key;
+                bool done = false;
+                for(uint shift = 1; shift < Cube.FACE_NUM; shift++)
+                {
+                    ulong key_shift = c.GetMiddleKey(shift);
+                    if(test_ring.BinarySearch(key_shift) >= 0)
+                    {
+                        done = true;
+                        break;
+                    }
+                }
+                if (!done)
+                {
+                    test_ring.Add(key);
+                }
+            }
+//*/
         }
 
         private void button_RandomMove_Click(object sender, EventArgs e)
@@ -314,6 +365,42 @@ namespace MagicCube
 
         private void button_ShowNext_Click(object sender, EventArgs e)
         {
+            uint face = Cube.Front;
+            Debug.Assert(Cube.UpFace(face) == Cube.Up);
+            Debug.Assert(Cube.DownFace(face) == Cube.Down);
+            Debug.Assert(Cube.LeftFace(face) == Cube.Left);
+            Debug.Assert(Cube.RightFace(face) == Cube.Right);
+
+            face = Cube.Up;
+            Debug.Assert(Cube.UpFace(face) == Cube.Right);
+            Debug.Assert(Cube.DownFace(face) == Cube.Left);
+            Debug.Assert(Cube.LeftFace(face) == Cube.Back);
+            Debug.Assert(Cube.RightFace(face) == Cube.Front);
+
+            face = Cube.Right;
+            Debug.Assert(Cube.UpFace(face) == Cube.Back);
+            Debug.Assert(Cube.DownFace(face) == Cube.Front);
+            Debug.Assert(Cube.LeftFace(face) == Cube.Up);
+            Debug.Assert(Cube.RightFace(face) == Cube.Down);
+
+            face = Cube.Back;
+            Debug.Assert(Cube.UpFace(face) == Cube.Down);
+            Debug.Assert(Cube.DownFace(face) == Cube.Up);
+            Debug.Assert(Cube.LeftFace(face) == Cube.Left);
+            Debug.Assert(Cube.RightFace(face) == Cube.Right);
+
+            face = Cube.Down;
+            Debug.Assert(Cube.UpFace(face) == Cube.Left);
+            Debug.Assert(Cube.DownFace(face) == Cube.Right);
+            Debug.Assert(Cube.LeftFace(face) == Cube.Back);
+            Debug.Assert(Cube.RightFace(face) == Cube.Front);
+
+            face = Cube.Left;
+            Debug.Assert(Cube.UpFace(face) == Cube.Front);
+            Debug.Assert(Cube.DownFace(face) == Cube.Back);
+            Debug.Assert(Cube.LeftFace(face) == Cube.Up);
+            Debug.Assert(Cube.RightFace(face) == Cube.Down);
+
             var last = solution.cube_rings.Last();
             if (++selected_cube >= last.Count)
             {

@@ -11,6 +11,34 @@ namespace MagicCube
     class Cube
     {
         public const uint
+            Front = 0,
+            Up    = 1,
+            Right = 2,
+            Back  = 3,
+            Down  = 4,
+            Left  = 5;
+
+        public static uint UpFace(uint face)
+        {
+            return (face + Up) % FACE_NUM;
+        }
+
+        public static uint DownFace(uint face)
+        {
+            return (face + Down) % FACE_NUM;
+        }
+
+        public static uint RightFace(uint face)
+        {
+            return (face + ((face & 1) == 1 ? Left : Right)) % FACE_NUM;
+        }
+
+        public static uint LeftFace(uint face)
+        {
+            return (face + ((face & 1) == 1 ? Right : Left)) % FACE_NUM;
+        }
+
+        public const uint
             F = 0, // Front
             B = 1, // Back
             U = 2, // Up
@@ -108,7 +136,6 @@ namespace MagicCube
 
         static ulong[] denominators;
 
-
         public struct Move
         {
             uint move;
@@ -198,6 +225,24 @@ namespace MagicCube
                 return new Move(0, 0);
             }
         }
+
+
+        public ulong GetMiddleKey(uint shift)
+        {
+            ulong key = 0;
+            for (uint i = 0; i < FACE_NUM; i++)
+            {
+                uint start = (i + shift) % FACE_NUM;
+                for(uint j = 0; j < Direction.TURN_COUNT; j++)
+                {
+                    uint me = middle_elements[start * Direction.TURN_COUNT + j];
+                    key *= FACE_NUM;
+                    key += (FACE_NUM + me - shift) % FACE_NUM;
+                }
+            }
+            return key;
+        }
+
 
         public ulong MiddleKey
         {
