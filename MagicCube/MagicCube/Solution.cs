@@ -20,7 +20,7 @@ namespace MagicCube
         {
             middle_rings = LoadRings(7, "middle_key_ring_", "ulong");
             corner_rings = LoadRings(7, "corner_key_ring_", "ulong");
-            cube_rings = LoadKeyRings(6, "key_ring_", "ulong");
+            cube_rings = LoadKeyRings(6 + 1, "key_ring_", "ulong");
         }
         
         public struct Move
@@ -34,31 +34,6 @@ namespace MagicCube
                 this.count = count;
                 this.key = key;
             }
-        }
-
-
-        public Move? FindMove(HashSet<ulong> ring, ulong middle_key)
-        {
-            Cube cube = new Cube();
-            cube.MiddleKey = middle_key;
-            int count = 0;
-            foreach(ulong next_key in cube.NextMiddleKeys())
-            {
-                if (ring.Contains(next_key))
-                {
-                    uint face = (uint)count / 3;
-                    return new Move(face, count % 3 + 1, next_key);
-                }
-                count++;
-            }
-            return null;
-        }
-
-        public List<Move> Path(List<HashSet<ulong>> rings, ulong middle_key)
-        {
-            List<Move> path = new List<Move>();
-
-            return path;
         }
 
         public static void SaveRing(IEnumerable<ulong> ring, string fname)
@@ -82,22 +57,6 @@ namespace MagicCube
                     bw.Write(key.middles);
                 }
             }
-        }
-
-        public static List<ulong> LoadList(string fname)
-        {
-            List<ulong> list = null;
-            using (BinaryReader br = new BinaryReader(File.Open(fname, FileMode.Open)))
-            {
-                long flength = (new FileInfo(fname)).Length;
-                int count = (int)(flength / sizeof(ulong));
-                list = new List<ulong>(count);
-                while(count-- > 0)
-                {
-                    list.Add(br.ReadUInt64());
-                }
-            }
-            return list;
         }
 
         public delegate T ElementWriter<T>(BinaryWriter bw);
@@ -152,26 +111,6 @@ namespace MagicCube
             }
             list.Sort();
             return list;
-        }
-
-        public static void DistinctValues<T>(List<T> list)
-        {
-            list.Sort();
-
-            int src = 0;
-            int dst = 0;
-            while (src < list.Count)
-            {
-                var val = list[src];
-                list[dst] = val;
-
-                ++dst;
-                while (++src < list.Count && list[src].Equals(val)) ;
-            }
-            if (dst < list.Count)
-            {
-                list.RemoveRange(dst, list.Count - dst);
-            }
         }
 
         public struct Key : IComparable<Key>
@@ -259,7 +198,15 @@ namespace MagicCube
                     cube.MiddleKey = key.middles;
                     foreach (uint next_move in cube.Moves())
                     {
-                        Key next_key = new Key(cube);
+                        //Key next_key = new Key(cube);
+                        Key x = new Key(cube);
+                        cube.Shift2(); cube.Shift2();
+                        Key y = new Key(cube);
+                        cube.Shift2(); cube.Shift2();
+                        Key z = new Key(cube);
+                        cube.Shift2(); cube.Shift2();
+                        Key next_key = Utils.Min(Utils.Min(x, y), z);
+
                         if (TestKey(next_key, solution) < 0)
                         {
                             next_ring.Add(next_key);
@@ -269,7 +216,7 @@ namespace MagicCube
 
                 // sort and remove duplicates
                 reserved = next_ring.Count * 14;
-                DistinctValues(next_ring);
+                next_ring.DistinctValues();
 
                 solution.Add(next_ring);
                 ring = next_ring;
@@ -277,7 +224,7 @@ namespace MagicCube
 
             for (int i = 0; i < solution.Count; i++)
             {
-                SaveRing(solution[i], "key_ring_" + i + ".ulong");
+                SaveRing(solution[i], "new_key_ring_" + i + ".ulong");
             }
         }
 
@@ -311,7 +258,7 @@ namespace MagicCube
                 //next_ring.Sort();
                 //next_ring = next_ring.Distinct().ToList();
                 reserved = next_ring.Count * 13;
-                DistinctValues(next_ring);
+                next_ring.DistinctValues();
 
                 solution.Add(next_ring);
                 ring = next_ring;
@@ -351,7 +298,7 @@ namespace MagicCube
 
                 // sort and remove duplicates
                 reserved = next_ring.Count * 13;
-                DistinctValues(next_ring);
+                next_ring.DistinctValues();
 
                 solution.Add(next_ring);
                 ring = next_ring;
@@ -436,7 +383,7 @@ namespace MagicCube
                     }
                 }
                 reserved = next_ring.Count * 13;
-                DistinctValues(next_ring);
+                next_ring.DistinctValues();
                 l_rings.Add(next_ring);
                 ring = next_ring;
             }
@@ -500,7 +447,7 @@ namespace MagicCube
                     }
                 }
                 reserved = next_ring.Count * 13;
-                DistinctValues(next_ring);
+                next_ring.DistinctValues();
                 l_rings.Add(next_ring);
                 ring = next_ring;
             }        
@@ -576,9 +523,14 @@ namespace MagicCube
                     }
                 }
                 reserved = next_ring.Count * 13;
-                DistinctValues(next_ring);
+                next_ring.DistinctValues();
                 l_rings.Add(next_ring);
                 ring = next_ring;
+
+                if(reserved > 100000000)
+                {
+                    return null;
+                }
             }
         }
 

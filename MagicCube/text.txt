@@ -1,0 +1,167 @@
+Solved Cube
+Middle Key: 731796345686735
+Corner Key: 731796345686735
+
+Middle Key: 2957514557629640970
+Corner Key: 545816149318547910
+
+Middle Key: 2882240288478758270
+Corner Key: 2421479937096825075
+
+Rotate Left:
+[0] Back face (Blue) start
+		corners	752488838581655
+		middles	735557825564615
+[5] Front face (White) shift1 + shift2
+		corners	3575383706890870
+		middles	1138023111572855
+[6] Left face (Orange) shift2
+		corners	26561878668986255
+		middles	4421808105199055
+[11] Down face (Green) shift1
+		corners	768523971296137175
+		middles	110416392456450695
+[13] Up face (Yellow) shift2 + shift2
+		corners	1587504574711582380
+		middles	1580192244649830090
+[16] Right face (Red) shift1 + shift1
+		corners	3685527322232667695
+		middles	526609251853804655
+
+Rotate Around:
+[1] Back face (Blue) start
+		corners	792456739016705
+		middles	741670230358925
+[4] Front face (White) shift1 + shift2
+		corners	2864829709317380
+		middles	1036515397633415
+[7] Left face (Orange) shift2
+		corners	77866583399233055
+		middles	11751051638331215
+[10] Down face (Green) shift1
+		corners	461409404347636955
+		middles	66542882270921315
+[14] Up face (Yellow) shift2 + shift2
+		corners	2380890986327481530
+		middles	2369922472006609100
+[15] Right face (Red) shift1 + shift1
+		corners	2766624118313097455
+		middles	397424986911097775
+
+Rotate Right
+[2] Back face (Blue)
+		corners	810315061310405
+		middles	742610600329385
+[3] Front face (White)
+		corners	1442898892407595
+		middles	833382423788975
+[8] Left face (Orange)
+		corners	102985746027541055
+		middles	15339503442854735
+[9] Down face (Green)
+		corners	307849654589077475
+		middles	44605776716200475
+[12] Right face (Red)
+		corners	923308085364438095
+		middles	133572219728409935
+[17] Up face (Yellow)
+		corners	3967663673268519105
+		middles	3949382907250058445
+
+		574908/191636 = 3
+		574908/175382 = 3.28
+		
+Edges Swap.
+3 edges:
+Front
+L2 F' U D' L2 U' D F' L2 : ULD
+U2 F' R L' U2 R' L F' U2 : RUL
+R2 F' D U' R2 D' U F' R2 : DRU
+D2 F' L R' D2 L' R F' D2 : LDR
+
+Right
+D2 R' F B' D2 F' B R' D2 : FDB
+F2 R' U D' F2 U' D R' F2 : UFD
+U2 R' B F' U2 B' F R' U2 : BUF
+B2 R' D U' B2 D' U R' B2 : DBU
+
+Up
+B2 U' R L' B2 R' L U' B2 : RBL
+R2 U' F B' R2 F' B U' R2 : FRB
+F2 U' L R' F2 L' R U' F2 : LFR
+L2 U' B F' L2 B' F U' L2 : BLF
+
+Back
+L2 B' D U' L2 D' U B' L2 : DLU
+D2 B' R L' D2 R' L B' D2 : RDL
+R2 B' U D' R2 U' D B' R2 : URD
+U2 B' L R' U2 L' R B' U2 : LUR
+
+Left
+D2 L' B F' D2 B' F L' D2 : BDF
+B2 L' U D' B2 U' D L' B2 : UBD
+U2 L' F B' U2 F' B L' U2 : FUB
+F2 L' D U' F2 D' U L' F2 : DFU
+
+Down
+B2 D' L R' B2 L' R D' B2 : LBR
+L2 D' F B' L2 F' B D' L2 : FLB
+F2 D' R L' F2 R' L D' F2 : RFL
+R2 D' B F' R2 B' F D' R2 : BRF
+
+Y-permutation
+Front:
+U' F' B L2 F B' U' : FU->BU->LD
+R' F' B U2 F B' R' : FR->BR->UL
+D' F' B R2 F B' D' : FD->BD->RU
+L' F' B D2 F B' L' : FL->BL->DR
+
+
+4 edges:
+H-permutation
+Down:  F2 L2 U2 B2 R L U2 F2 R L : FB LR
+Back:  R2 D2 F2 L2 U D F2 R2 U D : RL DU
+Left:  U2 B2 R2 D2 F B R2 U2 F B : UD BF
+Up:    B2 L2 D2 F2 R L D2 B2 R L : BF LR
+Front: L2 D2 B2 R2 U D B2 L2 U D : LR DU
+Right: D2 B2 L2 U2 F B L2 D2 F B : DU BF
+
+
+R2 F2 R2 U2 D2 F2 U2 D2 L2 B2
+
+
+
+4 opposing edges:
+R L U2 R' L' F' B' U2 F B
+4 adjacent edges:
+L R' D2 U2 L R' D L2 R2 U' B2 F2
+
+Corners Swap.
+3 corners:
+R' D' R D' R' D2 R Y L D L' D L D2 L'
+
+
+Swap (permute) R corners:
+Front Down Middle <-> Right Right Middle
+Front Right Corner <-> Right Up Corner
+B2 L' D' L B2 R' U R' U' R2
+
+4 corners Swap:
+D' R' F R F' D2 F R' F' D'
+
+3 corners Swap:
+L' R' D2 R D R' D2 L D' R
+
+Cube Clockwise Rotation.
+Front: URDL
+Up:    RFLB
+Right: BDFU
+Back:  DRUL
+Down:  LFRB
+Left:  FDBU
+
+Cube Face Change.
+UFR DBL
+DFR UBL
+
+

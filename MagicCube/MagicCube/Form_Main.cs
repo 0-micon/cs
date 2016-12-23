@@ -133,7 +133,7 @@ namespace MagicCube
 
         private void button_RotateLeft_Click(object sender, EventArgs e)
         {
-            textBox_Log.Text += FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Left\r\n";
+            textBox_Log.AppendText(FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Left\r\n");
 
             UpdateUndoMove(selected_face, Direction.RIGHT);
 
@@ -164,7 +164,7 @@ namespace MagicCube
 
         private void button_RotateRight_Click(object sender, EventArgs e)
         {
-            textBox_Log.Text += FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Right\r\n";
+            textBox_Log.AppendText(FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Right\r\n");
 
             UpdateUndoMove(selected_face, Direction.LEFT);
 
@@ -174,8 +174,29 @@ namespace MagicCube
 
         private void button_GetKeys_Click(object sender, EventArgs e)
         {
-            textBox_Log.Text += "Middle Key: " + cube.MiddleKey + "\r\n";
-            textBox_Log.Text += "Corner Key: " + cube.CornerKey + "\r\n";
+            textBox_Log.AppendText(
+                "Middle Key: " + cube.MiddleKey + "\r\n" +
+                "Corner Key: " + cube.CornerKey + "\r\n"
+                );
+            //string pattern = "a2 b' c d' a2 c' d b' a2";
+            List<char> faces = new List<char>("furbdl");
+            Random rnd = new Random();
+
+            int i = rnd.Next(faces.Count);
+            char a = faces[i];
+            faces.RemoveAt(i);
+            i = rnd.Next(faces.Count);
+            char b = faces[i];
+            faces.RemoveAt(i);
+            i = rnd.Next(faces.Count);
+            char c = faces[i];
+            faces.RemoveAt(i);
+            i = rnd.Next(faces.Count);
+            char d = faces[i];
+            faces.RemoveAt(i);
+
+            string str = string.Format("{0}2 {1}' {2} {3}' {0}2 {2}' {3} {1}' {0}2", a, b, c, d);
+            textBox_Log.AppendText(str + "\r\n");
         }
 
         private void digitTextBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -233,7 +254,7 @@ namespace MagicCube
         private void button_SolveMiddle_Click(object sender, EventArgs e)
         {
             button_Solve_Middle.Enabled = false;
-            //Solution.PrecomputeCornerMoves(7);
+         //   Solution.PrecomputeMiddleMoves(7);
             var path = solution.SolveMiddle(cube.MiddleKey);
 
             comboBox_MoveUndo.Items.Clear();
@@ -241,7 +262,7 @@ namespace MagicCube
             for (int i = 1; i < path.Count; i++)
             {
                 Cube.Move move = Cube.Move.MiddleKeysToMove(path[i - 1], path[i]);
-                textBox_Log.Text += path[i].ToString() + ": " + move.ToString() + "\r\n";
+                textBox_Log.AppendText(path[i].ToString() + ": " + move.ToString() + "\r\n");
 
                 comboBox_MoveUndo.Items.Add(move);
             }
@@ -282,6 +303,28 @@ namespace MagicCube
             {
                 button_RotateRight_Click(sender, e);
             }
+
+            Cube c = new Cube();
+            c.RotateRight(Cube.Back);
+            c.RotateRight(Cube.Back);
+            Solution.Key key_0 = new Solution.Key(c);
+            c.Shift1();
+            Solution.Key key_1 = new Solution.Key(c);
+            c.Shift1();
+            Solution.Key key_2 = new Solution.Key(c);
+            c.Shift1();
+            Solution.Key key_3 = new Solution.Key(c);
+            Debug.Assert(key_0.CompareTo(key_3) == 0);
+            c.Shift2();
+            Solution.Key key_4 = new Solution.Key(c);
+            c.Shift2();
+            Solution.Key key_5 = new Solution.Key(c);
+            c.Shift2();
+            Solution.Key key_6 = new Solution.Key(c);
+            Debug.Assert(key_0.CompareTo(key_6) == 0);
+            c.Shift1();
+            c.Shift2();
+            Solution.Key key_7 = new Solution.Key(c);
         }
 
         private void OnMoveUndo(ComboBox undoBox, ComboBox redoBox)
@@ -334,7 +377,7 @@ namespace MagicCube
             for (int i = 1; i < path.Count; i++)
             {
                 Cube.Move move = Cube.Move.CornerKeysToMove(path[i - 1], path[i]);
-                textBox_Log.Text += path[i].ToString() + ": " + move.ToString() + "\r\n";
+                textBox_Log.AppendText(path[i].ToString() + ": " + move.ToString() + "\r\n");
 
                 comboBox_MoveUndo.Items.Add(move);
             }
@@ -348,17 +391,19 @@ namespace MagicCube
             button_Solve.Enabled = false;
 
             var path = solution.Solve(new Solution.Key(cube));
-
-            comboBox_MoveUndo.Items.Clear();
-            comboBox_MoveRedo.Items.Clear();
-            for (int i = 1; i < path.Count; i++)
+            if(path != null)
             {
-                Cube.Move move = Cube.Move.KeysToMove(path[i - 1], path[i]);
-                textBox_Log.Text += path[i].ToString() + ": " + move.ToString() + "\r\n";
+                comboBox_MoveUndo.Items.Clear();
+                comboBox_MoveRedo.Items.Clear();
+                for (int i = 1; i < path.Count; i++)
+                {
+                    Cube.Move move = Cube.Move.KeysToMove(path[i - 1], path[i]);
+                    textBox_Log.AppendText(path[i].ToString() + ": " + move.ToString() + "\r\n");
 
-                comboBox_MoveUndo.Items.Add(move);
+                    comboBox_MoveUndo.Items.Add(move);
+                }
+                comboBox_MoveUndo.SelectedIndex = 0;
             }
-            comboBox_MoveUndo.SelectedIndex = 0;
 
             button_Solve.Enabled = true;
         }
@@ -401,7 +446,7 @@ namespace MagicCube
             Debug.Assert(Cube.LeftFace(face) == Cube.Up);
             Debug.Assert(Cube.RightFace(face) == Cube.Down);
 
-            var last = solution.cube_rings.Last();
+            var last = solution.cube_rings[1];//.Last();
             if (++selected_cube >= last.Count)
             {
                 selected_cube = 0;
@@ -410,8 +455,136 @@ namespace MagicCube
             Random rnd = new Random();
             selected_cube = rnd.Next(0, last.Count);
 
-            cube.MiddleKey = last[selected_cube].middles;
-            cube.CornerKey = last[selected_cube].corners;
+            //cube.RotateX();
+            //RepaintCube();
+            //if(true)
+            //    return;
+
+//            cube.MiddleKey = last[selected_cube].middles;
+//            cube.CornerKey = last[selected_cube].corners;
+
+            List<Solution.Key> sk = new List<Solution.Key>(last.Count);
+
+            foreach(var key in last)
+            {
+                Cube c = new Cube();
+                c.MiddleKey = key.middles;
+                c.CornerKey = key.corners;
+
+                Solution.Key x0 = new Solution.Key(c);
+                c.Shift1();
+                Solution.Key x1 = new Solution.Key(c);
+                c.Shift1();
+                Solution.Key x2 = new Solution.Key(c);
+                c.Shift1();
+
+                Debug.Assert(c.MiddleKey == x0.middles);
+                Debug.Assert(c.CornerKey == x0.corners);
+
+                c.Shift2();
+                Solution.Key x3 = new Solution.Key(c);
+                c.Shift2();
+                Solution.Key x4 = new Solution.Key(c);
+                c.Shift2();
+
+                Debug.Assert(c.MiddleKey == x0.middles);
+                Debug.Assert(c.CornerKey == x0.corners);
+
+                c.Shift1();
+                c.Shift2();
+                Solution.Key x5 = new Solution.Key(c);
+
+                Debug.Assert(last.BinarySearch(x0) >= 0);
+                Debug.Assert(last.BinarySearch(x1) >= 0);
+                Debug.Assert(last.BinarySearch(x2) >= 0);
+                Debug.Assert(last.BinarySearch(x3) >= 0);
+                Debug.Assert(last.BinarySearch(x4) >= 0);
+                Debug.Assert(last.BinarySearch(x5) >= 0);
+
+                //Solution.Key m = Utils.Min(Utils.Min(Utils.Min(Utils.Min(Utils.Min(x0, x1), x2), x3), x4), x5);
+
+                //Solution.Key m = Utils.Min(Utils.Min(x3, x4), x0);
+                //Solution.Key m = Utils.Min(Utils.Min(Utils.Min(Utils.Min(Utils.Min(x5, x4), x3), x2), x1), x0);
+                Solution.Key m = Utils.Min(Utils.Min(x3, x4), x0);
+                sk.Add(m);
+            }
+            sk.DistinctValues();
+
+            /*//
+            List<Solution.Key> test = new List<Solution.Key>(last.Count);
+            foreach (var key in sk)
+            {
+                Cube c = new Cube();
+                c.MiddleKey = key.middles;
+                c.CornerKey = key.corners;
+
+                Solution.Key x = new Solution.Key(c);
+
+                c.Shift();
+                c.Shift();
+                Solution.Key y = new Solution.Key(c);
+
+                c.Shift();
+                c.Shift();
+                Solution.Key z = new Solution.Key(c);
+
+                Debug.Assert(last.BinarySearch(x) >= 0);
+                Debug.Assert(last.BinarySearch(y) >= 0);
+                Debug.Assert(last.BinarySearch(z) >= 0);
+
+                test.Add(x);
+                test.Add(y);
+                test.Add(z);
+            }
+            test.DistinctValues();
+
+            Debug.Assert(test.Count == last.Count);
+            for(int i = 0; i < test.Count; i++)
+            {
+                Debug.Assert(test[i] == last[i]);
+            }
+            //*/
+            RepaintCube();
+        }
+
+        private void button_ApplyCommand_Click(object sender, EventArgs e)
+        {
+            string command = textBox_Command.Text.ToUpper();
+            Dictionary<char, uint> face_map = new Dictionary<char, uint>();
+            face_map['F'] = Cube.Front;
+            face_map['U'] = Cube.Up;
+            face_map['R'] = Cube.Right;
+            face_map['B'] = Cube.Back;
+            face_map['D'] = Cube.Down;
+            face_map['L'] = Cube.Left;
+
+            List<uint> job = new List<uint>();
+
+            foreach (char ch in command)
+            {
+                if (face_map.ContainsKey(ch))
+                {
+                    job.Add(face_map[ch]);
+                }
+                else if (job.Count > 0)
+                {
+                    uint last = job.Last();
+
+                    if (ch == '\'')
+                    {
+                        job.Add(last);
+                        job.Add(last);
+                    } else if(ch == '2')
+                    {
+                        job.Add(last);
+                    }
+                }
+            }
+
+            foreach(uint face in job)
+            {
+                cube.RotateRight(face);
+            }
             RepaintCube();
         }
     }
