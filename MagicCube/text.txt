@@ -118,6 +118,8 @@ L' F' B D2 F B' L' : FL->BL->DR
 
 
 4 edges:
+F2 U2 F2 U2 F2 U2
+
 H-permutation
 Down:  F2 L2 U2 B2 R L U2 F2 R L : FB LR
 Back:  R2 D2 F2 L2 U D F2 R2 U D : RL DU
@@ -126,15 +128,26 @@ Up:    B2 L2 D2 F2 R L D2 B2 R L : BF LR
 Front: L2 D2 B2 R2 U D B2 L2 U D : LR DU
 Right: D2 B2 L2 U2 F B L2 D2 F B : DU BF
 
-
 R2 F2 R2 U2 D2 F2 U2 D2 L2 B2
 
 
 
 4 opposing edges:
 R L U2 R' L' F' B' U2 F B
+B'F'L2 F  B  U  D  L2 U'D'
+
 4 adjacent edges:
 L R' D2 U2 L R' D L2 R2 U' B2 F2
+
+U2 R2 L2 D2 R2 L2
+
+8 edges:
+BF'U2D2FB'R2L2
+UF2U2F2B2U2F2UD2
+U2D2LR'U2D2LR'
+10 edges:
+D2 L2 B2 D' F2 B2 U F2 L2 D2
+
 
 Corners Swap.
 3 corners:
@@ -163,5 +176,7 @@ Left:  FDBU
 Cube Face Change.
 UFR DBL
 DFR UBL
+
+F2 U2 B R' B' R U2 F2 R' B R B'
 
 

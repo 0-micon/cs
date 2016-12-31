@@ -8,7 +8,7 @@ using System.IO;
 
 namespace MagicCube
 {
-    class Solution
+    public class Solution
     {
 
         internal List<List<ulong>> middle_rings;
@@ -21,21 +21,10 @@ namespace MagicCube
             middle_rings = LoadRings(7, "middle_key_ring_", "ulong");
             corner_rings = LoadRings(7, "corner_key_ring_", "ulong");
             cube_rings = LoadKeyRings(6 + 1, "key_ring_", "ulong");
+
+           // SaveShortSequences("short_sequences.txt");
         }
         
-        public struct Move
-        {
-            public uint face;
-            public int count;
-            public ulong key;
-            public Move(uint face, int count, ulong key)
-            {
-                this.face = face;
-                this.count = count;
-                this.key = key;
-            }
-        }
-
         public static void SaveRing(IEnumerable<ulong> ring, string fname)
         {
             using (BinaryWriter bw = new BinaryWriter(File.Open(fname, FileMode.Create)))
@@ -463,7 +452,11 @@ namespace MagicCube
 
             Cube cube = new Cube();
 
+            ulong corner_key = cube.CornerKey;
+            int middle_count = -1;
+
             int reserved = 18;
+            const int max_reserved = 10000000;
             while (true)
             {
                 List<Key> next_ring = new List<Key>(reserved);
@@ -472,12 +465,18 @@ namespace MagicCube
                     cube.MiddleKey = key.middles;
                     cube.CornerKey = key.corners;
 
+                    if(middle_count < 0)
+                    {
+                        middle_count = cube.CountSolvedMiddles;
+                    }
+
                     foreach (uint next_move in cube.Moves())
                     {
                         Key next_key = new Key(cube);
 
                         int pos = TestKey(next_key, cube_rings);
-                        if (pos >= 0)
+                        if (pos >= 0 ||
+                            (next_key.corners == corner_key && TestKey(next_key, l_rings) < 0 && middle_count < cube.CountSolvedMiddles))
                         {
                             List<Key> solution = new List<Key>();
                             solution.Add(next_key);
@@ -519,19 +518,70 @@ namespace MagicCube
                         else if (TestKey(next_key, l_rings) < 0)
                         {
                             next_ring.Add(next_key);
+                            if(next_ring.Count >= max_reserved)
+                            {
+                                goto NextStep;
+                            }
                         }
                     }
                 }
-                reserved = next_ring.Count * 13;
+
+            NextStep:
+                reserved = Math.Min(next_ring.Count * 13, max_reserved);
                 next_ring.DistinctValues();
                 l_rings.Add(next_ring);
                 ring = next_ring;
 
-                if(reserved > 100000000)
+                if(reserved > 10000000 || l_rings.Count > 100)
                 {
                     return null;
                 }
             }
+        }
+
+        public void SaveShortSequences(string fname)
+        {
+            Algorithm alg = new Algorithm();
+            ulong corner_key = (new Cube()).CornerKey;
+
+            for(int i = 1; i < cube_rings.Count; i++)
+            {
+                foreach(Key key in cube_rings[i])
+                {
+                    if(key.corners == corner_key)
+                    {
+                        MoveTrack track = new MoveTrack();
+
+                        Key src_key = key;
+                        for(int j = i; j-- > 0;)
+                        {
+                            Cube cube = new Cube();
+                            cube.MiddleKey = src_key.middles;
+                            cube.CornerKey = src_key.corners;
+                            foreach(uint move in cube.Moves())
+                            {
+                                Key dst_key = new Key(cube);
+                                if (cube_rings[j].BinarySearch(dst_key) >= 0)
+                                {
+                                    src_key = dst_key;
+
+                                    uint face = move / 3;
+                                    uint turn = 1 + (move % 3);
+
+                                    track.moves.Add(new Move(face, turn));
+
+                                    break; // foreach move
+                                }
+                            }
+                        }
+
+                        alg.Add(track);
+                        alg.Add(track.Reverse());
+                    }
+                }
+            }
+
+            alg.Save(fname);
         }
 
         public HashSet<ulong> GetMoveKeys(ulong middle_key)

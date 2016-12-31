@@ -15,6 +15,7 @@ namespace MagicCube
     {
         Cube cube = new Cube();
         Solution solution = new Solution();
+        Algorithm algorithm = new Algorithm();
 
         public const float cx = 24f;
         public const float cy = 24f;
@@ -41,6 +42,8 @@ namespace MagicCube
         public Form_Main()
         {
             InitializeComponent();
+
+            algorithm.Load("sequences.txt");
         }
 
         public void RepaintCube()
@@ -544,48 +547,110 @@ namespace MagicCube
                 Debug.Assert(test[i] == last[i]);
             }
             //*/
+
+            for (MoveTrack path; (path = algorithm.RunOnce(cube)) != null;)
+            {
+                textBox_Log.AppendText(path.moves.Count.ToString() + ": " + path.ToString() + "\r\n");
+                path.PlayForward(cube);
+            }
+
             RepaintCube();
         }
 
         private void button_ApplyCommand_Click(object sender, EventArgs e)
         {
             string command = textBox_Command.Text.ToUpper();
-            Dictionary<char, uint> face_map = new Dictionary<char, uint>();
-            face_map['F'] = Cube.Front;
-            face_map['U'] = Cube.Up;
-            face_map['R'] = Cube.Right;
-            face_map['B'] = Cube.Back;
-            face_map['D'] = Cube.Down;
-            face_map['L'] = Cube.Left;
 
-            List<uint> job = new List<uint>();
+            MoveTrack track = new MoveTrack(command);
+            textBox_Log.AppendText(track.ToString() + "\r\n");
 
-            foreach (char ch in command)
+            track.PlayForward(cube);
+
+            //foreach(MiddleElement me in cube.MiddleDiff(new Cube()))
+            //{
+            //    textBox_Log.AppendText(me.ToString() + "\r\n");
+            //}
+/*//
+            Algorithm alg = new Algorithm(track);
+
+            Solution.Key key = new Solution.Key(cube);
+
+            int i = cube.CountSolvedMiddles;
+            MoveTrack best = null;
+            foreach(MoveTrack moves in alg.tracks)
             {
-                if (face_map.ContainsKey(ch))
-                {
-                    job.Add(face_map[ch]);
-                }
-                else if (job.Count > 0)
-                {
-                    uint last = job.Last();
+                moves.PlayForward(cube);
 
-                    if (ch == '\'')
+                int j = cube.CountSolvedMiddles;
+                if(j > i)
+                {
+                    i = j;
+                    best = moves;
+                }
+
+                moves.PlayBackward(cube);
+                Debug.Assert(cube.MiddleKey == key.middles);
+                Debug.Assert(cube.CornerKey == key.corners);
+            }
+
+            if(best != null)
+            {
+                best.PlayForward(cube);
+                textBox_Log.AppendText(best.ToString() + "\r\n");
+            }
+*///
+            RepaintCube();
+
+            /*//
+            HashSet<string> map = new HashSet<string>();
+
+            var test = new Cube.Rotator();
+            map.Add(test.ToString());
+            foreach(uint dir_x in Direction.Items())
+            {
+                test.RotateClockwise(Cube.Down);
+                map.Add(test.ToString());
+                foreach (uint dir_y in Direction.Items())
+                {
+                    test.RotateClockwise(Cube.Left);
+                    map.Add(test.ToString());
+                    foreach (uint dir_z in Direction.Items())
                     {
-                        job.Add(last);
-                        job.Add(last);
-                    } else if(ch == '2')
-                    {
-                        job.Add(last);
+                        test.RotateClockwise(Cube.Front);
+                        map.Add(test.ToString());
                     }
                 }
             }
-
-            foreach(uint face in job)
+            foreach(string s in map)
             {
-                cube.RotateRight(face);
+                textBox_Log.AppendText(s + "\r\n");
             }
+            //*/
+        }
+
+        private void buttonRewindCommand_Click(object sender, EventArgs e)
+        {
+            string command = textBox_Command.Text.ToUpper();
+
+            MoveTrack alg = new MoveTrack(command).Reverse();
+
+            textBox_Log.AppendText(alg.ToString() + "\r\n");
+
+            alg.PlayForward(cube);
             RepaintCube();
+        }
+
+        private void button_AddCommand_Click(object sender, EventArgs e)
+        {
+            string command = textBox_Command.Text.ToUpper();
+            MoveTrack track = new MoveTrack(command);
+            algorithm.Add(track);
+            algorithm.Add(track.Reverse());
+        }
+
+        private void button_SaveCommand_Click(object sender, EventArgs e)
+        {
+            algorithm.Save("sequences.txt");
         }
     }
 }

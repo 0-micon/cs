@@ -49,6 +49,9 @@
             this.textBox_Command = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.button_ApplyCommand = new System.Windows.Forms.Button();
+            this.buttonRewindCommand = new System.Windows.Forms.Button();
+            this.button_AddCommand = new System.Windows.Forms.Button();
+            this.button_SaveCommand = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel_Cube
@@ -274,11 +277,44 @@
             this.button_ApplyCommand.UseVisualStyleBackColor = true;
             this.button_ApplyCommand.Click += new System.EventHandler(this.button_ApplyCommand_Click);
             // 
+            // buttonRewindCommand
+            // 
+            this.buttonRewindCommand.Location = new System.Drawing.Point(330, 393);
+            this.buttonRewindCommand.Name = "buttonRewindCommand";
+            this.buttonRewindCommand.Size = new System.Drawing.Size(75, 23);
+            this.buttonRewindCommand.TabIndex = 21;
+            this.buttonRewindCommand.Text = "Rewind";
+            this.buttonRewindCommand.UseVisualStyleBackColor = true;
+            this.buttonRewindCommand.Click += new System.EventHandler(this.buttonRewindCommand_Click);
+            // 
+            // button_AddCommand
+            // 
+            this.button_AddCommand.Location = new System.Drawing.Point(249, 422);
+            this.button_AddCommand.Name = "button_AddCommand";
+            this.button_AddCommand.Size = new System.Drawing.Size(75, 23);
+            this.button_AddCommand.TabIndex = 22;
+            this.button_AddCommand.Text = "Add";
+            this.button_AddCommand.UseVisualStyleBackColor = true;
+            this.button_AddCommand.Click += new System.EventHandler(this.button_AddCommand_Click);
+            // 
+            // button_SaveCommand
+            // 
+            this.button_SaveCommand.Location = new System.Drawing.Point(330, 422);
+            this.button_SaveCommand.Name = "button_SaveCommand";
+            this.button_SaveCommand.Size = new System.Drawing.Size(75, 23);
+            this.button_SaveCommand.TabIndex = 23;
+            this.button_SaveCommand.Text = "Save";
+            this.button_SaveCommand.UseVisualStyleBackColor = true;
+            this.button_SaveCommand.Click += new System.EventHandler(this.button_SaveCommand_Click);
+            // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(664, 442);
+            this.Controls.Add(this.button_SaveCommand);
+            this.Controls.Add(this.button_AddCommand);
+            this.Controls.Add(this.buttonRewindCommand);
             this.Controls.Add(this.button_ApplyCommand);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBox_Command);
@@ -330,6 +366,9 @@
         private System.Windows.Forms.TextBox textBox_Command;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button_ApplyCommand;
+        private System.Windows.Forms.Button buttonRewindCommand;
+        private System.Windows.Forms.Button button_AddCommand;
+        private System.Windows.Forms.Button button_SaveCommand;
     }
 }
 

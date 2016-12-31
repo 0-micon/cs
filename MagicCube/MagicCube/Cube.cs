@@ -8,16 +8,91 @@ using System.Diagnostics;
 
 namespace MagicCube
 {
-    class Cube
+    public class MiddleElement
+    {
+        uint face1, face2;
+        uint color1, color2;
+
+        public override string ToString()
+        {
+            return string.Format(
+                "{0}({1}:{2},{3}:{4})",
+                GetType().Name,
+                FaceInfo.items[face1].name,
+                FaceInfo.items[color1].color,
+                FaceInfo.items[face2].name,
+                FaceInfo.items[color2].color
+            );
+        }
+
+        public MiddleElement(uint face1, uint color1, uint face2, uint color2)
+        {
+            if(face1 <= face2)
+            {
+                this.face1 = face1;
+                this.face2 = face2;
+                this.color1 = color1;
+                this.color2 = color2;
+            }
+            else
+            {
+                this.face1 = face2;
+                this.face2 = face1;
+                this.color1 = color2;
+                this.color2 = color1;
+            }
+        }
+
+        public uint Face1
+        {
+            get
+            {
+                return face1;
+            }
+        }
+
+        public uint Face2
+        {
+            get
+            {
+                return face2;
+            }
+        }
+
+        public uint Color1
+        {
+            get
+            {
+                return color1;
+            }
+        }
+
+        public uint Color2
+        {
+            get
+            {
+                return color2;
+            }
+        }
+    }
+
+    public class Cube
     {
         public const uint FACE_NUM = 6;
         public const uint
             Front = 0,
-            Up    = 1,
+            Up = 1,
             Right = 2,
-            Back  = 3,
-            Down  = 4,
-            Left  = 5;
+            Back = 3,
+            Down = 4,
+            Left = 5;
+        public static string FaceAcronym
+        {
+            get
+            {
+                return "FURBDL";
+            }
+        }
 
         public static uint UpFace(uint face)
         {
@@ -43,10 +118,10 @@ namespace MagicCube
         {
             switch (direction)
             {
-                case Direction.UP:    return UpFace(face);
+                case Direction.UP: return UpFace(face);
                 case Direction.RIGHT: return RightFace(face);
-                case Direction.DOWN:  return DownFace(face);
-                case Direction.LEFT:  return LeftFace(face);
+                case Direction.DOWN: return DownFace(face);
+                case Direction.LEFT: return LeftFace(face);
             }
 
             throw new ArgumentOutOfRangeException("direction");
@@ -54,29 +129,59 @@ namespace MagicCube
 
         static readonly uint[,] LAYOUT;
         static readonly uint[,] NEIGHBOUR_POS;
+        public static readonly uint[][] ORIENTATION;
 
         static Cube()
         {
-            uint[,] layout = new uint[FACE_NUM, Direction.TURN_COUNT];
-            for(uint face = 0; face < FACE_NUM; face++)
+            uint[,] lt = new uint[FACE_NUM, Direction.TURN_COUNT];
+            for (uint face = 0; face < FACE_NUM; face++)
             {
-                for(uint direction = 0; direction < Direction.TURN_COUNT; direction++)
+                for (uint direction = 0; direction < Direction.TURN_COUNT; direction++)
                 {
-                    layout[face, direction] = Neighbour(face, direction);
+                    lt[face, direction] = Neighbour(face, direction);
                 }
             }
-            LAYOUT = layout;
+            LAYOUT = lt;
 
             uint[,] np = new uint[FACE_NUM, FACE_NUM];
-            for(uint face = 0; face < FACE_NUM; face++)
+            for (uint face = 0; face < FACE_NUM; face++)
             {
-                foreach(uint direction in Direction.Items())
+                foreach (uint direction in Direction.Items())
                 {
                     uint neighbour = LAYOUT[face, direction];
                     np[face, neighbour] = direction;
                 }
             }
             NEIGHBOUR_POS = np;
+
+            HashSet<string> set = new HashSet<string>();
+            var rot = new Cube.Rotator();
+            set.Add(rot.ToString());
+            foreach (uint dir_x in Direction.Items())
+            {
+                rot.RotateClockwise(Cube.Down);
+                set.Add(rot.ToString());
+                foreach (uint dir_y in Direction.Items())
+                {
+                    rot.RotateClockwise(Cube.Left);
+                    set.Add(rot.ToString());
+                    foreach (uint dir_z in Direction.Items())
+                    {
+                        rot.RotateClockwise(Cube.Front);
+                        set.Add(rot.ToString());
+                    }
+                }
+            }
+
+            uint[][] ori = new uint[set.Count][];
+            uint row = 0;
+            foreach(string s in set)
+            {
+                rot.FromString(s);
+                ori[row] = (uint[])rot.Faces.Clone();
+                row++;
+            }
+            ORIENTATION = ori;
         }
 
         uint[] middle_elements =
@@ -98,6 +203,74 @@ namespace MagicCube
             4, 4, 4, 4,
             5, 5, 5, 5
         };
+
+        public class Rotator
+        {
+            uint[] faces = new uint[Cube.FACE_NUM];
+
+            public uint[] Faces
+            {
+                get
+                {
+                    return faces;
+                }
+            }
+
+            public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach(uint face in faces)
+                {
+                    sb.Append(Cube.FaceAcronym[(int)face]);
+                }
+                return sb.ToString();
+            }
+
+            public void FromString(string src)
+            {
+                uint count = 0;
+                foreach(char ch in src)
+                {
+                    int face = Cube.FaceAcronym.IndexOf(ch);
+                    if(face >= 0)
+                    {
+                        if(count < Cube.FACE_NUM)
+                        {
+                            faces[count] = (uint)face;
+                            count++;
+                        }
+                    }
+                }
+            }
+
+            public Rotator()
+            {
+                Identity();
+            }
+
+            public void Identity()
+            {
+                for (uint face = 0; face < Cube.FACE_NUM; face++)
+                {
+                    faces[face] = face;
+                }
+            }
+
+            public void RotateClockwise(uint face)
+            {
+                // 0,1,2,3 => 3,0,1,2
+                uint direction = Direction.TURN_COUNT - 1;
+                uint dst_pos = Cube.Neighbour(face, direction);
+                uint last = faces[dst_pos];
+                while(direction-- > 0)
+                {
+                    uint src_pos = Cube.Neighbour(face, direction);
+                    faces[dst_pos] = faces[src_pos];
+                    dst_pos = src_pos;
+                }
+                faces[dst_pos] = last;
+            }
+        }
 
         public struct Move
         {
@@ -252,7 +425,6 @@ namespace MagicCube
                 }
             }
         }
-
 
         uint[,] face_order =
         {
@@ -464,6 +636,103 @@ namespace MagicCube
                 nme = NeighbourMiddleElementAt(face, i, nme);
                 nce = NeighbourCornerElementAt(face, i, nce);
                 snc = SecondNeighbourCornerElementAt(face, i, snc);
+            }
+        }
+
+        public IEnumerable<MiddleElement> MiddleElements()
+        {
+            for(uint face1 = 0; face1 < FACE_NUM; face1++)
+            {
+                uint direction = Direction.UP;
+                uint color1 = MiddleElementAt(face1, direction);
+                uint face2 = LAYOUT[face1, direction];
+                uint color2 = NeighbourMiddleElementAt(face1, direction);
+
+                yield return new MiddleElement(face1, color1, face2, color2);
+
+                direction = Direction.DOWN;
+                color1 = MiddleElementAt(face1, direction);
+                face2 = LAYOUT[face1, direction];
+                color2 = NeighbourMiddleElementAt(face1, direction);
+
+                yield return new MiddleElement(face1, color1, face2, color2);
+            }
+        }
+
+        public IEnumerable<MiddleElement> MiddleDiff(Cube other)
+        {
+            foreach(MiddleElement me in MiddleElements())
+            {
+                uint direction = NEIGHBOUR_POS[me.Face1, me.Face2];
+                if (me.Color1 != other.MiddleElementAt(me.Face1, direction) ||
+                    me.Color2 != other.NeighbourMiddleElementAt(me.Face1, direction))
+                {
+                    yield return me;
+                }
+            }
+        }
+
+        public int CountSolvedMiddles
+        {
+            get
+            {
+                int count = 0;
+                for (uint face1 = 0; face1 < FACE_NUM; face1++)
+                {
+                    uint direction = Direction.UP;
+                    if (face1 == MiddleElementAt(face1, direction) &&
+                        LAYOUT[face1, direction] == NeighbourMiddleElementAt(face1, direction))
+                    {
+                        count++;
+                    }
+
+                    direction = Direction.DOWN;
+                    if (face1 == MiddleElementAt(face1, direction) &&
+                        LAYOUT[face1, direction] == NeighbourMiddleElementAt(face1, direction))
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public int CountSolvedCorners
+        {
+            get
+            {
+        //        public uint SecondNeighbourCornerElementAt(uint face, uint direction)
+        //{
+        //    uint neighbour = LAYOUT[face, direction];
+        //    uint neighbour_direction = NEIGHBOUR_POS[neighbour, face];
+        //    return CornerElementAt(neighbour, Direction.TurnLeft(neighbour_direction));
+        //}
+
+                int count = 0;
+                for (uint face1 = 0; face1 < FACE_NUM; face1++)
+                {
+                    uint direction = Direction.UP;
+
+                    uint ce = CornerElementAt(face1, direction);
+                    uint ne = NeighbourCornerElementAt(face1, direction);
+                    uint sn = SecondNeighbourCornerElementAt(face1, direction);
+
+                    if (face1 == CornerElementAt(face1, direction) &&
+                        LAYOUT[face1, direction] == NeighbourCornerElementAt(face1, direction) &&
+                        LAYOUT[face1, Direction.TurnLeft(direction)] == SecondNeighbourCornerElementAt(face1, direction))
+                    {
+                        count++;
+                    }
+
+                    direction = Direction.DOWN;
+                    if (face1 == CornerElementAt(face1, direction) &&
+                        LAYOUT[face1, direction] == NeighbourCornerElementAt(face1, direction) &&
+                        LAYOUT[face1, Direction.TurnLeft(direction)] == SecondNeighbourCornerElementAt(face1, direction))
+                    {
+                        count++;
+                    }
+                }
+                return count;
             }
         }
 
