@@ -182,6 +182,55 @@ namespace MagicCube
             return dst_track;
         }
 
+
+        public void RunFirst(ulong cross, Dictionary<ulong, CrossEntry> done)
+        {
+            foreach (var pair in tracks)
+            {
+                Cross dst_cross = new Cross(cross);
+                dst_cross.Transform = pair.Key;
+
+                ulong dst_key = dst_cross;
+                MoveTrack dst_path = pair.Value;
+
+                if (!done.ContainsKey(dst_key))
+                {
+                    done[dst_key] = new CrossEntry(dst_key, dst_cross.CountSolvedMiddles, dst_path);
+                }
+                else if (done[dst_key].path.Count > dst_path.Count)
+                {
+                    done[dst_key].path = dst_path;
+                }
+            }
+        }
+
+        public void RunNext(ulong cross, MoveTrack path, Dictionary<ulong, CrossEntry> done, int threshold)
+        {
+            foreach (var pair in tracks)
+            {
+                if (pair.Value.Count + path.Count >= threshold)
+                {
+                    continue;
+                }
+
+                Cross dst_cross = new Cross(cross);
+                dst_cross.Transform = pair.Key;
+
+                ulong dst_key = dst_cross;
+                MoveTrack dst_path = path + pair.Value;
+
+                if (!done.ContainsKey(dst_key))
+                {
+                    done[dst_key] = new CrossEntry(dst_key, dst_cross.CountSolvedMiddles, dst_path);
+                }
+                else if (done[dst_key].path.Count > dst_path.Count)
+                {
+                    done[dst_key].path = dst_path;
+                    done[dst_key].handled = false;
+                }
+            }
+        }
+
         public MoveTrack Run(Cube cube)
         {
             MoveTrack track = null;
@@ -265,6 +314,36 @@ namespace MagicCube
                 {
                     result = other.path.Count - path.Count;
                     if(result == 0)
+                    {
+                        result = dst_key.CompareTo(other.dst_key);
+                    }
+                }
+                return result;
+            }
+        }
+
+        public class CrossEntry : IComparable<CrossEntry>
+        {
+            public ulong dst_key;
+            public int solved_middles;
+            public MoveTrack path;
+            public bool handled;
+
+            public CrossEntry(ulong dst_key, int solved_middles, MoveTrack path)
+            {
+                this.dst_key = dst_key;
+                this.solved_middles = solved_middles;
+                this.path = path;
+                this.handled = false;
+            }
+
+            public int CompareTo(CrossEntry other)
+            {
+                int result = solved_middles - other.solved_middles;
+                if (result == 0)
+                {
+                    result = other.path.Count - path.Count;
+                    if (result == 0)
                     {
                         result = dst_key.CompareTo(other.dst_key);
                     }

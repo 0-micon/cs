@@ -44,13 +44,13 @@ namespace MagicCube
         {
             InitializeComponent();
 
-            ///*
+            /*
             for (int i = 6; i <= 11; i++)
             {
                 algorithm.Load(string.Format("sequences_{0:D2}.txt", i));
             }
             //*/
-            //algorithm.Load("sequences.txt");
+            algorithm.Load("sequences.txt");
         }
 
         public void RepaintCube()
@@ -161,6 +161,10 @@ namespace MagicCube
             cube.RotateRight(selected_face);
             cube.RotateRight(selected_face);
             cube.RotateRight(selected_face);
+
+            cross.RotateFace(selected_face);
+            cross.RotateFace(selected_face);
+            cross.RotateFace(selected_face);
             RepaintCube();
         }
 
@@ -380,6 +384,7 @@ namespace MagicCube
                 for (uint i = 0; i < undo_move.Turn; i++)
                 {
                     cube.RotateRight(undo_move.Face);
+                    cross.RotateFace(undo_move.Face);
                 }
                 RepaintCube();
             }
@@ -573,8 +578,47 @@ namespace MagicCube
             }
             //*/
 
-            /*//
-            MoveTrack track = algorithm.Run(cube);
+
+            MoveTrack track = null;
+            Dictionary<ulong, Algorithm.CrossEntry> done = new Dictionary<ulong, Algorithm.CrossEntry>();
+            algorithm.RunFirst(cross, done);
+            int threshold = 10000;
+            for(int try_count = 0; ; try_count++)
+            {
+                if (done.ContainsKey(Cross.IDENTITY) && !done[Cross.IDENTITY].handled)
+                {
+                    track = done[Cross.IDENTITY].path;
+                    done[Cross.IDENTITY].handled = true;
+                    threshold = track.Count;
+                }
+
+                if (try_count > 10)
+                {
+                    break;
+                }
+                // make list
+                // get top ten
+                // test them
+
+                List<Algorithm.CrossEntry> list = new List<Algorithm.CrossEntry>(
+                    from entry in done.Values
+                    where entry.path.Count < threshold - 6 && !entry.handled
+                    select entry);
+
+                list.Sort();
+                list.Reverse();
+                list.RemoveRange(10, list.Count - 10);
+
+                foreach(var entry in list)
+                {
+                    entry.handled = true;
+                    algorithm.RunNext(entry.dst_key, entry.path, done, threshold);
+                }
+            }
+
+            // var x = from pair in done select 
+            ///*//
+            //MoveTrack track = algorithm.Run(cube);
             if(track != null)
             {
                 int a = cube.CountSolvedMiddles;
@@ -582,6 +626,8 @@ namespace MagicCube
                 int b = cube.CountSolvedMiddles;
                 textBox_Log.AppendText(a.ToString() + " -> " + b.ToString() + "\r\n");
                 textBox_Log.AppendText(track.Count.ToString() + ": " + track.ToString() + "\r\n");
+
+                cross.Transform = track.PlayForward(Cross.IDENTITY).Transform;
             }
             else
             //*/
@@ -614,6 +660,7 @@ namespace MagicCube
             textBox_Log.AppendText(track.ToString() + "\r\n");
 
             track.PlayForward(cube);
+            cross.Transform = track.PlayForward(Cross.IDENTITY).Transform;
 
             //foreach(MiddleElement me in cube.MiddleDiff(new Cube()))
             //{
