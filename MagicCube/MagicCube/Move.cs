@@ -6,20 +6,22 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    public class Move
+    public struct Move
     {
-        uint face;
-        uint turn;
+        public const uint FACE_NUM = Cube.FACE_NUM;
+        public const uint TURN_NUM = Direction.TURN_COUNT;
+
+        uint move_index;
 
         public uint Face
         {
             get
             {
-                return face;
+                return move_index % FACE_NUM;
             }
             set
             {
-                face = value % Cube.FACE_NUM;
+                move_index = (value % FACE_NUM) + FACE_NUM * Turn;
             }
         }
 
@@ -27,11 +29,11 @@ namespace MagicCube
         {
             get
             {
-                return turn;
+                return (move_index / FACE_NUM) % TURN_NUM;
             }
             set
             {
-                turn = value % Direction.TURN_COUNT;
+                move_index = Face + FACE_NUM * (value % TURN_NUM);
             }
         }
 
@@ -54,8 +56,19 @@ namespace MagicCube
 
         public Move(uint face, uint turn)
         {
+            move_index = 0;
+
             Face = face;
             Turn = turn;
+        }
+
+        public Move(uint index) : this(index / 3, 1 + (index % 3))
+        {
+        }
+
+        public Move Reverse()
+        {
+            return new Move(Face, TurnBack);
         }
 
         public override string ToString()
@@ -68,7 +81,7 @@ namespace MagicCube
             StringBuilder sb = new StringBuilder(2);
             sb.Append(Cube.FaceAcronym[(int)face]);
 
-            turn %= Direction.TURN_COUNT;
+            turn %= TURN_NUM;
             if(turn == 2)
             {
                 sb.Append('2');
@@ -79,6 +92,16 @@ namespace MagicCube
             }
 
             return sb.ToString();
+        }
+
+        public static bool operator true(Move m)
+        {
+            return m.Turn != 0;
+        }
+
+        public static bool operator false(Move m)
+        {
+            return m.Turn == 0;
         }
     }
 }

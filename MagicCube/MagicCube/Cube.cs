@@ -204,6 +204,16 @@ namespace MagicCube
             5, 5, 5, 5
         };
 
+        public Cube()
+        {
+        }
+
+        public Cube(CubeKey key)
+        {
+            MiddleKey = key.middles;
+            CornerKey = key.corners;
+        }
+
         public class Rotator
         {
             uint[] faces = new uint[Cube.FACE_NUM];
@@ -311,11 +321,9 @@ namespace MagicCube
                 return FaceInfo.items[Face].name + ", " + Turn + " time(s)";
             }
 
-            public static Move KeysToMove(Solution.Key src_key, Solution.Key dst_key)
+            public static Move KeysToMove(CubeKey src_key, CubeKey dst_key)
             {
-                Cube c = new Cube();
-                c.MiddleKey = src_key.middles;
-                c.CornerKey = src_key.corners;
+                Cube c = new Cube(src_key);
 
                 foreach (uint move in c.Moves())
                 {
@@ -426,12 +434,18 @@ namespace MagicCube
             }
         }
 
-        uint[,] face_order =
+        public CubeKey Key
         {
-            { Front, Up, Right, Back, Down, Left },
-
-        };
-
+            get
+            {
+                return new CubeKey(this);
+            }
+            set
+            {
+                MiddleKey = value.middles;
+                CornerKey = value.corners;
+            }
+        }
 
         public ulong GetCornerKey(uint face, uint[] order)
         {

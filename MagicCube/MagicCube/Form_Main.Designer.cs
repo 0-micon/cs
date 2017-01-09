@@ -225,7 +225,7 @@
             this.button_ShowNext.Name = "button_ShowNext";
             this.button_ShowNext.Size = new System.Drawing.Size(75, 23);
             this.button_ShowNext.TabIndex = 15;
-            this.button_ShowNext.Text = "Show Next";
+            this.button_ShowNext.Text = "Show &Next";
             this.button_ShowNext.UseVisualStyleBackColor = true;
             this.button_ShowNext.Click += new System.EventHandler(this.button_ShowNext_Click);
             // 

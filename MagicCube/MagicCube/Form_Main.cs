@@ -16,6 +16,7 @@ namespace MagicCube
         Cube cube = new Cube();
         Solution solution = new Solution();
         Algorithm algorithm = new Algorithm();
+        Cross cross = new Cross(Cross.IDENTITY);
 
         public const float cx = 24f;
         public const float cy = 24f;
@@ -43,7 +44,13 @@ namespace MagicCube
         {
             InitializeComponent();
 
-            algorithm.Load("sequences.txt");
+            ///*
+            for (int i = 6; i <= 11; i++)
+            {
+                algorithm.Load(string.Format("sequences_{0:D2}.txt", i));
+            }
+            //*/
+            //algorithm.Load("sequences.txt");
         }
 
         public void RepaintCube()
@@ -67,6 +74,17 @@ namespace MagicCube
 
                 br = new SolidBrush(Color.FromName(FaceInfo.items[cube.CornerElementAt(face, Direction.Sum(direction, i))].color));
                 g.FillRectangle(br, x + cx * corner_positions[i].X, y + cy * corner_positions[i].Y, cx - 1, cy - 1);
+
+                using (SolidBrush sb = new SolidBrush(Color.FromName(FaceInfo.items[cross.MiddleElementAt(face, Direction.Sum(direction, i))].color)))
+                {
+                    g.FillEllipse(sb, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx - 1, cy - 1);
+                }
+
+                using(Pen pen = new Pen(Color.Black))
+                {
+                    g.DrawEllipse(pen, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx - 1, cy - 1);
+                }
+                    
             }
         }
 
@@ -172,6 +190,7 @@ namespace MagicCube
             UpdateUndoMove(selected_face, Direction.LEFT);
 
             cube.RotateRight(selected_face);
+            cross.RotateFace(selected_face);
             RepaintCube();
         }
 
@@ -300,13 +319,20 @@ namespace MagicCube
 
         private void button_RandomMove_Click(object sender, EventArgs e)
         {
+            /*//
+            algorithm.PlayRandom(cube, 6);
+            RepaintCube();
+            //*/
+            
             Random rnd = new Random();
             selected_face = (uint) rnd.Next(0, (int)Cube.FACE_NUM);
             for (int i = rnd.Next(1, (int)Direction.TURN_COUNT); i-- > 0;)
             {
                 button_RotateRight_Click(sender, e);
             }
+            RepaintCube();
 
+            /*//
             Cube c = new Cube();
             c.RotateRight(Cube.Back);
             c.RotateRight(Cube.Back);
@@ -328,6 +354,7 @@ namespace MagicCube
             c.Shift1();
             c.Shift2();
             Solution.Key key_7 = new Solution.Key(c);
+            //*/
         }
 
         private void OnMoveUndo(ComboBox undoBox, ComboBox redoBox)
@@ -393,7 +420,7 @@ namespace MagicCube
         {
             button_Solve.Enabled = false;
 
-            var path = solution.Solve(new Solution.Key(cube));
+            var path = solution.Solve(new CubeKey(cube));
             if(path != null)
             {
                 comboBox_MoveUndo.Items.Clear();
@@ -466,28 +493,26 @@ namespace MagicCube
 //            cube.MiddleKey = last[selected_cube].middles;
 //            cube.CornerKey = last[selected_cube].corners;
 
-            List<Solution.Key> sk = new List<Solution.Key>(last.Count);
+            List<CubeKey> sk = new List<CubeKey>(last.Count);
 
             foreach(var key in last)
             {
-                Cube c = new Cube();
-                c.MiddleKey = key.middles;
-                c.CornerKey = key.corners;
+                Cube c = new Cube(key);
 
-                Solution.Key x0 = new Solution.Key(c);
+                CubeKey x0 = new CubeKey(c);
                 c.Shift1();
-                Solution.Key x1 = new Solution.Key(c);
+                CubeKey x1 = new CubeKey(c);
                 c.Shift1();
-                Solution.Key x2 = new Solution.Key(c);
+                CubeKey x2 = new CubeKey(c);
                 c.Shift1();
 
                 Debug.Assert(c.MiddleKey == x0.middles);
                 Debug.Assert(c.CornerKey == x0.corners);
 
                 c.Shift2();
-                Solution.Key x3 = new Solution.Key(c);
+                CubeKey x3 = new CubeKey(c);
                 c.Shift2();
-                Solution.Key x4 = new Solution.Key(c);
+                CubeKey x4 = new CubeKey(c);
                 c.Shift2();
 
                 Debug.Assert(c.MiddleKey == x0.middles);
@@ -495,7 +520,7 @@ namespace MagicCube
 
                 c.Shift1();
                 c.Shift2();
-                Solution.Key x5 = new Solution.Key(c);
+                CubeKey x5 = new CubeKey(c);
 
                 Debug.Assert(last.BinarySearch(x0) >= 0);
                 Debug.Assert(last.BinarySearch(x1) >= 0);
@@ -504,32 +529,32 @@ namespace MagicCube
                 Debug.Assert(last.BinarySearch(x4) >= 0);
                 Debug.Assert(last.BinarySearch(x5) >= 0);
 
-                //Solution.Key m = Utils.Min(Utils.Min(Utils.Min(Utils.Min(Utils.Min(x0, x1), x2), x3), x4), x5);
+                //CubeKey m = Utils.Min(Utils.Min(Utils.Min(Utils.Min(Utils.Min(x0, x1), x2), x3), x4), x5);
 
-                //Solution.Key m = Utils.Min(Utils.Min(x3, x4), x0);
-                //Solution.Key m = Utils.Min(Utils.Min(Utils.Min(Utils.Min(Utils.Min(x5, x4), x3), x2), x1), x0);
-                Solution.Key m = Utils.Min(Utils.Min(x3, x4), x0);
+                //CubeKey m = Utils.Min(Utils.Min(x3, x4), x0);
+                //CubeKey m = Utils.Min(Utils.Min(Utils.Min(Utils.Min(Utils.Min(x5, x4), x3), x2), x1), x0);
+                CubeKey m = Utils.Min(Utils.Min(x3, x4), x0);
                 sk.Add(m);
             }
             sk.DistinctValues();
 
             /*//
-            List<Solution.Key> test = new List<Solution.Key>(last.Count);
+            List<CubeKey> test = new List<CubeKey>(last.Count);
             foreach (var key in sk)
             {
                 Cube c = new Cube();
                 c.MiddleKey = key.middles;
                 c.CornerKey = key.corners;
 
-                Solution.Key x = new Solution.Key(c);
+                CubeKey x = new CubeKey(c);
 
                 c.Shift();
                 c.Shift();
-                Solution.Key y = new Solution.Key(c);
+                CubeKey y = new CubeKey(c);
 
                 c.Shift();
                 c.Shift();
-                Solution.Key z = new Solution.Key(c);
+                CubeKey z = new CubeKey(c);
 
                 Debug.Assert(last.BinarySearch(x) >= 0);
                 Debug.Assert(last.BinarySearch(y) >= 0);
@@ -548,10 +573,34 @@ namespace MagicCube
             }
             //*/
 
-            for (MoveTrack path; (path = algorithm.RunOnce(cube)) != null;)
+            /*//
+            MoveTrack track = algorithm.Run(cube);
+            if(track != null)
             {
-                textBox_Log.AppendText(path.moves.Count.ToString() + ": " + path.ToString() + "\r\n");
-                path.PlayForward(cube);
+                int a = cube.CountSolvedMiddles;
+                track.PlayForward(cube);
+                int b = cube.CountSolvedMiddles;
+                textBox_Log.AppendText(a.ToString() + " -> " + b.ToString() + "\r\n");
+                textBox_Log.AppendText(track.Count.ToString() + ": " + track.ToString() + "\r\n");
+            }
+            else
+            //*/
+            {
+                int total = 0;
+                for (MoveTrack path; (path = algorithm.RunOnce(cross)) != null;)
+                {
+                    int a = cube.CountSolvedMiddles;
+                    path.PlayForward(cube);
+                    total += path.Count;
+                    int b = cube.CountSolvedMiddles;
+                    textBox_Log.AppendText(a.ToString() + " -> " + b.ToString() + "\r\n");
+                    textBox_Log.AppendText(path.Count.ToString() + ": " + path.ToString() + "\r\n");
+
+                    cross.Transform = path.PlayForward(Cross.IDENTITY).Transform;
+
+                    Console.WriteLine(cross);
+                }
+                textBox_Log.AppendText("Total moves: " + total.ToString() + "\r\n");
             }
 
             RepaintCube();
@@ -573,7 +622,7 @@ namespace MagicCube
 /*//
             Algorithm alg = new Algorithm(track);
 
-            Solution.Key key = new Solution.Key(cube);
+            CubeKey key = new CubeKey(cube);
 
             int i = cube.CountSolvedMiddles;
             MoveTrack best = null;
