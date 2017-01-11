@@ -607,8 +607,11 @@ namespace MagicCube
 
                 list.Sort();
                 list.Reverse();
-                list.RemoveRange(10, list.Count - 10);
-
+                if(list.Count > 10)
+                {
+                    list.RemoveRange(10, list.Count - 10);
+                }
+                
                 foreach(var entry in list)
                 {
                     entry.handled = true;
@@ -654,6 +657,10 @@ namespace MagicCube
 
         private void button_ApplyCommand_Click(object sender, EventArgs e)
         {
+            cross.RotateLR();
+            cross.RotateFB();
+            cross.RotateDU();
+
             string command = textBox_Command.Text.ToUpper();
 
             MoveTrack track = new MoveTrack(command);
@@ -733,15 +740,21 @@ namespace MagicCube
             textBox_Log.AppendText(alg.ToString() + "\r\n");
 
             alg.PlayForward(cube);
+            cross.Transform = alg.PlayForward(Cross.IDENTITY).Transform;
             RepaintCube();
         }
 
         private void button_AddCommand_Click(object sender, EventArgs e)
         {
-            string command = textBox_Command.Text.ToUpper();
-            MoveTrack track = new MoveTrack(command);
-            algorithm.Add(track);
-            algorithm.Add(track.Reverse());
+            //string command = textBox_Command.Text.ToUpper();
+            //MoveTrack track = new MoveTrack(command);
+            //algorithm.Add(track);
+            //algorithm.Add(track.Reverse());
+            OpenFileDialog dlg = new OpenFileDialog();
+            if(dlg.ShowDialog() == DialogResult.OK)
+            {
+                algorithm.Load(dlg.FileName);
+            }
         }
 
         private void button_SaveCommand_Click(object sender, EventArgs e)

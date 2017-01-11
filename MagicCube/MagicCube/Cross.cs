@@ -48,6 +48,11 @@ namespace MagicCube
         {
             return new MiddleCubelet(i);
         }
+
+        public override string ToString()
+        {
+            return "" + Cross.FaceAcronym[(int)HeadColor] + Cross.FaceAcronym[(int)FaceColor];
+        }
     }
 
     public struct Cross
@@ -83,25 +88,30 @@ namespace MagicCube
         public const int BIT_NUM = 5;
         public const uint BIT_MASK = 0x1F;
 
-        public static readonly MiddleCubelet[] CUBELETS =
+        public static readonly uint[,] CUBELETS =
         {
             // normal cubelets
-            new MiddleCubelet(F, U), new MiddleCubelet(F, D),
-            new MiddleCubelet(U, R), new MiddleCubelet(U, L),
-            new MiddleCubelet(R, B), new MiddleCubelet(R, F),
-            new MiddleCubelet(B, D), new MiddleCubelet(B, U),
-            new MiddleCubelet(D, L), new MiddleCubelet(D, R),
-            new MiddleCubelet(L, F), new MiddleCubelet(L, B),
+            {F, U}, {F, D},
+            {U, R}, {U, L},
+            {R, B}, {R, F},
+            {B, D}, {B, U},
+            {D, L}, {D, R},
+            {L, F}, {L, B},
             // swapped cubelets
-            new MiddleCubelet(U, F), new MiddleCubelet(D, F),
-            new MiddleCubelet(R, U), new MiddleCubelet(L, U),
-            new MiddleCubelet(B, R), new MiddleCubelet(F, R),
-            new MiddleCubelet(D, B), new MiddleCubelet(U, B),
-            new MiddleCubelet(L, D), new MiddleCubelet(R, D),
-            new MiddleCubelet(F, L), new MiddleCubelet(B, L),
+            {U, F}, {D, F},
+            {R, U}, {L, U},
+            {B, R}, {F, R},
+            {D, B}, {U, B},
+            {L, D}, {R, D},
+            {F, L}, {B, L},
         };
 
+        public static readonly uint[,] INDICES;
+
         public static readonly ulong IDENTITY;
+        public static readonly ulong ROTATE_DU; // Down => Up axis rotation
+        public static readonly ulong ROTATE_FB; // Front => Back axis rotation
+        public static readonly ulong ROTATE_LR; // Left => Right axis rotation
 
         static Cross()
         {
@@ -112,6 +122,59 @@ namespace MagicCube
                 key |= ((ulong)i << shift);
             }
             IDENTITY = key;
+
+            INDICES = new uint[FACE_NUM, FACE_NUM];
+            for(uint i = 0; i < CUBELETS.GetLength(0); i++)
+            {
+                INDICES[CUBELETS[i, 0], CUBELETS[i, 1]] = i;
+            }
+
+            Cross tmp = new Cross();
+
+            tmp.SetCubeletIndex(F, 0, SwappedIndex(U * 2) + 0);
+            tmp.SetCubeletIndex(F, 1, SwappedIndex(D * 2) + 1);
+            tmp.SetCubeletIndex(U, 0, SwappedIndex(B * 2) + 1);
+            tmp.SetCubeletIndex(U, 1, SwappedIndex(F * 2) + 0);
+            tmp.SetCubeletIndex(R, 0, SwappedIndex(L * 2) + 1);
+            tmp.SetCubeletIndex(R, 1, SwappedIndex(R * 2) + 0);
+            tmp.SetCubeletIndex(B, 0, SwappedIndex(D * 2) + 0);
+            tmp.SetCubeletIndex(B, 1, SwappedIndex(U * 2) + 1);
+            tmp.SetCubeletIndex(D, 0, SwappedIndex(F * 2) + 1);
+            tmp.SetCubeletIndex(D, 1, SwappedIndex(B * 2) + 0);
+            tmp.SetCubeletIndex(L, 0, SwappedIndex(R * 2) + 1);
+            tmp.SetCubeletIndex(L, 1, SwappedIndex(L * 2) + 0);
+
+            ROTATE_DU = tmp;
+
+            tmp.SetCubeletIndex(F, 0, SwappedIndex(R * 2) + 1);
+            tmp.SetCubeletIndex(F, 1, SwappedIndex(L * 2) + 0);
+            tmp.SetCubeletIndex(U, 0, SwappedIndex(D * 2) + 1);
+            tmp.SetCubeletIndex(U, 1, SwappedIndex(U * 2) + 0);
+            tmp.SetCubeletIndex(R, 0, SwappedIndex(B * 2) + 0);
+            tmp.SetCubeletIndex(R, 1, SwappedIndex(F * 2) + 1);
+            tmp.SetCubeletIndex(B, 0, SwappedIndex(L * 2) + 1);
+            tmp.SetCubeletIndex(B, 1, SwappedIndex(R * 2) + 0);
+            tmp.SetCubeletIndex(D, 0, SwappedIndex(U * 2) + 1);
+            tmp.SetCubeletIndex(D, 1, SwappedIndex(D * 2) + 0);
+            tmp.SetCubeletIndex(L, 0, SwappedIndex(F * 2) + 0);
+            tmp.SetCubeletIndex(L, 1, SwappedIndex(B * 2) + 1);
+
+            ROTATE_FB = tmp;
+
+            tmp.SetCubeletIndex(F, 0, SwappedIndex(F * 2) + 1);
+            tmp.SetCubeletIndex(F, 1, SwappedIndex(B * 2) + 0);
+            tmp.SetCubeletIndex(U, 0, SwappedIndex(R * 2) + 1);
+            tmp.SetCubeletIndex(U, 1, SwappedIndex(L * 2) + 0);
+            tmp.SetCubeletIndex(R, 0, SwappedIndex(U * 2) + 0);
+            tmp.SetCubeletIndex(R, 1, SwappedIndex(D * 2) + 1);
+            tmp.SetCubeletIndex(B, 0, SwappedIndex(B * 2) + 1);
+            tmp.SetCubeletIndex(B, 1, SwappedIndex(F * 2) + 0);
+            tmp.SetCubeletIndex(D, 0, SwappedIndex(L * 2) + 1);
+            tmp.SetCubeletIndex(D, 1, SwappedIndex(R * 2) + 0);
+            tmp.SetCubeletIndex(L, 0, SwappedIndex(D * 2) + 0);
+            tmp.SetCubeletIndex(L, 1, SwappedIndex(U * 2) + 1);
+
+            ROTATE_LR = tmp;
         }
 
         public static string FaceAcronym
@@ -183,7 +246,7 @@ namespace MagicCube
         public MiddleCubelet CubeletAt(uint face, uint down)
         {
             uint pos = GetCubeletIndex(face, down);
-            return CUBELETS[pos];
+            return new MiddleCubelet(CUBELETS[pos,0], CUBELETS[pos,1]);
         }
 
         public uint MiddleElementAt(uint face, uint direction)
@@ -229,6 +292,85 @@ namespace MagicCube
             //Debug.Assert(r_index_new == SwappedIndex(u_index));
             //Debug.Assert(d_index_new == SwappedIndex(r_index));
             //Debug.Assert(l_index_new == SwappedIndex(d_index));
+        }
+
+        public void Rotate(ulong transform, uint[] face_orientation)
+        {
+            Transform = transform;
+
+            for (uint i = 0; i < CUBELET_NUM; i++)
+            {
+                uint src_idx = GetCubeletIndex(i);
+                uint dst_idx = INDICES[
+                    face_orientation[CUBELETS[src_idx, 0]],
+                    face_orientation[CUBELETS[src_idx, 1]]];
+
+                SetCubeletIndex(i, dst_idx);
+            }
+        }
+
+        public void RotateLR()
+        {
+            // FURBDL => DFRUBL
+            uint[] orientation = { D, F, R, U, B, L };
+            Rotate(ROTATE_LR, orientation);
+        }
+
+        public void RotateFB()
+        {
+            // FURBDL => FRDBLU
+            uint[] orientation = { F, R, D, B, L, U };
+            Rotate(ROTATE_FB, orientation);
+        }
+
+        public void RotateDU()
+        {
+            //Cross dst = key;
+            /*//
+            for(uint face = 0; face < FACE_NUM; face++)
+            {
+                dst.SetCubeletIndex(orientation[face], 0, GetCubeletIndex(face, 0));
+                dst.SetCubeletIndex(orientation[face], 1, GetCubeletIndex(face, 1));
+            }
+            //*/
+
+            /*//
+            Cross tmp = Cross.IDENTITY;
+            tmp.SetCubeletIndex(F, 0, SwappedIndex(U * 2) + 0);
+            tmp.SetCubeletIndex(F, 1, SwappedIndex(D * 2) + 1);
+            tmp.SetCubeletIndex(U, 0, SwappedIndex(B * 2) + 1);
+            tmp.SetCubeletIndex(U, 1, SwappedIndex(F * 2) + 0);
+            tmp.SetCubeletIndex(R, 0, SwappedIndex(L * 2) + 1);
+            tmp.SetCubeletIndex(R, 1, SwappedIndex(R * 2) + 0);
+            tmp.SetCubeletIndex(B, 0, SwappedIndex(D * 2) + 0);
+            tmp.SetCubeletIndex(B, 1, SwappedIndex(U * 2) + 1);
+            tmp.SetCubeletIndex(D, 0, SwappedIndex(F * 2) + 1);
+            tmp.SetCubeletIndex(D, 1, SwappedIndex(B * 2) + 0);
+            tmp.SetCubeletIndex(L, 0, SwappedIndex(R * 2) + 1);
+            tmp.SetCubeletIndex(L, 1, SwappedIndex(L * 2) + 0);
+
+            dst.SetCubeletIndex(U, 0, SwappedIndex(GetCubeletIndex(F, 0)));
+            dst.SetCubeletIndex(D, 1, SwappedIndex(GetCubeletIndex(F, 1)));
+            dst.SetCubeletIndex(B, 1, SwappedIndex(GetCubeletIndex(U, 0)));
+            dst.SetCubeletIndex(F, 0, SwappedIndex(GetCubeletIndex(U, 1)));
+            dst.SetCubeletIndex(L, 1, SwappedIndex(GetCubeletIndex(R, 0)));
+            dst.SetCubeletIndex(R, 0, SwappedIndex(GetCubeletIndex(R, 1)));
+            dst.SetCubeletIndex(D, 0, SwappedIndex(GetCubeletIndex(B, 0)));
+            dst.SetCubeletIndex(U, 1, SwappedIndex(GetCubeletIndex(B, 1)));
+            dst.SetCubeletIndex(F, 1, SwappedIndex(GetCubeletIndex(D, 0)));
+            dst.SetCubeletIndex(B, 0, SwappedIndex(GetCubeletIndex(D, 1)));
+            dst.SetCubeletIndex(R, 1, SwappedIndex(GetCubeletIndex(L, 0)));
+            dst.SetCubeletIndex(L, 0, SwappedIndex(GetCubeletIndex(L, 1)));
+
+            Console.WriteLine(tmp);
+            Console.WriteLine(tmp.Transform);
+            //*/
+
+            //key = dst;
+
+            // FURBDL => RUBLDF
+            uint[] orientation = { R, U, B, L, D, F };
+            Rotate(ROTATE_DU, orientation);
         }
 
         public ulong Transform
