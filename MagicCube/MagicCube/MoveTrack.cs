@@ -64,6 +64,21 @@ namespace MagicCube
             }
         }
 
+        public void PlayForward(Cube cube, int idx)
+        {
+            Move m = this[idx];
+
+            uint face = m.Face;
+            uint turn = m.Turn;
+
+            switch (turn)
+            {
+                case 3: cube.RotateRight(face); goto case 2;    // fall through
+                case 2: cube.RotateRight(face); goto case 1;    // fall through
+                case 1: cube.RotateRight(face); break;
+            }
+        }
+
         public Cross PlayForward(Cross cross)
         {
             for (int i = 0; i < Count; i++)
@@ -141,6 +156,16 @@ namespace MagicCube
             {
                 base.Add(move);
             }
+        }
+
+        public MoveTrack SubTrack(int start, int length)
+        {
+            MoveTrack dst = new MoveTrack();
+            for(int i = start; i < start + length; i++)
+            {
+                dst.Add(this[i]);
+            }
+            return dst;
         }
 
         public static MoveTrack operator +(MoveTrack a, MoveTrack b)

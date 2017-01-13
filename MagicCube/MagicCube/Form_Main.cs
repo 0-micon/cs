@@ -619,18 +619,30 @@ namespace MagicCube
                 }
             }
 
+            // clean
+            done.Clear();
+            done = null;
+
+
             // var x = from pair in done select 
             ///*//
             //MoveTrack track = algorithm.Run(cube);
             if(track != null)
             {
-                int a = cube.CountSolvedMiddles;
-                track.PlayForward(cube);
-                int b = cube.CountSolvedMiddles;
-                textBox_Log.AppendText(a.ToString() + " -> " + b.ToString() + "\r\n");
                 textBox_Log.AppendText(track.Count.ToString() + ": " + track.ToString() + "\r\n");
 
+
+                for (MoveTrack new_track = solution.Analyze2(track, 5); new_track.Count < track.Count; new_track = solution.Analyze2(track, 5))
+                {
+                    track = new_track;
+                    textBox_Log.AppendText(track.Count.ToString() + ": " + track.ToString() + "\r\n");
+                }
+
+                int a = cube.CountSolvedMiddles;
+                track.PlayForward(cube);
                 cross.Transform = track.PlayForward(Cross.IDENTITY).Transform;
+                int b = cube.CountSolvedMiddles;
+                textBox_Log.AppendText(a.ToString() + " -> " + b.ToString() + "\r\n");
             }
             else
             //*/
@@ -657,9 +669,9 @@ namespace MagicCube
 
         private void button_ApplyCommand_Click(object sender, EventArgs e)
         {
-            cross.RotateLR();
-            cross.RotateFB();
-            cross.RotateDU();
+       //     cross.RotateLR();
+       //     cross.RotateFB();
+       //     cross.RotateDU();
 
             string command = textBox_Command.Text.ToUpper();
 

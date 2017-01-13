@@ -178,6 +178,44 @@ namespace MagicCube
             }
         }
 
+        public static List<List<CubeKey>> ComputeMoves(int level, CubeKey src_key)
+        {
+            List<CubeKey> ring = new List<CubeKey>(1);
+            ring.Add(src_key);
+
+            List<List<CubeKey>> solution = new List<List<CubeKey>>(level);
+            solution.Add(ring);
+
+            int reserved = 18;
+            Cube cube = new Cube();
+            for (int i = 0; i < level; i++)
+            {
+                List<CubeKey> next_ring = new List<CubeKey>(reserved);
+                foreach (CubeKey key in ring)
+                {
+                    cube.Key = key;
+                    foreach (uint next_move in cube.Moves())
+                    {
+                        CubeKey next_key = cube.Key;
+
+                        if (TestKey(next_key, solution) < 0)
+                        {
+                            next_ring.Add(next_key);
+                        }
+                    }
+                }
+
+                // sort and remove duplicates
+                reserved = next_ring.Count * 14;
+                next_ring.DistinctValues();
+
+                solution.Add(next_ring);
+                ring = next_ring;
+            }
+
+            return solution;
+        }
+
         public static void PrecomputeMiddleMoves(int level)
         {
             Cube cube = new Cube();
@@ -717,6 +755,99 @@ namespace MagicCube
             }
 
             return ring;
+        }
+
+        public MoveTrack Analyze2(MoveTrack path, int depth)
+        {
+            for(int length = path.Count; length >= depth + cube_rings.Count; length--)
+            {
+                for (int i = 0; i <= path.Count - length; i++)
+                {
+                    MoveTrack test = path.SubTrack(i, length);
+
+                    Cube cube = new Cube();
+                    test.PlayBackward(cube);
+
+                    MoveTrack result = Solve2(cube.Key, depth + cube_rings.Count);
+                    if(result != null)
+                    {
+                        Debug.Assert(result.Count < test.Count);
+
+                        MoveTrack path_a = path.SubTrack(0, i);
+                        MoveTrack path_b = path.SubTrack(i + length, path.Count - i - length);
+
+                        MoveTrack track = path_a + result + path_b;
+
+                        Debug.Assert(track.Count < path.Count);
+                        return track;
+                    }
+                }
+            }
+            return path;
+        }
+
+        public MoveTrack Analyze(MoveTrack path, int depth)
+        {
+            Cube cube = new Cube();
+            path.PlayBackward(cube);
+
+            int count = path.Count;
+            List<List<CubeKey>>[] rings = new List<List<CubeKey>>[count + 1];
+            for (int i = 0; i < count; i++)
+            {
+                rings[i] = ComputeMoves(depth - 1, cube.Key);
+                path.PlayForward(cube, i);
+            }
+            rings[count] = cube_rings.GetRange(0, depth);
+
+            for(int i = 0; i < count - depth; i++)
+            {
+                for(int j = count; --j > i + depth;)
+                {
+                    MoveTrack track = Intersect(rings[i], rings[j]);
+                    if(track != null)
+                    {
+                        MoveTrack path_a = path.SubTrack(0, i);
+                        MoveTrack path_b = path.SubTrack(j, path.Count - j);
+                        MoveTrack result = path_a + track + path_b;
+                        Debug.Assert(path.Count == path_a.Count + path_b.Count + j - i);
+
+                        Cube cube_a = new Cube();
+                        Cube cube_b = new Cube();
+                        path.PlayForward(cube_a);
+                        result.PlayForward(cube_b);
+                        Debug.Assert(cube_a.Key == cube_b.Key);
+
+                        return result;
+                    }
+                }
+            }
+            return path;
+        }
+
+        public static MoveTrack Intersect(List<List<CubeKey>> ring_a, List<List<CubeKey>> ring_b)
+        {
+            for(int i = 0; i < ring_a.Count; i++)
+            {
+                for(int j = 0; j < ring_b.Count; j++)
+                {
+                    CubeKey key;
+                    if (ring_a[i].FirstIntersection(ring_b[j], out key))
+                    {
+                        MoveTrack track = new MoveTrack();
+                        GetMoveTrack(key, track, ring_a, i - 1, -1);
+                        track = track.Reverse();
+                        GetMoveTrack(key, track, ring_b, j - 1, -1);
+
+                        Cube cube_a = new Cube(ring_a[0][0]);
+                        track.PlayForward(cube_a);
+                        Debug.Assert(cube_a.Key == ring_b[0][0]);
+                        
+                        return track;
+                    }
+                }
+            }
+            return null;
         }
     }
 }

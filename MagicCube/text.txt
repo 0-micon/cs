@@ -1,3 +1,18 @@
+30: F2 U2 F L R' D' F2 R L' F2 U2 F' B L2 U' 
+ F B' R D' R U' D B' U R2 D U' B2 D' U
+25: U2 B D U' R' F2 U D' F2 U'
+ F B' R D' R U' D B' U R2 D U' B2 D' U
+
+i = 0
+j = 14
+
+
+U' D B2 U D' R2 U' B D' U R' D R' B F' U L2 B' F U2 F2 L R' F2 D R L' F' U2 F2
+Middle Key: 2445293426315100670
+Corner Key: 731796345686735
+
+
+
 Solved Cube
 Middle Key: 731796345686735
 Corner Key: 731796345686735

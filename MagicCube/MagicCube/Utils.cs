@@ -28,6 +28,17 @@ namespace MagicCube
             }
         }
 
+        public static bool FirstIntersection<T>(this IEnumerable<T> a, IEnumerable<T> b, out T item) where T : IComparable<T>
+        {
+            foreach(T i in a.Intersection(b))
+            {
+                item = i;
+                return true; 
+            }
+            item = default(T);
+            return false;
+        }
+
         // Summary: Compare two sorted collections.
         public static IEnumerable<T> Intersection<T>(this IEnumerable<T> a, IEnumerable<T> b) where T : IComparable<T>
         {
@@ -65,6 +76,14 @@ namespace MagicCube
         public static T Max<T>(T a, T b) where T : IComparable<T>
         {
             return a.CompareTo(b) > 0 ? a : b;
+        }
+
+        public static IEnumerable<KeyValuePair<int, int>> GetRange(int start, int end, int length)
+        {
+            for(int i = 0; i < end - length; i++)
+            {
+                yield return new KeyValuePair<int, int>(i, i + length);
+            }
         }
     }
 }

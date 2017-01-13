@@ -103,5 +103,10 @@ namespace MagicCube
         {
             return m.Turn == 0;
         }
+
+        public static implicit operator uint(Move m)
+        {
+            return m.move_index;
+        }
     }
 }

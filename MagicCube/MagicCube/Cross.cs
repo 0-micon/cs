@@ -415,6 +415,46 @@ namespace MagicCube
             }
         }
 
+        /*
+        public ulong MinKey
+        {
+            get
+            {
+                ulong min_key = key;
+
+                Cross tmp = key;
+
+                for(int x = 0; x < 4; x++)
+                {
+                    tmp.RotateLR();
+                    if(tmp < min_key)
+                    {
+                        min_key = tmp;
+                    }
+                    for (int y = 0; y < 4; y++)
+                    {
+                        tmp.RotateDU();
+                        if (tmp < min_key)
+                        {
+                            min_key = tmp;
+                        }
+                        for (int z = 0; z < 4; z++)
+                        {
+                            tmp.RotateFB();
+                            if (tmp < min_key)
+                            {
+                                min_key = tmp;
+                            }
+                        }
+                    }
+                }
+
+                return min_key;
+            }
+        }
+        */
+
+/*//
         public uint FindCubletPos(uint cublet_index)
         {
             for (uint i = 0; i < CUBELET_NUM; i++)
@@ -432,6 +472,7 @@ namespace MagicCube
             }
             throw new ArgumentOutOfRangeException("cublet_index");
         }
+//*/
 
         public int CountSolvedMiddles
         {
