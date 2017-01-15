@@ -52,6 +52,7 @@
             this.buttonRewindCommand = new System.Windows.Forms.Button();
             this.button_AddCommand = new System.Windows.Forms.Button();
             this.button_SaveCommand = new System.Windows.Forms.Button();
+            this.checkBox_SingmasterNotation = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // panel_Cube
@@ -307,11 +308,25 @@
             this.button_SaveCommand.UseVisualStyleBackColor = true;
             this.button_SaveCommand.Click += new System.EventHandler(this.button_SaveCommand_Click);
             // 
+            // checkBox_SingmasterNotation
+            // 
+            this.checkBox_SingmasterNotation.AutoSize = true;
+            this.checkBox_SingmasterNotation.Checked = true;
+            this.checkBox_SingmasterNotation.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_SingmasterNotation.Location = new System.Drawing.Point(12, 419);
+            this.checkBox_SingmasterNotation.Name = "checkBox_SingmasterNotation";
+            this.checkBox_SingmasterNotation.Size = new System.Drawing.Size(119, 17);
+            this.checkBox_SingmasterNotation.TabIndex = 24;
+            this.checkBox_SingmasterNotation.Text = "Singmaster notation";
+            this.checkBox_SingmasterNotation.UseVisualStyleBackColor = true;
+            this.checkBox_SingmasterNotation.CheckedChanged += new System.EventHandler(this.checkBox_SingmasterNotation_CheckedChanged);
+            // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(664, 442);
+            this.Controls.Add(this.checkBox_SingmasterNotation);
             this.Controls.Add(this.button_SaveCommand);
             this.Controls.Add(this.button_AddCommand);
             this.Controls.Add(this.buttonRewindCommand);
@@ -369,6 +384,7 @@
         private System.Windows.Forms.Button buttonRewindCommand;
         private System.Windows.Forms.Button button_AddCommand;
         private System.Windows.Forms.Button button_SaveCommand;
+        private System.Windows.Forms.CheckBox checkBox_SingmasterNotation;
     }
 }
 

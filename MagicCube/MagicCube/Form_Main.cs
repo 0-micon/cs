@@ -629,13 +629,13 @@ namespace MagicCube
             //MoveTrack track = algorithm.Run(cube);
             if(track != null)
             {
-                textBox_Log.AppendText(track.Count.ToString() + ": " + track.ToString() + "\r\n");
+                textBox_Log.AppendText(track.Count.ToString() + ": " + track.Track + "\r\n");
 
 
                 for (MoveTrack new_track = solution.Analyze2(track, 5); new_track.Count < track.Count; new_track = solution.Analyze2(track, 5))
                 {
                     track = new_track;
-                    textBox_Log.AppendText(track.Count.ToString() + ": " + track.ToString() + "\r\n");
+                    textBox_Log.AppendText(track.Count.ToString() + ": " + track.Track + "\r\n");
                 }
 
                 int a = cube.CountSolvedMiddles;
@@ -673,9 +673,9 @@ namespace MagicCube
        //     cross.RotateFB();
        //     cross.RotateDU();
 
-            string command = textBox_Command.Text.ToUpper();
+            string command = textBox_Command.Text;
 
-            MoveTrack track = new MoveTrack(command);
+            MoveTrack track = new MoveTrack(command, checkBox_SingmasterNotation.Checked);
             textBox_Log.AppendText(track.ToString() + "\r\n");
 
             track.PlayForward(cube);
@@ -745,9 +745,9 @@ namespace MagicCube
 
         private void buttonRewindCommand_Click(object sender, EventArgs e)
         {
-            string command = textBox_Command.Text.ToUpper();
+            string command = textBox_Command.Text;
 
-            MoveTrack alg = new MoveTrack(command).Reverse();
+            MoveTrack alg = new MoveTrack(command, checkBox_SingmasterNotation.Checked).Reverse();
 
             textBox_Log.AppendText(alg.ToString() + "\r\n");
 
@@ -772,6 +772,24 @@ namespace MagicCube
         private void button_SaveCommand_Click(object sender, EventArgs e)
         {
             algorithm.Save("sequences.txt");
+        }
+
+        private void checkBox_SingmasterNotation_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox_SingmasterNotation.Checked)
+            {
+                string src_command = textBox_Command.Text.ToLower();
+                MoveTrack track = new MoveTrack(src_command, false);
+
+                textBox_Command.Text = track.ToString();
+            }
+            else
+            {
+                string src_command = textBox_Command.Text.ToUpper();
+                MoveTrack track = new MoveTrack(src_command, true);
+
+                textBox_Command.Text = track.Track;
+            }
         }
     }
 }
