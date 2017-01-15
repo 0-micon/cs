@@ -95,7 +95,7 @@ namespace MagicCube
                         //file.Write('.');
                         //file.Write(c_count);
                         file.Write(';');
-                        file.Write(pair.Value.ToString());
+                        file.Write(pair.Value.Track);
                         file.Write(';');
                         file.Write(pair.Value.Count);
                         file.Write(';');
@@ -120,7 +120,7 @@ namespace MagicCube
                     string[] arr = buf.Split(';');
                     if(arr.Length > 1)
                     {
-                        Add(new MoveTrack(arr[1]));
+                        Add(new MoveTrack(arr[1], false));
                     }
                 }
             }

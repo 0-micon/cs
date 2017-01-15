@@ -6,8 +6,43 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    public class MoveTrack : List<Move>
+    public class MoveTrack
     {
+        string _track;
+
+        static SearchTree _substitute;
+
+        static MoveTrack()
+        {
+            _substitute = new SearchTree();
+            _substitute.Load("substitites.txt");
+        }
+
+        public Move this[int i] => Move.FromChar(_track[i]);
+        public int Count        => _track.Length;
+        public string Track     => _track;
+
+        public void Clear()
+        {
+            _track = string.Empty;
+        }
+
+        void Trim()
+        {
+            for(int i = 0; i < _track.Length - 1; i++)
+            {
+                int j = i;
+                string dst = _substitute.GetReplacement(_track, ref j);
+                if (dst != null)
+                {
+                    string src = _track.Substring(i, j - i + 1);
+                    _track = _track.Replace(src, dst);
+                    Trim();
+                    return;
+                }
+            }
+        }
+
         // Notation (known as "Singmaster notation"):
         // 1) the first letters from the names of the sides (F, U, R...) is used as a move name;
         // 2) 2 for a double face move (FF is equal to F2);
@@ -19,48 +54,69 @@ namespace MagicCube
             Clear();
             if (src != null)
             {
+                StringBuilder sb = new StringBuilder();
                 foreach (char ch in src.ToUpper())
                 {
                     int i = Cube.FaceAcronym.IndexOf(ch);
                     if (i >= 0)
                     {
-                        base.Add(new Move((uint)i, Direction.RIGHT));
+                        sb.Append((new Move((uint)i, Direction.RIGHT)).ToChar());
                     }
-                    else if (Count > 0)
+                    else if (sb.Length > 0)
                     {
-                        int last = Count - 1;
+                        int last = sb.Length - 1;
                         if (ch == '\'' || ch == '3')
                         {
-                            this[last] = new Move(this[last].Face, Direction.LEFT);
+                            
+                            sb[last] = (new Move(Move.FromChar(sb[last]).Face, Direction.LEFT)).ToChar();
                         }
                         else if (ch == '2')
                         {
-                            this[last] = new Move(this[last].Face, Direction.DOWN);
+                            sb[last] = (new Move(Move.FromChar(sb[last]).Face, Direction.DOWN)).ToChar();
                         }
                     }
                 }
+                _track = sb.ToString();
             }
+        }
+
+        public Move[] ToArray()
+        {
+            Move[] moves = new Move[Count];
+            for(int i = 0; i < Count; i++)
+            {
+                moves[i] = this[i];
+            }
+            return moves;
         }
 
         public override string ToString()
         {
-            return string.Join(" ", this);
+            return string.Join(" ", ToArray());
         }
 
-        public MoveTrack(string src = null)
+        public MoveTrack(string src, bool singmaster_notation = true)
         {
-            FromString(src);
+            if (singmaster_notation)
+            {
+                FromString(src);
+            }
+            else
+            {
+                _track = src;
+            }
+        }
+
+        public MoveTrack()
+        {
+            _track = string.Empty;
         }
 
         public void PlayForward(Cube cube)
         {
             for (int i = 0; i < Count; i++)
             {
-                Move m = this[i];
-                for (uint t = 0; t < m.Turn; t++)
-                {
-                    cube.RotateRight(m.Face);
-                }
+                PlayForward(cube, i);
             }
         }
 
@@ -110,23 +166,21 @@ namespace MagicCube
 
             if (transform != null)
             {
-                foreach (Move m in this)
+                for(int i = 0; i < Count; i++)
                 {
+                    Move m = this[i];
                     dst.Add(new Move(transform[m.Face], m.Turn));
                 }
             }
             else
             {
-                foreach (Move m in this)
-                {
-                    dst.Add(new Move(m.Face, m.Turn));
-                }
+                dst._track = _track;
             }
 
             return dst;
         }
 
-        public new MoveTrack Reverse()
+        public MoveTrack Reverse()
         {
             MoveTrack dst = new MoveTrack();
             for (int i = Count; i-- > 0;)
@@ -137,53 +191,24 @@ namespace MagicCube
             return dst;
         }
 
-        public new void Add(Move move)
+        public void Add(Move move)
         {
-            int last = Count - 1;
-            if (last >= 0 && this[last].Face == move.Face)
-            {
-                Move dst_move = new Move(move.Face, this[last].Turn + move.Turn);
-                if (dst_move)
-                {
-                    this[last] = dst_move;
-                }
-                else
-                {
-                    RemoveAt(last);
-                }
-            }
-            else
-            {
-                base.Add(move);
-            }
+            _track += move.ToChar();
         }
 
         public MoveTrack SubTrack(int start, int length)
         {
             MoveTrack dst = new MoveTrack();
-            for(int i = start; i < start + length; i++)
-            {
-                dst.Add(this[i]);
-            }
+            dst._track = _track.Substring(start, length);
             return dst;
         }
 
         public static MoveTrack operator +(MoveTrack a, MoveTrack b)
         {
-            MoveTrack dst = a.Clone();
-            foreach (Move m in b)
-            {
-                dst.Add(new Move(m.Face, m.Turn));
-            }
+            MoveTrack dst = new MoveTrack();
+            dst._track = a._track + b._track;
+            dst.Trim();
             return dst;
-        }
-
-        public int LastIndex
-        {
-            get
-            {
-                return Count - 1;
-            }
         }
 
         public IEnumerable<MoveTrack> AllTransforms()

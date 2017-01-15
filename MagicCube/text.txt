@@ -1,7 +1,9 @@
-30: F2 U2 F L R' D' F2 R L' F2 U2 F' B L2 U' 
- F B' R D' R U' D B' U R2 D U' B2 D' U
-25: U2 B D U' R' F2 U D' F2 U'
- F B' R D' R U' D B' U R2 D U' B2 D' U
+30: F2 U2     F L R' D' F2 R L' F2 U2 F' B L2 U'   F B' R D' R U' D B' U R2 D U' B2 D' U
+24: F2 U2     B D U' R' F2 U D' F'                   B' R D' R U' D B' U R2 D U' B2 D' U
+              B D U' R' F2 U D' F2 U'
+
+F2 U2     F L R' D' F2 R L' F2 U2 F' B L2      U' F B' R D' R U' D B' U R2 D U' B2 D' U
+F2 U2     B D U' R' F2 U D' F2                 U' F B' R D' R U' D B' U R2 D U' B2 D' U
 
 i = 0
 j = 14

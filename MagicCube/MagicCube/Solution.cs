@@ -849,5 +849,102 @@ namespace MagicCube
             }
             return null;
         }
+
+        public static void MakeReplaces()
+        {
+            Dictionary<string, string> replaces = new Dictionary<string, string>();
+            Dictionary<string, string> synonyms = new Dictionary<string, string>();
+
+            Cube cube = new Cube();
+            Dictionary<CubeKey, MoveTrack> done = new Dictionary<CubeKey, MoveTrack>();
+            done[cube.Key] = new MoveTrack();
+
+
+            for (int i = 0; i < 6; i++)
+            {
+                List<CubeKey> key_list = new List<CubeKey>(from entry in done where entry.Value.Count == i select entry.Key);
+                foreach (CubeKey src_key in key_list)
+                {
+                    cube.Key = src_key;
+                    MoveTrack src_path = done[src_key];
+                    foreach (uint move_index in cube.Moves())
+                    {
+                        MoveTrack dst_path = src_path.Clone();
+                        dst_path.Add(new Move(move_index));
+
+                        CubeKey dst_key = cube.Key;
+
+                        if (done.ContainsKey(dst_key))
+                        {
+                            MoveTrack rep_path = done[dst_key];
+                            int delta = dst_path.Count - rep_path.Count;
+                            if (delta >= 0)
+                            {
+                                int beg = 0;                // left trim count
+                                int end = rep_path.Count;   // rep_path.Count - right trim count
+
+                                while (beg < end && rep_path.Track[beg] == dst_path.Track[beg])
+                                {
+                                    beg++;
+                                }
+
+
+                                while (end > beg && rep_path.Track[end - 1] == dst_path.Track[end - 1 + delta])
+                                {
+                                    end--;
+                                }
+
+                                MoveTrack dst = dst_path.SubTrack(beg, end - beg + delta);
+                                MoveTrack rep = rep_path.SubTrack(beg, end - beg);
+
+                                if (delta == 0)
+                                {
+                                    if (!synonyms.ContainsKey(dst.Track))
+                                    {
+                                        synonyms.Add(dst.Track, rep.Track);
+                                    }
+                                    else
+                                    {
+                                        Debug.Assert(synonyms[dst.Track] == rep.Track);
+                                    }
+                                }
+                                else
+                                {
+                                    if (!replaces.ContainsKey(dst.Track))
+                                    {
+                                        replaces.Add(dst.Track, rep.Track);
+                                    }
+                                    else
+                                    {
+                                        Debug.Assert(replaces[dst.Track] == rep.Track);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            done[dst_key] = dst_path;
+                        }
+                    }
+                }
+            }
+
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("replaces.txt"))
+            {
+                foreach (KeyValuePair<string, string> pair in replaces)
+                {
+                    file.WriteLine(pair.Key + ";" + pair.Value);
+                }
+            }
+
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("synonyms.txt"))
+            {
+                foreach (KeyValuePair<string, string> pair in synonyms)
+                {
+                    file.WriteLine(pair.Key + ";" + pair.Value);
+                }
+            }
+        }
+
     }
 }

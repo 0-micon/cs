@@ -8,8 +8,7 @@ namespace MagicCube
 {
     public struct Move
     {
-        public const uint FACE_NUM = Cube.FACE_NUM;
-        public const uint TURN_NUM = Direction.TURN_COUNT;
+        const uint TURN_NUM = Direction.TURN_COUNT - 1;
 
         uint move_index;
 
@@ -17,11 +16,11 @@ namespace MagicCube
         {
             get
             {
-                return move_index % FACE_NUM;
+                return move_index / TURN_NUM;
             }
             set
             {
-                move_index = (value % FACE_NUM) + FACE_NUM * Turn;
+                move_index = value * TURN_NUM + Turn - 1;
             }
         }
 
@@ -29,11 +28,11 @@ namespace MagicCube
         {
             get
             {
-                return (move_index / FACE_NUM) % TURN_NUM;
+                return 1 + (move_index % TURN_NUM);
             }
             set
             {
-                move_index = Face + FACE_NUM * (value % TURN_NUM);
+                move_index = Face * TURN_NUM + value - 1;
             }
         }
 
@@ -54,16 +53,15 @@ namespace MagicCube
             }
         }
 
-        public Move(uint face, uint turn)
+        public Move(uint face, uint turn) : this(0)
         {
-            move_index = 0;
-
             Face = face;
             Turn = turn;
         }
 
-        public Move(uint index) : this(index / 3, 1 + (index % 3))
+        public Move(uint index)
         {
+            move_index = index;
         }
 
         public Move Reverse()
@@ -76,12 +74,21 @@ namespace MagicCube
             return ToName(Face, Turn);
         }
 
+        public char ToChar()
+        {
+            return (char)('a' + move_index);
+        }
+
+        public static Move FromChar(char ch)
+        {
+            return new Move((uint)ch - 'a');
+        }
+
         public static string ToName(uint face, uint turn)
         {
             StringBuilder sb = new StringBuilder(2);
             sb.Append(Cube.FaceAcronym[(int)face]);
 
-            turn %= TURN_NUM;
             if(turn == 2)
             {
                 sb.Append('2');
