@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    class SearchTree
+    public class SearchTree
     {
-        const uint MOVE_COUNT = Cube.FACE_NUM * 3;
+        const uint MOVE_COUNT = Faces.Count * 3;
 
         SearchNode _root = new SearchNode();
 
@@ -17,6 +17,22 @@ namespace MagicCube
         {
             public SearchNode[] children = new SearchNode[MOVE_COUNT];
             public string result = null;
+
+            public void Save(System.IO.StreamWriter file, string key)
+            {
+                if (result != null)
+                {
+                    file.WriteLine(key + ";" + result);
+                }
+
+                for (int i = 0; i < MOVE_COUNT; i++)
+                {
+                    if (children[i] != null)
+                    {
+                        children[i].Save(file, key + (char)('a' + i));
+                    }
+                }
+            }
         }
 
         public string GetReplacement(string key, ref int start)
@@ -73,6 +89,62 @@ namespace MagicCube
                     }
                 }
             }
+        }
+
+        public void Save(string fname)
+        {
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(fname))
+            {
+                _root.Save(file, string.Empty);
+            }
+        }
+
+        //
+        // Summary:
+        //     Determines whether the SearchTree contains the specified key.
+        //
+        // Parameters:
+        //   key:
+        //     The key to locate in the SearchTree.
+        //
+        // Returns:
+        //     true if the SearchTree contains an element with the specified key;
+        //     otherwise, false.
+        //
+        // Exceptions:
+        //     System.ArgumentNullException: key is null.
+        public bool ContainsKey(string key)
+        {
+            string result = this[key];
+            return result != null;
+        }
+
+        public string this[string key]
+        {
+            get
+            {
+                SearchNode node = _root;
+                for (int i = 0; i < key.Length && node != null; i++)
+                {
+                    int idx = key[i] - 'a';
+                    node = node.children[idx];
+                }
+
+                return node != null ? node.result : null;
+            }
+
+            set
+            {
+                Add(key, value);
+            }
+        }
+
+        //
+        // Summary:
+        //     Removes all keys and values from the SearchTree.
+        public void Clear()
+        {
+            _root = new SearchNode();
         }
     }
 }

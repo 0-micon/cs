@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -87,7 +88,7 @@ namespace MagicCube
         public static string ToName(uint face, uint turn)
         {
             StringBuilder sb = new StringBuilder(2);
-            sb.Append(Cube.FaceAcronym[(int)face]);
+            sb.Append(Faces.Acronym[(int)face]);
 
             if(turn == 2)
             {
@@ -114,6 +115,20 @@ namespace MagicCube
         public static implicit operator uint(Move m)
         {
             return m.move_index;
+        }
+
+        public T Apply<T>(T cube, bool backwards = false) where T : Faces.IRotatable
+        {
+            uint face = Face;
+            uint turn = backwards ? TurnBack : Turn;
+
+            switch (turn)
+            {
+                case 3: cube.RotateFace(face); goto case 2;    // fall through
+                case 2: cube.RotateFace(face); goto case 1;    // fall through
+                case 1: cube.RotateFace(face); break;
+            }
+            return cube;
         }
     }
 }

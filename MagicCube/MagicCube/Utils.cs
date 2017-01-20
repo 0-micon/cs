@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -68,6 +69,15 @@ namespace MagicCube
             }
         }
 
+        public static IEnumerable<KeyValuePair<int, T>> Index<T>(IEnumerable<T> e)
+        {
+            int idx = 0;
+            foreach(T val in e)
+            {
+                yield return new KeyValuePair<int, T>(idx++, val);
+            }
+        }
+
         public static T Min<T>(T a, T b) where T : IComparable<T>
         {
             return a.CompareTo(b) < 0 ? a : b;
@@ -85,5 +95,32 @@ namespace MagicCube
                 yield return new KeyValuePair<int, int>(i, i + length);
             }
         }
+    }
+
+    public class SimpleEnumerator<T> : IEnumerator<T>
+    {
+        // Enumerators are positioned before the first element
+        // until the first MoveNext() call.
+        int _position = -1;
+        T[] _array;
+
+        public SimpleEnumerator(T[] array)
+        {
+            _array = array;
+        }
+
+        public bool MoveNext() => ++_position < _array.Length;
+
+        public void Reset()
+        {
+            _position = -1;
+        }
+
+        public void Dispose()
+        {
+        }
+
+        public T Current => _array[_position];
+        object IEnumerator.Current => _array[_position];
     }
 }

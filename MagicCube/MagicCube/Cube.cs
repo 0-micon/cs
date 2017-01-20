@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using System.Diagnostics;
 
+//using static MagicCube.Faces;
+
 namespace MagicCube
 {
     public class MiddleElement
@@ -76,75 +78,25 @@ namespace MagicCube
         }
     }
 
-    public class Cube
+    public class Cube : Faces.IRotatable
     {
-        public const uint FACE_NUM = 6;
-        public const uint
-            Front = 0,
-            Up = 1,
-            Right = 2,
-            Back = 3,
-            Down = 4,
-            Left = 5;
-        public static string FaceAcronym
-        {
-            get
-            {
-                return "FURBDL";
-            }
-        }
-
-        public static uint UpFace(uint face)
-        {
-            return (face + Up) % FACE_NUM;
-        }
-
-        public static uint DownFace(uint face)
-        {
-            return (face + Down) % FACE_NUM;
-        }
-
-        public static uint RightFace(uint face)
-        {
-            return (face + ((face & 1) == 1 ? Left : Right)) % FACE_NUM;
-        }
-
-        public static uint LeftFace(uint face)
-        {
-            return (face + ((face & 1) == 1 ? Right : Left)) % FACE_NUM;
-        }
-
-        public static uint Neighbour(uint face, uint direction)
-        {
-            switch (direction)
-            {
-                case Direction.UP: return UpFace(face);
-                case Direction.RIGHT: return RightFace(face);
-                case Direction.DOWN: return DownFace(face);
-                case Direction.LEFT: return LeftFace(face);
-            }
-
-            throw new ArgumentOutOfRangeException("direction");
-        }
-
         static readonly uint[,] LAYOUT;
         static readonly uint[,] NEIGHBOUR_POS;
-        public static readonly uint[][] ORIENTATION;
 
         static Cube()
         {
-            uint[,] lt = new uint[FACE_NUM, Direction.TURN_COUNT];
-            for (uint face = 0; face < FACE_NUM; face++)
+            uint[,] lt = new uint[Faces.Count, Direction.TURN_COUNT];
+            for (uint face = 0; face < Faces.Count; face++)
             {
                 for (uint direction = 0; direction < Direction.TURN_COUNT; direction++)
                 {
-                    lt[face, direction] = Neighbour(face, direction);
+                    lt[face, direction] = Faces.Neighbour(face, direction);
                 }
             }
             LAYOUT = lt;
 
-            uint[,] np = new uint[FACE_NUM, FACE_NUM];
-            for (uint face = 0; face < FACE_NUM; face++)
+            uint[,] np = new uint[Faces.Count, Faces.Count];
+            for (uint face = 0; face < Faces.Count; face++)
             {
                 foreach (uint direction in Direction.Items())
                 {
@@ -153,35 +105,6 @@ namespace MagicCube
                 }
             }
             NEIGHBOUR_POS = np;
-
-            HashSet<string> set = new HashSet<string>();
-            var rot = new Cube.Rotator();
-            set.Add(rot.ToString());
-            foreach (uint dir_x in Direction.Items())
-            {
-                rot.RotateClockwise(Cube.Down);
-                set.Add(rot.ToString());
-                foreach (uint dir_y in Direction.Items())
-                {
-                    rot.RotateClockwise(Cube.Left);
-                    set.Add(rot.ToString());
-                    foreach (uint dir_z in Direction.Items())
-                    {
-                        rot.RotateClockwise(Cube.Front);
-                        set.Add(rot.ToString());
-                    }
-                }
-            }
-
-            uint[][] ori = new uint[set.Count][];
-            uint row = 0;
-            foreach(string s in set)
-            {
-                rot.FromString(s);
-                ori[row] = (uint[])rot.Faces.Clone();
-                row++;
-            }
-            ORIENTATION = ori;
         }
 
         uint[] middle_elements =
@@ -214,74 +137,6 @@ namespace MagicCube
             CornerKey = key.corners;
         }
 
-        public class Rotator
-        {
-            uint[] faces = new uint[Cube.FACE_NUM];
-
-            public uint[] Faces
-            {
-                get
-                {
-                    return faces;
-                }
-            }
-
-            public override string ToString()
-            {
-                StringBuilder sb = new StringBuilder();
-                foreach(uint face in faces)
-                {
-                    sb.Append(Cube.FaceAcronym[(int)face]);
-                }
-                return sb.ToString();
-            }
-
-            public void FromString(string src)
-            {
-                uint count = 0;
-                foreach(char ch in src)
-                {
-                    int face = Cube.FaceAcronym.IndexOf(ch);
-                    if(face >= 0)
-                    {
-                        if(count < Cube.FACE_NUM)
-                        {
-                            faces[count] = (uint)face;
-                            count++;
-                        }
-                    }
-                }
-            }
-
-            public Rotator()
-            {
-                Identity();
-            }
-
-            public void Identity()
-            {
-                for (uint face = 0; face < Cube.FACE_NUM; face++)
-                {
-                    faces[face] = face;
-                }
-            }
-
-            public void RotateClockwise(uint face)
-            {
-                // 0,1,2,3 => 3,0,1,2
-                uint direction = Direction.TURN_COUNT - 1;
-                uint dst_pos = Cube.Neighbour(face, direction);
-                uint last = faces[dst_pos];
-                while(direction-- > 0)
-                {
-                    uint src_pos = Cube.Neighbour(face, direction);
-                    faces[dst_pos] = faces[src_pos];
-                    dst_pos = src_pos;
-                }
-                faces[dst_pos] = last;
-            }
-        }
-
         public struct Move
         {
             uint move;
@@ -296,7 +151,7 @@ namespace MagicCube
             {
                 get
                 {
-                    return move % FACE_NUM;
+                    return move % Faces.Count;
                 }
                 set
                 {
@@ -308,11 +163,11 @@ namespace MagicCube
             {
                 get
                 {
-                    return (move / FACE_NUM) % Direction.TURN_COUNT;
+                    return (move / Faces.Count) % Direction.TURN_COUNT;
                 }
                 set
                 {
-                    move = Face + FACE_NUM * (value % Direction.TURN_COUNT);
+                    move = Face + Faces.Count * (value % Direction.TURN_COUNT);
                 }
             }
 
@@ -333,22 +188,6 @@ namespace MagicCube
                         uint turn = 1 + (move % 3);
                         return new Move(face, turn);
                     }
-                }
-                return new Move(0, 0);
-            }
-
-            public static Move MiddleKeysToMove(ulong src_key, ulong dst_key)
-            {
-                int count = 0;
-                foreach (ulong key in Cube.NextMiddleKeys(src_key))
-                {
-                    if (key == dst_key)
-                    {
-                        uint face = (uint) (count / 3);
-                        uint turn = (uint) (1 + (count % 3));
-                        return new Move(face, turn);
-                    }
-                    count++;
                 }
                 return new Move(0, 0);
             }
@@ -374,14 +213,14 @@ namespace MagicCube
         public ulong GetMiddleKey(uint shift)
         {
             ulong key = 0;
-            for (uint i = 0; i < FACE_NUM; i++)
+            for (uint i = 0; i < Faces.Count; i++)
             {
-                uint start = (i + shift) % FACE_NUM;
+                uint start = (i + shift) % Faces.Count;
                 for(uint j = 0; j < Direction.TURN_COUNT; j++)
                 {
                     uint me = middle_elements[start * Direction.TURN_COUNT + j];
-                    key *= FACE_NUM;
-                    key += (FACE_NUM + me - shift) % FACE_NUM;
+                    key *= Faces.Count;
+                    key += (Faces.Count + me - shift) % Faces.Count;
                 }
             }
             return key;
@@ -395,7 +234,7 @@ namespace MagicCube
                 ulong key = 0;
                 foreach (uint me in middle_elements)
                 {
-                    key *= FACE_NUM;
+                    key *= Faces.Count;
                     key += me;
                 }
                 return key;
@@ -405,8 +244,8 @@ namespace MagicCube
                 int i = middle_elements.Length;
                 while(i-- > 0)
                 {
-                    middle_elements[i] = (uint)(value % FACE_NUM);
-                    value /= FACE_NUM;
+                    middle_elements[i] = (uint)(value % Faces.Count);
+                    value /= Faces.Count;
                 }
             }
         }
@@ -418,7 +257,7 @@ namespace MagicCube
                 ulong key = 0;
                 foreach (uint ce in corner_elements)
                 {
-                    key *= FACE_NUM;
+                    key *= Faces.Count;
                     key += ce;
                 }
                 return key;
@@ -428,8 +267,8 @@ namespace MagicCube
                 int i = corner_elements.Length;
                 while (i-- > 0)
                 {
-                    corner_elements[i] = (uint)(value % FACE_NUM);
-                    value /= FACE_NUM;
+                    corner_elements[i] = (uint)(value % Faces.Count);
+                    value /= Faces.Count;
                 }
             }
         }
@@ -453,7 +292,7 @@ namespace MagicCube
             // front
             foreach(uint direction in Direction.Items())
             {
-                key *= FACE_NUM;
+                key *= Faces.Count;
                 key += order[CornerElementAt(face, direction)];
             }
             // neighbours
@@ -462,15 +301,15 @@ namespace MagicCube
                 uint nface = LAYOUT[face, direction];
                 foreach(uint ndirection in Direction.Items())
                 {
-                    key *= FACE_NUM;
+                    key *= Faces.Count;
                     key += order[CornerElementAt(nface, ndirection)];
                 }
             }
             // back
-            face = (face + 3) % FACE_NUM;
+            face = (face + 3) % Faces.Count;
             foreach (uint direction in Direction.Items())
             {
-                key *= FACE_NUM;
+                key *= Faces.Count;
                 key += order[CornerElementAt(face, direction)];
             }
 
@@ -480,18 +319,18 @@ namespace MagicCube
         public IEnumerable<uint> Moves()
         {
             uint move = 0;
-            for (uint face = 0; face < FACE_NUM; face++)
+            for (uint face = 0; face < Faces.Count; face++)
             {
-                RotateRight(face);
+                RotateFace(face);
                 yield return move++;
 
-                RotateRight(face);
+                RotateFace(face);
                 yield return move++;
 
-                RotateRight(face);
+                RotateFace(face);
                 yield return move++;
 
-                RotateRight(face); // restore
+                RotateFace(face); // restore
             }
         }
 
@@ -505,18 +344,18 @@ namespace MagicCube
 
         public IEnumerable<ulong> NextCornerKeys()
         {
-            for (uint face = 0; face < FACE_NUM; face++)
+            for (uint face = 0; face < Faces.Count; face++)
             {
-                RotateRight(face);
+                RotateFace(face);
                 yield return CornerKey;
 
-                RotateRight(face);
+                RotateFace(face);
                 yield return CornerKey;
 
-                RotateRight(face);
+                RotateFace(face);
                 yield return CornerKey;
 
-                RotateRight(face); // restore
+                RotateFace(face); // restore
             }
         }
 
@@ -525,30 +364,6 @@ namespace MagicCube
             Cube c = new Cube();
             c.CornerKey = corner_key;
             return c.NextCornerKeys();
-        }
-
-        public IEnumerable<ulong> NextMiddleKeys()
-        {
-            for (uint face = 0; face < FACE_NUM; face++)
-            {
-                RotateRight(face);
-                yield return MiddleKey;
-
-                RotateRight(face);
-                yield return MiddleKey;
-
-                RotateRight(face);
-                yield return MiddleKey;
-
-                RotateRight(face); // restore
-            }
-        }
-
-        public static IEnumerable<ulong> NextMiddleKeys(ulong middle_key)
-        {
-            Cube c = new Cube();
-            c.MiddleKey = middle_key;
-            return c.NextMiddleKeys();
         }
 
         public uint CornerElementAt(uint face, uint direction)
@@ -628,7 +443,7 @@ namespace MagicCube
             return face * Direction.TURN_COUNT;
         }
 
-        public void RotateRight(uint face)
+        public void RotateFace(uint face)
         {
             // Rotate clockwise: 0,1,2,3 => 3,0,1,2
             const uint last = Direction.TURN_COUNT - 1;
@@ -655,7 +470,7 @@ namespace MagicCube
 
         public IEnumerable<MiddleElement> MiddleElements()
         {
-            for(uint face1 = 0; face1 < FACE_NUM; face1++)
+            for(uint face1 = 0; face1 < Faces.Count; face1++)
             {
                 uint direction = Direction.UP;
                 uint color1 = MiddleElementAt(face1, direction);
@@ -691,7 +506,7 @@ namespace MagicCube
             get
             {
                 int count = 0;
-                for (uint face1 = 0; face1 < FACE_NUM; face1++)
+                for (uint face1 = 0; face1 < Faces.Count; face1++)
                 {
                     uint direction = Direction.UP;
                     if (face1 == MiddleElementAt(face1, direction) &&
@@ -723,7 +538,7 @@ namespace MagicCube
         //}
 
                 int count = 0;
-                for (uint face1 = 0; face1 < FACE_NUM; face1++)
+                for (uint face1 = 0; face1 < Faces.Count; face1++)
                 {
                     uint direction = Direction.UP;
 
@@ -757,12 +572,12 @@ namespace MagicCube
 
             Dictionary<uint, uint> dict = new Dictionary<uint, uint>();
 
-            dict[Left] = Front;
-            dict[Front] = Up;
-            dict[Up] = Left;
-            dict[Right] = Back;
-            dict[Back] = Down;
-            dict[Down] = Right;
+            dict[Faces.Left] = Faces.Front;
+            dict[Faces.Front] = Faces.Up;
+            dict[Faces.Up] = Faces.Left;
+            dict[Faces.Right] = Faces.Back;
+            dict[Faces.Back] = Faces.Down;
+            dict[Faces.Down] = Faces.Right;
 
             Cube c = new Cube();
 
@@ -770,21 +585,21 @@ namespace MagicCube
             {
                 uint u = Direction.TurnAround(d);
 
-                c.MiddleElementAt(Front, d, dict[MiddleElementAt(Left, d)]);
-                c.MiddleElementAt(Up, u, dict[MiddleElementAt(Front, d)]);
-                c.MiddleElementAt(Left, u, dict[MiddleElementAt(Up, d)]);
+                c.MiddleElementAt(Faces.Front, d, dict[MiddleElementAt(Faces.Left, d)]);
+                c.MiddleElementAt(Faces.Up, u, dict[MiddleElementAt(Faces.Front, d)]);
+                c.MiddleElementAt(Faces.Left, u, dict[MiddleElementAt(Faces.Up, d)]);
 
-                c.MiddleElementAt(Back, d, dict[MiddleElementAt(Right, d)]);
-                c.MiddleElementAt(Down, u, dict[MiddleElementAt(Back, d)]);
-                c.MiddleElementAt(Right, u, dict[MiddleElementAt(Down, d)]);
+                c.MiddleElementAt(Faces.Back, d, dict[MiddleElementAt(Faces.Right, d)]);
+                c.MiddleElementAt(Faces.Down, u, dict[MiddleElementAt(Faces.Back, d)]);
+                c.MiddleElementAt(Faces.Right, u, dict[MiddleElementAt(Faces.Down, d)]);
 
-                c.CornerElementAt(Front, d, dict[CornerElementAt(Left, d)]);
-                c.CornerElementAt(Up, u, dict[CornerElementAt(Front, d)]);
-                c.CornerElementAt(Left, u, dict[CornerElementAt(Up, d)]);
+                c.CornerElementAt(Faces.Front, d, dict[CornerElementAt(Faces.Left, d)]);
+                c.CornerElementAt(Faces.Up, u, dict[CornerElementAt(Faces.Front, d)]);
+                c.CornerElementAt(Faces.Left, u, dict[CornerElementAt(Faces.Up, d)]);
 
-                c.CornerElementAt(Back, d, dict[CornerElementAt(Right, d)]);
-                c.CornerElementAt(Down, u, dict[CornerElementAt(Back, d)]);
-                c.CornerElementAt(Right, u, dict[CornerElementAt(Down, d)]);
+                c.CornerElementAt(Faces.Back, d, dict[CornerElementAt(Faces.Right, d)]);
+                c.CornerElementAt(Faces.Down, u, dict[CornerElementAt(Faces.Back, d)]);
+                c.CornerElementAt(Faces.Right, u, dict[CornerElementAt(Faces.Down, d)]);
             }
 
             MiddleKey = c.MiddleKey;
@@ -797,19 +612,19 @@ namespace MagicCube
             // Left-Up-Back
             for (int i = 0; i < middle_elements.Length; i++)
             {
-                middle_elements[i] = (middle_elements[i] + 2) % FACE_NUM;
+                middle_elements[i] = (middle_elements[i] + 2) % Faces.Count;
             }
             for (int i = 0; i < corner_elements.Length; i++)
             {
-                corner_elements[i] = (corner_elements[i] + 2) % FACE_NUM;
+                corner_elements[i] = (corner_elements[i] + 2) % Faces.Count;
             }
 
-            const uint last = FACE_NUM - 1;
+            const uint last = Faces.Count - 1;
             for (uint src_dir = 0; src_dir < Direction.TURN_COUNT; src_dir++)
             {
                 uint me = MiddleElementAt(last, src_dir);
                 uint ce = CornerElementAt(last, src_dir);
-                for (uint face = 0; face < FACE_NUM; face++)
+                for (uint face = 0; face < Faces.Count; face++)
                 {
                     me = MiddleElementAt(face, src_dir, me);
                     ce = CornerElementAt(face, src_dir, ce);
@@ -819,7 +634,7 @@ namespace MagicCube
             {
                 uint me = MiddleElementAt(last, src_dir);
                 uint ce = CornerElementAt(last, src_dir);
-                for (uint face = 0; face < FACE_NUM; face++)
+                for (uint face = 0; face < Faces.Count; face++)
                 {
                     me = MiddleElementAt(face, src_dir, me);
                     ce = CornerElementAt(face, src_dir, ce);
@@ -832,7 +647,7 @@ namespace MagicCube
         {
             Cube tmp = new Cube();
 
-            uint[] order = { Down, Front, Right, Up, Back, Left };
+            uint[] order = { Faces.Down, Faces.Front, Faces.Right, Faces.Up, Faces.Back, Faces.Left };
 
             foreach(uint direction in Direction.Items())
             {
@@ -840,28 +655,28 @@ namespace MagicCube
                 uint dir_left = Direction.TurnLeft(direction);
 
                 // Left -> clockwise
-                tmp.MiddleElementAt(Left, dir_right, order[MiddleElementAt(Left, direction)]);
-                tmp.CornerElementAt(Left, dir_right, order[CornerElementAt(Left, direction)]);
+                tmp.MiddleElementAt(Faces.Left, dir_right, order[MiddleElementAt(Faces.Left, direction)]);
+                tmp.CornerElementAt(Faces.Left, dir_right, order[CornerElementAt(Faces.Left, direction)]);
 
                 // Right -> anticlockwise
-                tmp.MiddleElementAt(Right, dir_left, order[MiddleElementAt(Right, direction)]);
-                tmp.CornerElementAt(Right, dir_left, order[CornerElementAt(Right, direction)]);
+                tmp.MiddleElementAt(Faces.Right, dir_left, order[MiddleElementAt(Faces.Right, direction)]);
+                tmp.CornerElementAt(Faces.Right, dir_left, order[CornerElementAt(Faces.Right, direction)]);
 
                 // Up -> Front
-                tmp.MiddleElementAt(Front, dir_right, order[MiddleElementAt(Up, direction)]);
-                tmp.CornerElementAt(Front, dir_right, order[CornerElementAt(Up, direction)]);
+                tmp.MiddleElementAt(Faces.Front, dir_right, order[MiddleElementAt(Faces.Up, direction)]);
+                tmp.CornerElementAt(Faces.Front, dir_right, order[CornerElementAt(Faces.Up, direction)]);
 
                 // Front -> Down
-                tmp.MiddleElementAt(Down, dir_left, order[MiddleElementAt(Front, direction)]);
-                tmp.CornerElementAt(Down, dir_left, order[CornerElementAt(Front, direction)]);
+                tmp.MiddleElementAt(Faces.Down, dir_left, order[MiddleElementAt(Faces.Front, direction)]);
+                tmp.CornerElementAt(Faces.Down, dir_left, order[CornerElementAt(Faces.Front, direction)]);
 
                 // Down -> Back
-                tmp.MiddleElementAt(Back, dir_right, order[MiddleElementAt(Down, direction)]);
-                tmp.CornerElementAt(Back, dir_right, order[CornerElementAt(Down, direction)]);
+                tmp.MiddleElementAt(Faces.Back, dir_right, order[MiddleElementAt(Faces.Down, direction)]);
+                tmp.CornerElementAt(Faces.Back, dir_right, order[CornerElementAt(Faces.Down, direction)]);
 
                 // Back -> Up
-                tmp.MiddleElementAt(Up, dir_left, order[MiddleElementAt(Back, direction)]);
-                tmp.CornerElementAt(Up, dir_left, order[CornerElementAt(Back, direction)]);
+                tmp.MiddleElementAt(Faces.Up, dir_left, order[MiddleElementAt(Faces.Back, direction)]);
+                tmp.CornerElementAt(Faces.Up, dir_left, order[CornerElementAt(Faces.Back, direction)]);
             }
 
             MiddleKey = tmp.MiddleKey;
@@ -945,7 +760,7 @@ namespace MagicCube
                     ulong key = 0;
                     foreach (uint e in elements)
                     {
-                        key *= FACE_NUM;
+                        key *= Faces.Count;
                         key += e;
                     }
                     return key;
@@ -955,8 +770,8 @@ namespace MagicCube
                     int i = elements.Length;
                     while (i-- > 0)
                     {
-                        elements[i] = (uint)(value % FACE_NUM);
-                        value /= FACE_NUM;
+                        elements[i] = (uint)(value % Faces.Count);
+                        value /= Faces.Count;
                     }
                 }
             }

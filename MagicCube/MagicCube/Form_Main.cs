@@ -16,7 +16,8 @@ namespace MagicCube
         Cube cube = new Cube();
         Solution solution = new Solution();
         Algorithm algorithm = new Algorithm();
-        Cross cross = new Cross(Cross.IDENTITY);
+        Cross cross = Cross.IDENTITY;
+        Saltire xcross = Saltire.IDENTITY;
 
         public const float cx = 24f;
         public const float cy = 24f;
@@ -84,7 +85,16 @@ namespace MagicCube
                 {
                     g.DrawEllipse(pen, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx - 1, cy - 1);
                 }
-                    
+
+                using (SolidBrush sb = new SolidBrush(Color.FromName(FaceInfo.items[xcross.CornerElementAt(face, Direction.Sum(direction, i))].color)))
+                {
+                    g.FillEllipse(sb, x + cx * corner_positions[i].X, y + cy * corner_positions[i].Y, cx - 1, cy - 1);
+                }
+
+                using (Pen pen = new Pen(Color.Black))
+                {
+                    g.DrawEllipse(pen, x + cx * corner_positions[i].X, y + cy * corner_positions[i].Y, cx - 1, cy - 1);
+                }
             }
         }
 
@@ -95,7 +105,7 @@ namespace MagicCube
             //g.ResetTransform();
             //g.TranslateTransform(ctrl.Width / 3f, ctrl.Height / 2f);
 
-            for(uint face = 0; face < Cube.FACE_NUM; face++)
+            for(uint face = 0; face < Faces.Count; face++)
             {
                 float x = 3 * cx * FaceInfo.items[face].location.X;
                 float y = 3 * cy * FaceInfo.items[face].location.Y;
@@ -108,7 +118,7 @@ namespace MagicCube
 
         private void panel_Cube_MouseUp(object sender, MouseEventArgs e)
         {
-            for (uint face = 0; face < Cube.FACE_NUM; face++)
+            for (uint face = 0; face < Faces.Count; face++)
             {
                 float x = 3 * cx * FaceInfo.items[face].location.X;
                 float y = 3 * cy * FaceInfo.items[face].location.Y;
@@ -158,13 +168,8 @@ namespace MagicCube
 
             UpdateUndoMove(selected_face, Direction.RIGHT);
 
-            cube.RotateRight(selected_face);
-            cube.RotateRight(selected_face);
-            cube.RotateRight(selected_face);
+            RotateCube(selected_face, Direction.LEFT);
 
-            cross.RotateFace(selected_face);
-            cross.RotateFace(selected_face);
-            cross.RotateFace(selected_face);
             RepaintCube();
         }
 
@@ -187,14 +192,23 @@ namespace MagicCube
             comboBox_MoveRedo.Items.Clear();
         }
 
+        public void RotateCube(uint face, uint count)
+        {
+            for(uint i = 0; i < count; i++)
+            {
+                cube.RotateFace(face);
+                cross.RotateFace(face);
+                xcross.RotateFace(face);
+            }
+        }
+
         private void button_RotateRight_Click(object sender, EventArgs e)
         {
             textBox_Log.AppendText(FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Right\r\n");
 
             UpdateUndoMove(selected_face, Direction.LEFT);
 
-            cube.RotateRight(selected_face);
-            cross.RotateFace(selected_face);
+            RotateCube(selected_face, Direction.RIGHT);
             RepaintCube();
         }
 
@@ -280,21 +294,32 @@ namespace MagicCube
         private void button_SolveMiddle_Click(object sender, EventArgs e)
         {
             button_Solve_Middle.Enabled = false;
-         //   Solution.PrecomputeMiddleMoves(7);
-            var path = solution.SolveMiddle(cube.MiddleKey);
-
-            comboBox_MoveUndo.Items.Clear();
-            comboBox_MoveRedo.Items.Clear();
-            for (int i = 1; i < path.Count; i++)
+            Solution.PrecomputeCornerMoves(7);
+            var path = solution.SolveMiddle(cube.MiddleKey, 7);
+            if (path != null)
             {
-                Cube.Move move = Cube.Move.MiddleKeysToMove(path[i - 1], path[i]);
-                textBox_Log.AppendText(path[i].ToString() + ": " + move.ToString() + "\r\n");
+                textBox_Log.AppendText($"{path.Count}: {path}\r\n");
+                path.PlayForward(cube);
+                cross.Transform = path.PlayForward(new Cross(Cross.IDENTITY)).Transform;
+                //path.PlayForward(cross);
 
-                comboBox_MoveUndo.Items.Add(move);
+                comboBox_MoveUndo.Items.Clear();
+                comboBox_MoveRedo.Items.Clear();
+                for (int i = 0; i < path.Count; i++)
+                {
+                    //Cube.Move move = Cube.Move.MiddleKeysToMove(path[i - 1], path[i]);
+                    //textBox_Log.AppendText(path[i].ToString() + ": " + move.ToString() + "\r\n");
+
+                    //comboBox_MoveUndo.Items.Add(path[i]);
+                }
+                //comboBox_MoveUndo.SelectedIndex = 0;
             }
-            comboBox_MoveUndo.SelectedIndex = 0;
+            
+
+
 
             button_Solve_Middle.Enabled = true;
+            RepaintCube();
 
 /*//
             Cube c = new Cube();
@@ -304,7 +329,7 @@ namespace MagicCube
             {
                 c.MiddleKey = key;
                 bool done = false;
-                for(uint shift = 1; shift < Cube.FACE_NUM; shift++)
+                for(uint shift = 1; shift < Faces.Count; shift++)
                 {
                     ulong key_shift = c.GetMiddleKey(shift);
                     if(test_ring.BinarySearch(key_shift) >= 0)
@@ -323,13 +348,16 @@ namespace MagicCube
 
         private void button_RandomMove_Click(object sender, EventArgs e)
         {
+            //MoveTrack.MakeReplaces();
             /*//
             algorithm.PlayRandom(cube, 6);
             RepaintCube();
             //*/
+
+            //solution.SaveShortMiddleSequences("short_middle_sequences.txt");
             
             Random rnd = new Random();
-            selected_face = (uint) rnd.Next(0, (int)Cube.FACE_NUM);
+            selected_face = (uint) rnd.Next(0, (int)Faces.Count);
             for (int i = rnd.Next(1, (int)Direction.TURN_COUNT); i-- > 0;)
             {
                 button_RotateRight_Click(sender, e);
@@ -381,11 +409,7 @@ namespace MagicCube
                 redoBox.Items.Insert(0, new Cube.Move(undo_move.Face, turn));
                 redoBox.SelectedIndex = 0;
 
-                for (uint i = 0; i < undo_move.Turn; i++)
-                {
-                    cube.RotateRight(undo_move.Face);
-                    cross.RotateFace(undo_move.Face);
-                }
+                RotateCube(undo_move.Face, undo_move.Turn);
                 RepaintCube();
             }
         }
@@ -425,7 +449,7 @@ namespace MagicCube
         {
             button_Solve.Enabled = false;
 
-            var path = solution.Solve(new CubeKey(cube));
+            var path = solution.Solve(cube.Key, 7);
             if(path != null)
             {
                 comboBox_MoveUndo.Items.Clear();
@@ -445,41 +469,41 @@ namespace MagicCube
 
         private void button_ShowNext_Click(object sender, EventArgs e)
         {
-            uint face = Cube.Front;
-            Debug.Assert(Cube.UpFace(face) == Cube.Up);
-            Debug.Assert(Cube.DownFace(face) == Cube.Down);
-            Debug.Assert(Cube.LeftFace(face) == Cube.Left);
-            Debug.Assert(Cube.RightFace(face) == Cube.Right);
+            uint face = Faces.Front;
+            Debug.Assert(Faces.UpFace(face) == Faces.Up);
+            Debug.Assert(Faces.DownFace(face) == Faces.Down);
+            Debug.Assert(Faces.LeftFace(face) == Faces.Left);
+            Debug.Assert(Faces.RightFace(face) == Faces.Right);
 
-            face = Cube.Up;
-            Debug.Assert(Cube.UpFace(face) == Cube.Right);
-            Debug.Assert(Cube.DownFace(face) == Cube.Left);
-            Debug.Assert(Cube.LeftFace(face) == Cube.Back);
-            Debug.Assert(Cube.RightFace(face) == Cube.Front);
+            face = Faces.Up;
+            Debug.Assert(Faces.UpFace(face) == Faces.Right);
+            Debug.Assert(Faces.DownFace(face) == Faces.Left);
+            Debug.Assert(Faces.LeftFace(face) == Faces.Back);
+            Debug.Assert(Faces.RightFace(face) == Faces.Front);
 
-            face = Cube.Right;
-            Debug.Assert(Cube.UpFace(face) == Cube.Back);
-            Debug.Assert(Cube.DownFace(face) == Cube.Front);
-            Debug.Assert(Cube.LeftFace(face) == Cube.Up);
-            Debug.Assert(Cube.RightFace(face) == Cube.Down);
+            face = Faces.Right;
+            Debug.Assert(Faces.UpFace(face) == Faces.Back);
+            Debug.Assert(Faces.DownFace(face) == Faces.Front);
+            Debug.Assert(Faces.LeftFace(face) == Faces.Up);
+            Debug.Assert(Faces.RightFace(face) == Faces.Down);
 
-            face = Cube.Back;
-            Debug.Assert(Cube.UpFace(face) == Cube.Down);
-            Debug.Assert(Cube.DownFace(face) == Cube.Up);
-            Debug.Assert(Cube.LeftFace(face) == Cube.Left);
-            Debug.Assert(Cube.RightFace(face) == Cube.Right);
+            face = Faces.Back;
+            Debug.Assert(Faces.UpFace(face) == Faces.Down);
+            Debug.Assert(Faces.DownFace(face) == Faces.Up);
+            Debug.Assert(Faces.LeftFace(face) == Faces.Left);
+            Debug.Assert(Faces.RightFace(face) == Faces.Right);
 
-            face = Cube.Down;
-            Debug.Assert(Cube.UpFace(face) == Cube.Left);
-            Debug.Assert(Cube.DownFace(face) == Cube.Right);
-            Debug.Assert(Cube.LeftFace(face) == Cube.Back);
-            Debug.Assert(Cube.RightFace(face) == Cube.Front);
+            face = Faces.Down;
+            Debug.Assert(Faces.UpFace(face) == Faces.Left);
+            Debug.Assert(Faces.DownFace(face) == Faces.Right);
+            Debug.Assert(Faces.LeftFace(face) == Faces.Back);
+            Debug.Assert(Faces.RightFace(face) == Faces.Front);
 
-            face = Cube.Left;
-            Debug.Assert(Cube.UpFace(face) == Cube.Front);
-            Debug.Assert(Cube.DownFace(face) == Cube.Back);
-            Debug.Assert(Cube.LeftFace(face) == Cube.Up);
-            Debug.Assert(Cube.RightFace(face) == Cube.Down);
+            face = Faces.Left;
+            Debug.Assert(Faces.UpFace(face) == Faces.Front);
+            Debug.Assert(Faces.DownFace(face) == Faces.Back);
+            Debug.Assert(Faces.LeftFace(face) == Faces.Up);
+            Debug.Assert(Faces.RightFace(face) == Faces.Down);
 
             var last = solution.cube_rings[1];//.Last();
             if (++selected_cube >= last.Count)
@@ -629,20 +653,24 @@ namespace MagicCube
             //MoveTrack track = algorithm.Run(cube);
             if(track != null)
             {
-                textBox_Log.AppendText(track.Count.ToString() + ": " + track.Track + "\r\n");
+                textBox_Log.AppendText($"{track.Count}: {track.Track}\r\n");
 
 
                 for (MoveTrack new_track = solution.Analyze2(track, 5); new_track.Count < track.Count; new_track = solution.Analyze2(track, 5))
                 {
                     track = new_track;
-                    textBox_Log.AppendText(track.Count.ToString() + ": " + track.Track + "\r\n");
+                    textBox_Log.AppendText($"{track.Count}: {track.Track}\r\n");
                 }
 
                 int a = cube.CountSolvedMiddles;
-                track.PlayForward(cube);
-                cross.Transform = track.PlayForward(Cross.IDENTITY).Transform;
+                foreach(Move m in track)
+                {
+                    RotateCube(m.Face, m.Turn);
+                }
+                //track.PlayForward(cube);
+                //cross.Transform = track.PlayForward(Cross.IDENTITY).Transform;
                 int b = cube.CountSolvedMiddles;
-                textBox_Log.AppendText(a.ToString() + " -> " + b.ToString() + "\r\n");
+                textBox_Log.AppendText($"{a} -> {b}\r\n");
             }
             else
             //*/
@@ -654,14 +682,14 @@ namespace MagicCube
                     path.PlayForward(cube);
                     total += path.Count;
                     int b = cube.CountSolvedMiddles;
-                    textBox_Log.AppendText(a.ToString() + " -> " + b.ToString() + "\r\n");
-                    textBox_Log.AppendText(path.Count.ToString() + ": " + path.ToString() + "\r\n");
+                    textBox_Log.AppendText($"{a} -> {b}\r\n");
+                    textBox_Log.AppendText($"{path.Count}: {path}\r\n");
 
-                    cross.Transform = path.PlayForward(Cross.IDENTITY).Transform;
+                    cross.Transform = path.PlayForward(new Cross(Cross.IDENTITY)).Transform;
 
                     Console.WriteLine(cross);
                 }
-                textBox_Log.AppendText("Total moves: " + total.ToString() + "\r\n");
+                textBox_Log.AppendText($"Total moves: {total}\r\n");
             }
 
             RepaintCube();
@@ -676,10 +704,14 @@ namespace MagicCube
             string command = textBox_Command.Text;
 
             MoveTrack track = new MoveTrack(command, checkBox_SingmasterNotation.Checked);
-            textBox_Log.AppendText(track.ToString() + "\r\n");
+            textBox_Log.AppendText($"{track}\r\n");
 
-            track.PlayForward(cube);
-            cross.Transform = track.PlayForward(Cross.IDENTITY).Transform;
+            //track.PlayForward(cube);
+            //cross.Transform = track.PlayForward(Cross.IDENTITY).Transform;
+            foreach(Move m in track)
+            {
+                RotateCube(m.Face, m.Turn);
+            }
 
             //foreach(MiddleElement me in cube.MiddleDiff(new Cube()))
             //{
@@ -731,7 +763,7 @@ namespace MagicCube
                     map.Add(test.ToString());
                     foreach (uint dir_z in Direction.Items())
                     {
-                        test.RotateClockwise(Cube.Front);
+                        test.RotateClockwise(Faces.Front);
                         map.Add(test.ToString());
                     }
                 }
@@ -752,21 +784,23 @@ namespace MagicCube
             textBox_Log.AppendText(alg.ToString() + "\r\n");
 
             alg.PlayForward(cube);
-            cross.Transform = alg.PlayForward(Cross.IDENTITY).Transform;
+            cross.Transform = alg.PlayForward(new Cross(Cross.IDENTITY)).Transform;
             RepaintCube();
         }
 
         private void button_AddCommand_Click(object sender, EventArgs e)
         {
             //string command = textBox_Command.Text.ToUpper();
-            //MoveTrack track = new MoveTrack(command);
-            //algorithm.Add(track);
+            MoveTrack track = new MoveTrack(textBox_Command.Text, checkBox_SingmasterNotation.Checked);
+            algorithm.Add(track);
             //algorithm.Add(track.Reverse());
+            /*
             OpenFileDialog dlg = new OpenFileDialog();
             if(dlg.ShowDialog() == DialogResult.OK)
             {
                 algorithm.Load(dlg.FileName);
             }
+            */
         }
 
         private void button_SaveCommand_Click(object sender, EventArgs e)

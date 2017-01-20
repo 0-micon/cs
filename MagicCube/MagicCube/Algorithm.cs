@@ -38,10 +38,11 @@ namespace MagicCube
 
         public static IEnumerable<KeyValuePair<ulong, MoveTrack>> AllTransforms(MoveTrack track)
         {
-            foreach(MoveTrack dst_track in track.AllTransforms())
+            Cross cross = Cross.IDENTITY;
+            foreach (MoveTrack dst_track in track.AllTransforms())
             {
                 yield return new KeyValuePair<ulong, MoveTrack>(
-                    dst_track.PlayForward(Cross.IDENTITY).Transform,
+                    dst_track.PlayForward(cross).Transform,
                     dst_track);
             }
         }
@@ -88,7 +89,7 @@ namespace MagicCube
                         Cross cross = new Cross(Cross.IDENTITY);
                         cross.Transform = pair.Key;
 
-                        int m_count = 12 - cross.CountSolvedMiddles;
+                        int m_count = 12 - cross.CountSolvedCubelets;
                         //int c_count = 12 - cube.CountSolvedCorners;
 
                         file.Write(m_count);
@@ -157,14 +158,14 @@ namespace MagicCube
         public MoveTrack RunOnce(Cross cross)
         {
             MoveTrack dst_track = null;
-            int solved_middles = cross.CountSolvedMiddles;
+            int solved_middles = cross.CountSolvedCubelets;
 
             foreach (var pair in tracks)
             {
                 Cross dst_cross = new Cross(cross);
                 dst_cross.Transform = pair.Key; // pair.Value.PlayForward(cross);
 
-                int i = dst_cross.CountSolvedMiddles;
+                int i = dst_cross.CountSolvedCubelets;
                 if(i > solved_middles)
                 {
                     solved_middles = i;
@@ -195,7 +196,7 @@ namespace MagicCube
 
                 if (!done.ContainsKey(dst_key))
                 {
-                    done[dst_key] = new CrossEntry(dst_key, dst_cross.CountSolvedMiddles, dst_path);
+                    done[dst_key] = new CrossEntry(dst_key, dst_cross.CountSolvedCubelets, dst_path);
                 }
                 else if (done[dst_key].path.Count > dst_path.Count)
                 {
@@ -221,7 +222,7 @@ namespace MagicCube
 
                 if (!done.ContainsKey(dst_key))
                 {
-                    done[dst_key] = new CrossEntry(dst_key, dst_cross.CountSolvedMiddles, dst_path);
+                    done[dst_key] = new CrossEntry(dst_key, dst_cross.CountSolvedCubelets, dst_path);
                 }
                 else if (done[dst_key].path.Count > dst_path.Count)
                 {

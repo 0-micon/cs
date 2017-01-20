@@ -19,8 +19,8 @@ namespace MagicCube
 
         public Solution()
         {
-            middle_rings = LoadRings(7, "middle_key_ring_", "ulong");
-            corner_rings = LoadRings(7, "corner_key_ring_", "ulong");
+            middle_rings = LoadRings(7/* + 1*/, "middle_key_ring_", "ulong");
+            corner_rings = LoadRings(7/* + 1*/, "corner_key_ring_", "ulong");
             cube_rings = LoadKeyRings(6 + 1, "key_ring_", "ulong");
 
             // SaveShortSequences("short_sequences.txt");
@@ -233,8 +233,9 @@ namespace MagicCube
                 foreach (ulong key in ring)
                 {
                     cube.MiddleKey = key;
-                    foreach (ulong next_key in cube.NextMiddleKeys())
+                    foreach (var c in Faces.Moves(cube))
                     {
+                        ulong next_key = cube.MiddleKey;
                         if (TestKey(next_key, solution) < 0)
                         {
                             next_ring.Add(next_key);
@@ -258,28 +259,26 @@ namespace MagicCube
             }
         }
 
-        public static void PrecomputeCornerMoves(int level)
+        public static void PrecomputeCornerMoves(int max_depth)
         {
-            Cube cube = new Cube();
+            List<ulong> src_ring = new List<ulong>(1);
+            src_ring.Add(Saltire.IDENTITY);
 
-            List<ulong> ring = new List<ulong>(1);
-            ring.Add(cube.CornerKey);
-
-            List<List<ulong>> solution = new List<List<ulong>>(level);
-            solution.Add(ring);
+            List<List<ulong>> solution = new List<List<ulong>>(max_depth);
+            solution.Add(src_ring);
 
             int reserved = 18;
-            for (int i = 0; i < level; i++)
+            while (solution.Count < max_depth)
             {
                 List<ulong> next_ring = new List<ulong>(reserved);
-                foreach (ulong key in ring)
+                foreach (ulong src_key in src_ring)
                 {
-                    cube.CornerKey = key;
-                    foreach (ulong next_key in cube.NextCornerKeys())
+                    Saltire cube = src_key;
+                    foreach (ulong dst_key in Faces.Moves(cube))
                     {
-                        if (TestKey(next_key, solution) < 0)
+                        if (TestKey(dst_key, solution) < 0)
                         {
-                            next_ring.Add(next_key);
+                            next_ring.Add(dst_key);
                         }
                     }
                 }
@@ -289,12 +288,12 @@ namespace MagicCube
                 next_ring.DistinctValues();
 
                 solution.Add(next_ring);
-                ring = next_ring;
+                src_ring = next_ring;
             }
 
             for (int i = 0; i < solution.Count; i++)
             {
-                SaveRing(solution[i], "corner_key_ring_" + i + ".ulong");
+                SaveRing(solution[i], $"_corner_key_ring_{i}.ulong");
             }
         }
 
@@ -377,7 +376,7 @@ namespace MagicCube
             }
         }
 
-        public List<ulong> SolveMiddle(ulong middle_key)
+        public MoveTrack SolveMiddle(ulong middle_key, int max_depth)
         {
             List<ulong> ring = new List<ulong>();
             ring.Add(middle_key);
@@ -388,60 +387,75 @@ namespace MagicCube
             Cube cube = new Cube();
 
             int reserved = 18;
-            while (true)
+            for (int depth = 0; depth < max_depth; depth++)
             {
-                List<ulong> next_ring = new List<ulong>(reserved);
+                List<ulong> next_ring = null;
+                if (depth + 1 < max_depth)
+                {
+                    next_ring = new List<ulong>(reserved);
+                }
+
                 foreach (ulong key in ring)
                 {
                     cube.MiddleKey = key;
-                    foreach (ulong next_key in cube.NextMiddleKeys())
+                    foreach (var c in Faces.Moves(cube))
                     {
+                        ulong next_key = cube.MiddleKey;
                         int pos = TestKey(next_key, middle_rings);
                         if (pos >= 0)
                         {
-                            List<ulong> solution = new List<ulong>();
-                            solution.Add(next_key);
+                            var solution = new MoveTrack();
 
-                            for(int l = l_rings.Count; l-- > 0;)
+                            var test_cube = new Cube(cube.Key);
+
+                            for (int l = l_rings.Count; l-- > 0;)
                             {
-                                foreach (ulong prev_key in Cube.NextMiddleKeys(solution.Last()))
+                                foreach (uint move in test_cube.Moves())
                                 {
-                                    if (l_rings[l].BinarySearch(prev_key) >= 0)
+                                    if (l_rings[l].BinarySearch(test_cube.MiddleKey) >= 0)
                                     {
-                                        solution.Add(prev_key);
+                                        solution.Add(new Move(move));
                                         break;
                                     }
                                 }
                             }
 
-                            solution.Reverse();
-                            for(int r = pos; r-- > 0;)
+                            solution = solution.Reverse();
+                            test_cube = new Cube(cube.Key);
+
+                            for (int r = pos; r-- > 0;)
                             {
-                                foreach (ulong prev_key in Cube.NextMiddleKeys(solution.Last()))
+                                foreach (uint move in test_cube.Moves())
                                 {
-                                    if (middle_rings[r].BinarySearch(prev_key) >= 0)
+                                    if (middle_rings[r].BinarySearch(test_cube.MiddleKey) >= 0)
                                     {
-                                        solution.Add(prev_key);
+                                        solution.Add(new Move(move));
                                         break;
                                     }
                                 }
                             }
+                            solution.Trim();
                             return solution;
                         }
-                        else if (TestKey(next_key, l_rings) < 0)
+                        else if (next_ring != null && TestKey(next_key, l_rings) < 0)
                         {
                             next_ring.Add(next_key);
                         }
                     }
                 }
-                reserved = next_ring.Count * 13;
-                next_ring.DistinctValues();
-                l_rings.Add(next_ring);
-                ring = next_ring;
-            }        
+
+                if(next_ring != null)
+                {
+                    reserved = next_ring.Count * 13;
+                    next_ring.DistinctValues();
+                    l_rings.Add(next_ring);
+                    ring = next_ring;
+                }
+            }
+            return null;
         }
 
-        public List<CubeKey> Solve(CubeKey start_key)
+        public List<CubeKey> Solve(CubeKey start_key, int max_depth)
         {
             List<CubeKey> ring = new List<CubeKey>();
             ring.Add(start_key);
@@ -456,13 +470,18 @@ namespace MagicCube
 
             int reserved = 18;
             const int max_reserved = 10000000;
-            while (true)
+            
+            for(int depth = 0; depth < max_depth; depth++)
             {
-                List<CubeKey> next_ring = new List<CubeKey>(reserved);
+                List<CubeKey> next_ring = null;
+                if (depth + 1 < max_depth)
+                {
+                    next_ring = new List<CubeKey>(reserved);
+                }
+                
                 foreach (CubeKey key in ring)
                 {
-                    cube.MiddleKey = key.middles;
-                    cube.CornerKey = key.corners;
+                    cube.Key = key;
 
                     if(middle_count < 0)
                     {
@@ -482,9 +501,7 @@ namespace MagicCube
 
                             for (int l = l_rings.Count; l-- > 0;)
                             {
-                                Cube c = new Cube();
-                                c.MiddleKey = solution.Last().middles;
-                                c.CornerKey = solution.Last().corners;
+                                Cube c = new Cube(solution.Last());
                                 foreach (uint prev_move in c.Moves())
                                 {
                                     CubeKey prev_key = new CubeKey(c);
@@ -499,9 +516,7 @@ namespace MagicCube
                             solution.Reverse();
                             for (int r = pos; r-- > 0;)
                             {
-                                Cube c = new Cube();
-                                c.MiddleKey = solution.Last().middles;
-                                c.CornerKey = solution.Last().corners;
+                                Cube c = new Cube(solution.Last());
                                 foreach (uint prev_move in c.Moves())
                                 {
                                     CubeKey prev_key = new CubeKey(c);
@@ -514,28 +529,22 @@ namespace MagicCube
                             }
                             return solution;
                         }
-                        else if (TestKey(next_key, l_rings) < 0)
+                        else if (next_ring != null && TestKey(next_key, l_rings) < 0)
                         {
                             next_ring.Add(next_key);
-                            if(next_ring.Count >= max_reserved)
-                            {
-                                goto NextStep;
-                            }
                         }
                     }
                 }
 
-            NextStep:
-                reserved = Math.Min(next_ring.Count * 13, max_reserved);
-                next_ring.DistinctValues();
-                l_rings.Add(next_ring);
-                ring = next_ring;
-
-                if(reserved > 10000000 || l_rings.Count > 100)
+                if (next_ring != null)
                 {
-                    return null;
+                    reserved = Math.Min(next_ring.Count * 13, max_reserved);
+                    next_ring.DistinctValues();
+                    l_rings.Add(next_ring);
+                    ring = next_ring;
                 }
             }
+            return null;
         }
 
         public MoveTrack Solve2(CubeKey start_key, int max_level)
@@ -554,12 +563,11 @@ namespace MagicCube
                 List<CubeKey> next_ring = new List<CubeKey>(reserved);
                 foreach (CubeKey key in ring)
                 {
-                    cube.MiddleKey = key.middles;
-                    cube.CornerKey = key.corners;
+                    cube.Key = key;
 
                     foreach (uint next_move in cube.Moves())
                     {
-                        CubeKey next_key = new CubeKey(cube);
+                        CubeKey next_key = cube.Key;
 
                         int pos = TestKey(next_key, cube_rings);
                         if (pos >= 0)
@@ -624,6 +632,44 @@ namespace MagicCube
 
                         alg.Add(track);
                         alg.Add(track.Reverse());
+                    }
+                }
+            }
+
+            alg.Save(fname);
+        }
+
+        public void SaveShortMiddleSequences(string fname)
+        {
+            Algorithm alg = new Algorithm();
+            ulong middle_key = (new Cube()).MiddleKey;
+
+            for (int i = 1; i < cube_rings.Count; i++)
+            {
+                foreach (CubeKey key in cube_rings[i])
+                {
+                    if (key.middles == middle_key)
+                    {
+                        MoveTrack track = new MoveTrack();
+
+                        CubeKey src_key = key;
+                        for (int j = i; j-- > 0;)
+                        {
+                            Cube cube = new Cube(src_key);
+                            foreach (uint move in cube.Moves())
+                            {
+                                CubeKey dst_key = cube.Key;
+                                if (cube_rings[j].BinarySearch(dst_key) >= 0)
+                                {
+                                    src_key = dst_key;
+                                    track.Add(new Move(move));
+
+                                    break; // foreach move
+                                }
+                            }
+                        }
+
+                        alg.Add(track);
                     }
                 }
             }
@@ -744,24 +790,13 @@ namespace MagicCube
             }
         }
 
-        public HashSet<ulong> GetMoveKeys(ulong middle_key)
-        {
-            HashSet<ulong> ring = new HashSet<ulong>();
-            Cube cube = new Cube();
-            cube.MiddleKey = middle_key;
-            foreach (ulong next_key in cube.NextMiddleKeys())
-            {
-                ring.Add(next_key);
-            }
-
-            return ring;
-        }
-
         public MoveTrack Analyze2(MoveTrack path, int depth)
         {
-            for(int length = path.Count; length >= depth + cube_rings.Count; length--)
+            //for(int length = path.Count; length >= depth + cube_rings.Count; length--)
+            for (int length = depth + cube_rings.Count; length <= path.Count; length++)
             {
                 for (int i = 0; i <= path.Count - length; i++)
+                //for (int i = path.Count - length; i >= 0; i--)
                 {
                     MoveTrack test = path.SubTrack(i, length);
 
@@ -796,7 +831,7 @@ namespace MagicCube
             for (int i = 0; i < count; i++)
             {
                 rings[i] = ComputeMoves(depth - 1, cube.Key);
-                path.PlayForward(cube, i);
+                path.Play(cube, i);
             }
             rings[count] = cube_rings.GetRange(0, depth);
 
@@ -849,102 +884,5 @@ namespace MagicCube
             }
             return null;
         }
-
-        public static void MakeReplaces()
-        {
-            Dictionary<string, string> replaces = new Dictionary<string, string>();
-            Dictionary<string, string> synonyms = new Dictionary<string, string>();
-
-            Cube cube = new Cube();
-            Dictionary<CubeKey, MoveTrack> done = new Dictionary<CubeKey, MoveTrack>();
-            done[cube.Key] = new MoveTrack();
-
-
-            for (int i = 0; i < 6; i++)
-            {
-                List<CubeKey> key_list = new List<CubeKey>(from entry in done where entry.Value.Count == i select entry.Key);
-                foreach (CubeKey src_key in key_list)
-                {
-                    cube.Key = src_key;
-                    MoveTrack src_path = done[src_key];
-                    foreach (uint move_index in cube.Moves())
-                    {
-                        MoveTrack dst_path = src_path.Clone();
-                        dst_path.Add(new Move(move_index));
-
-                        CubeKey dst_key = cube.Key;
-
-                        if (done.ContainsKey(dst_key))
-                        {
-                            MoveTrack rep_path = done[dst_key];
-                            int delta = dst_path.Count - rep_path.Count;
-                            if (delta >= 0)
-                            {
-                                int beg = 0;                // left trim count
-                                int end = rep_path.Count;   // rep_path.Count - right trim count
-
-                                while (beg < end && rep_path.Track[beg] == dst_path.Track[beg])
-                                {
-                                    beg++;
-                                }
-
-
-                                while (end > beg && rep_path.Track[end - 1] == dst_path.Track[end - 1 + delta])
-                                {
-                                    end--;
-                                }
-
-                                MoveTrack dst = dst_path.SubTrack(beg, end - beg + delta);
-                                MoveTrack rep = rep_path.SubTrack(beg, end - beg);
-
-                                if (delta == 0)
-                                {
-                                    if (!synonyms.ContainsKey(dst.Track))
-                                    {
-                                        synonyms.Add(dst.Track, rep.Track);
-                                    }
-                                    else
-                                    {
-                                        Debug.Assert(synonyms[dst.Track] == rep.Track);
-                                    }
-                                }
-                                else
-                                {
-                                    if (!replaces.ContainsKey(dst.Track))
-                                    {
-                                        replaces.Add(dst.Track, rep.Track);
-                                    }
-                                    else
-                                    {
-                                        Debug.Assert(replaces[dst.Track] == rep.Track);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            done[dst_key] = dst_path;
-                        }
-                    }
-                }
-            }
-
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("replaces.txt"))
-            {
-                foreach (KeyValuePair<string, string> pair in replaces)
-                {
-                    file.WriteLine(pair.Key + ";" + pair.Value);
-                }
-            }
-
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("synonyms.txt"))
-            {
-                foreach (KeyValuePair<string, string> pair in synonyms)
-                {
-                    file.WriteLine(pair.Key + ";" + pair.Value);
-                }
-            }
-        }
-
     }
 }

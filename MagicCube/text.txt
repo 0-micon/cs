@@ -1,18 +1,24 @@
-30: F2 U2     F L R' D' F2 R L' F2 U2 F' B L2 U'   F B' R D' R U' D B' U R2 D U' B2 D' U
-24: F2 U2     B D U' R' F2 U D' F'                   B' R D' R U' D B' U R2 D U' B2 D' U
-              B D U' R' F2 U D' F2 U'
+F R B F' U' B';agjcfl;
+R' B F' U B' F;ijcdla;
+F U' B F' L B';afjcpl;
+D2 U2 F D2 U2 B';neanel;
+L' D2 L R' B2 R;rnpikg;
 
-F2 U2     F L R' D' F2 R L' F2 U2 F' B L2      U' F B' R D' R U' D B' U R2 D U' B2 D' U
-F2 U2     B D U' R' F2 U D' F2                 U' F B' R D' R U' D B' U R2 D U' B2 D' U
-
-i = 0
-j = 14
-
-
-U' D B2 U D' R2 U' B D' U R' D R' B F' U L2 B' F U2 F2 L R' F2 D R L' F' U2 F2
-Middle Key: 2445293426315100670
-Corner Key: 731796345686735
-
+R F R F L R D2 R' D' L' F' R F'
+R U L R' F' R' F2 L' R U2
+L' F R D' B' U' D L U R' F' L
+B2 R' D' B R B2 R' B' R' D B R
+L2 D2 B2 L B2 D2 F B U F' B' L2
+B2 D' L B' R L' D R' D B2
+F' L' U' B' U' F' B L F U L F
+B2 L U' F2 D2 F2 U B' L' U' L2 U B'
+F U' L' F2 L F U L' F' L' F2 L
+F D L B F' D2 F B' L D' F'
+R' D R2 B D B' D' R2 B' D' R2
+F2 R D B2 L' D2 B2 D2 L' B2 D R' F2
+F R F2 R' D' R U L2 U' R' F' D
+U2 B2 R U2 F2 L' U D' B U' D' L F2
+U R' F2 L R F U2 L2 U2 F L' U'
 
 
 Solved Cube

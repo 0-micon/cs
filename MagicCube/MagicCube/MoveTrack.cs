@@ -1,21 +1,24 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    public class MoveTrack
+    public class MoveTrack : IComparable<MoveTrack>, IEnumerable<Move>
     {
         string _track;
 
         static SearchTree _substitute;
+        static string _substitute_fname = "substitutes.txt";
 
         static MoveTrack()
         {
             _substitute = new SearchTree();
-            _substitute.Load("substitites.txt");
+            _substitute.Load(_substitute_fname);
         }
 
         public Move this[int i] => Move.FromChar(_track[i]);
@@ -27,7 +30,7 @@ namespace MagicCube
             _track = string.Empty;
         }
 
-        void Trim()
+        public void Trim()
         {
             for(int i = 0; i < _track.Length - 1; i++)
             {
@@ -37,7 +40,7 @@ namespace MagicCube
                 {
                     string src = _track.Substring(i, j - i + 1);
                     _track = _track.Replace(src, dst);
-                    Trim();
+                    Trim();  // re-trim
                     return;
                 }
             }
@@ -57,7 +60,7 @@ namespace MagicCube
                 StringBuilder sb = new StringBuilder();
                 foreach (char ch in src.ToUpper())
                 {
-                    int i = Cube.FaceAcronym.IndexOf(ch);
+                    int i = Faces.Acronym.IndexOf(ch);
                     if (i >= 0)
                     {
                         sb.Append((new Move((uint)i, Direction.RIGHT)).ToChar());
@@ -112,52 +115,24 @@ namespace MagicCube
             _track = string.Empty;
         }
 
-        public void PlayForward(Cube cube)
+        public T Play<T>(T cube, int idx, bool backwards = false) where T : Faces.IRotatable => this[idx].Apply(cube, backwards);
+
+        public T PlayForward<T>(T cube) where T : Faces.IRotatable
         {
             for (int i = 0; i < Count; i++)
             {
-                PlayForward(cube, i);
+                cube = Play(cube, i, false);
             }
+            return cube;
         }
 
-        public void PlayForward(Cube cube, int idx)
-        {
-            Move m = this[idx];
-
-            uint face = m.Face;
-            uint turn = m.Turn;
-
-            switch (turn)
-            {
-                case 3: cube.RotateRight(face); goto case 2;    // fall through
-                case 2: cube.RotateRight(face); goto case 1;    // fall through
-                case 1: cube.RotateRight(face); break;
-            }
-        }
-
-        public Cross PlayForward(Cross cross)
-        {
-            for (int i = 0; i < Count; i++)
-            {
-                Move m = this[i];
-                for (uint t = 0; t < m.Turn; t++)
-                {
-                    cross.RotateFace(m.Face);
-                }
-            }
-            return cross;
-        }
-
-        public void PlayBackward(Cube cube)
+        public T PlayBackward<T>(T cube) where T : Faces.IRotatable
         {
             for (int i = Count; i-- > 0;)
             {
-                Move m = this[i];
-                for (uint t = 0; t < m.TurnBack; t++)
-                {
-                    cube.RotateRight(m.Face);
-                }
+                cube = Play(cube, i, true);
             }
+            return cube;
         }
 
         public MoveTrack Clone(uint[] transform = null)
@@ -214,12 +189,140 @@ namespace MagicCube
         public IEnumerable<MoveTrack> AllTransforms()
         {
             MoveTrack reverse = Reverse();
-            foreach (uint[] transform in Cube.ORIENTATION)
+            foreach (uint[] transform in Faces.Orientations)
             {
                 yield return Clone(transform);
                 yield return reverse.Clone(transform);
             }
         }
 
+        public static void MakeReplaces()
+        {
+            Dictionary<string, string> synonyms = new Dictionary<string, string>();
+
+            Cube cube = new Cube();
+            Dictionary<CubeKey, MoveTrack> done = new Dictionary<CubeKey, MoveTrack>();
+            done[cube.Key] = new MoveTrack();
+
+            // reset substitutes
+            _substitute.Clear();
+
+            for (int i = 0; i < 6; i++)
+            {
+                List<CubeKey> key_list = new List<CubeKey>(from entry in done where entry.Value.Count == i select entry.Key);
+                foreach (CubeKey src_key in key_list)
+                {
+                    cube.Key = src_key;
+                    MoveTrack src_path = done[src_key];
+                    foreach (uint move_index in cube.Moves())
+                    {
+                        MoveTrack dst_path = src_path.Clone();
+                        dst_path.Add(new Move(move_index));
+
+                        CubeKey dst_key = cube.Key;
+
+                        if (done.ContainsKey(dst_key))
+                        {
+                            MoveTrack rep_path = done[dst_key];
+                            dst_path.Trim();
+
+                            int delta = dst_path.Count - rep_path.Count;
+                            if (delta >= 0)
+                            {
+                                int beg = 0;                // left trim count
+                                int end = rep_path.Count;   // rep_path.Count - right trim count
+
+                                while (beg < end && rep_path.Track[beg] == dst_path.Track[beg])
+                                {
+                                    beg++;
+                                }
+
+
+                                while (end > beg && rep_path.Track[end - 1] == dst_path.Track[end - 1 + delta])
+                                {
+                                    end--;
+                                }
+
+                                MoveTrack dst = dst_path.SubTrack(beg, end - beg + delta);
+                                MoveTrack rep = rep_path.SubTrack(beg, end - beg);
+
+                                if (dst.CompareTo(rep) != 0)
+                                {
+                                    Debug.Assert(dst.Count > 0);
+
+                                    if (delta == 0)
+                                    {
+                                        if (!synonyms.ContainsKey(dst.Track))
+                                        {
+                                            synonyms.Add(dst.Track, rep.Track);
+                                        }
+                                        else
+                                        {
+                                            Debug.Assert(synonyms[dst.Track] == rep.Track);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!_substitute.ContainsKey(dst.Track))
+                                        {
+                                            _substitute.Add(dst.Track, rep.Track);
+                                        }
+                                        else
+                                        {
+                                            Debug.Assert(_substitute[dst.Track] == rep.Track);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            done[dst_key] = dst_path;
+                        }
+                    }
+                }
+            }
+
+            _substitute.Save(_substitute_fname);
+
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("synonyms.txt"))
+            {
+                foreach (KeyValuePair<string, string> pair in synonyms)
+                {
+                    file.WriteLine(pair.Key + ";" + pair.Value);
+                }
+            }
+        }
+
+        //
+        // Summary:
+        //     Compares the current object with another object of the same type.
+        //
+        // Parameters:
+        //   other: An object to compare with this object.
+        //
+        // Returns:
+        //     A value that indicates the relative order of the objects being compared. The
+        //     return value has the following meanings: Value Meaning Less than zero This object
+        //     is less than the other parameter.Zero This object is equal to other. Greater
+        //     than zero This object is greater than other.
+        public int CompareTo(MoveTrack other) => _track.CompareTo(other._track);
+
+        public override int GetHashCode() => _track.GetHashCode();
+
+        public bool Equals(MoveTrack other) => _track.Equals(other._track);
+
+        public override bool Equals(object obj)
+        {
+            if (obj is MoveTrack)
+            {
+                return Equals((MoveTrack)obj);
+            }
+            return false;
+        }
+
+        // IEnumerable interface implementation:
+        public IEnumerator<Move> GetEnumerator() => new SimpleEnumerator<Move>(ToArray());
+        IEnumerator  IEnumerable.GetEnumerator() => new SimpleEnumerator<Move>(ToArray());
     }
 }
