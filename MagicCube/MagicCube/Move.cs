@@ -116,12 +116,12 @@ namespace MagicCube
         {
             return m.move_index;
         }
+    }
 
-        public T Apply<T>(T cube, bool backwards = false) where T : Faces.IRotatable
+    public static class MoveExtension
+    {
+        public static T Move<T>(this T cube, uint face, uint turn) where T : Faces.IRotatable
         {
-            uint face = Face;
-            uint turn = backwards ? TurnBack : Turn;
-
             switch (turn)
             {
                 case 3: cube.RotateFace(face); goto case 2;    // fall through
@@ -129,6 +129,16 @@ namespace MagicCube
                 case 1: cube.RotateFace(face); break;
             }
             return cube;
+        }
+
+        public static T MoveForward<T>(this T cube, Move move) where T : Faces.IRotatable
+        {
+            return cube.Move(move.Face, move.Turn);
+        }
+
+        public static T MoveBackward<T>(this T cube, Move move) where T : Faces.IRotatable
+        {
+            return cube.Move(move.Face, move.TurnBack);
         }
     }
 }

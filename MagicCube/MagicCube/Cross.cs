@@ -65,6 +65,8 @@ namespace MagicCube
         //  Conversion from ulong to Cross
         public static implicit operator Cross(ulong i) => new Cross(i);
 
+        public static IEnumerable<ulong> NextKeys(ulong src) => Faces.NextKeys<ulong, Cross>(src, x => x, x => x);
+
         public Cross(ulong key)
         {
             _key = key;

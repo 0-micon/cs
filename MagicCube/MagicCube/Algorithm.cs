@@ -19,7 +19,7 @@ namespace MagicCube
             if (list.Count > 0)
             {
                 int i = new Random().Next(list.Count);
-                list[i].PlayForward(cube);
+                cube.PlayForward(list[i]);
                 return true;
             }
             else
@@ -36,14 +36,14 @@ namespace MagicCube
             }
         }
 
-        public static IEnumerable<KeyValuePair<ulong, MoveTrack>> AllTransforms(MoveTrack track)
+        public static IEnumerable<KeyValuePair<ulong, MoveTrack>> AllTransforms(MoveTrack src_track)
         {
-            Cross cross = Cross.IDENTITY;
-            foreach (MoveTrack dst_track in track.AllTransforms())
+            foreach (MoveTrack dst_track in src_track.AllTransforms())
             {
-                yield return new KeyValuePair<ulong, MoveTrack>(
-                    dst_track.PlayForward(cross).Transform,
-                    dst_track);
+                Cross dst_cross = Cross.IDENTITY;
+                dst_cross = dst_cross.PlayForward(dst_track);
+
+                yield return new KeyValuePair<ulong, MoveTrack>(dst_cross.Transform, dst_track);
             }
         }
 
@@ -139,7 +139,7 @@ namespace MagicCube
                     if (result == null || result.Count > current.Count + track.Count)
                     {
                         cube.Key = key;
-                        track.PlayForward(cube);
+                        cube.PlayForward(track);
 
                         int dst_count = cube.CountSolvedMiddles;
                         if (dst_count == 12)
@@ -289,7 +289,7 @@ namespace MagicCube
                 {
                     cube.Key = entry.dst_key;
 
-                    track.PlayForward(cube);
+                    cube.PlayForward(track);
                     result.Add(new Entry(new CubeKey(cube), cube.CountSolvedMiddles, entry.path + track));
                 }
             }

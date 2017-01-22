@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace MagicCube
 {
-    public partial class Form_Main : Form
+    public partial class Form_Main : Form, Faces.IRotatable
     {
         Cube cube = new Cube();
         Solution solution = new Solution();
@@ -202,6 +202,12 @@ namespace MagicCube
             }
         }
 
+        public void RotateFace(uint face)
+        {
+            RotateCube(face, 1);
+        }
+
+
         private void button_RotateRight_Click(object sender, EventArgs e)
         {
             textBox_Log.AppendText(FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Right\r\n");
@@ -294,14 +300,13 @@ namespace MagicCube
         private void button_SolveMiddle_Click(object sender, EventArgs e)
         {
             button_Solve_Middle.Enabled = false;
-            Solution.PrecomputeCornerMoves(7);
+            //Solution.PrecomputeMiddleMoves(7);
             var path = solution.SolveMiddle(cube.MiddleKey, 7);
             if (path != null)
             {
                 textBox_Log.AppendText($"{path.Count}: {path}\r\n");
-                path.PlayForward(cube);
-                cross.Transform = path.PlayForward(new Cross(Cross.IDENTITY)).Transform;
-                //path.PlayForward(cross);
+                cube.PlayForward(path);
+                cross.PlayForward(path);
 
                 comboBox_MoveUndo.Items.Clear();
                 comboBox_MoveRedo.Items.Clear();
@@ -428,7 +433,7 @@ namespace MagicCube
         {
             button_SolveCorners.Enabled = false;
 
-            //Solution.PrecomputeMoves(6);
+            //Solution.PrecomputeCornerMoves(8);
             var path = solution.SolveCorners(cube.CornerKey);
 
             comboBox_MoveUndo.Items.Clear();
@@ -679,13 +684,14 @@ namespace MagicCube
                 for (MoveTrack path; (path = algorithm.RunOnce(cross)) != null;)
                 {
                     int a = cube.CountSolvedMiddles;
-                    path.PlayForward(cube);
+                    cube.PlayForward(path);
+                    cross.PlayForward(path);
+                    xcross.PlayForward(path);
+
                     total += path.Count;
                     int b = cube.CountSolvedMiddles;
                     textBox_Log.AppendText($"{a} -> {b}\r\n");
                     textBox_Log.AppendText($"{path.Count}: {path}\r\n");
-
-                    cross.Transform = path.PlayForward(new Cross(Cross.IDENTITY)).Transform;
 
                     Console.WriteLine(cross);
                 }
@@ -783,10 +789,11 @@ namespace MagicCube
 
             textBox_Log.AppendText(alg.ToString() + "\r\n");
 
-            alg.PlayForward(cube);
-            cross.Transform = alg.PlayForward(new Cross(Cross.IDENTITY)).Transform;
+            this.PlayForward(alg);
+            
             RepaintCube();
         }
+
 
         private void button_AddCommand_Click(object sender, EventArgs e)
         {

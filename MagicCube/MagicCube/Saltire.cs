@@ -47,6 +47,8 @@ namespace MagicCube
         //  Conversion from ulong to Saltire
         public static implicit operator Saltire(ulong i) => new Saltire(i);
 
+        public static IEnumerable<ulong> NextKeys(ulong src) => Faces.NextKeys<ulong, Saltire>(src, x => x, x => x);
+
         public Saltire(ulong key)
         {
             _key = key;

@@ -115,26 +115,6 @@ namespace MagicCube
             _track = string.Empty;
         }
 
-        public T Play<T>(T cube, int idx, bool backwards = false) where T : Faces.IRotatable => this[idx].Apply(cube, backwards);
-
-        public T PlayForward<T>(T cube) where T : Faces.IRotatable
-        {
-            for (int i = 0; i < Count; i++)
-            {
-                cube = Play(cube, i, false);
-            }
-            return cube;
-        }
-
-        public T PlayBackward<T>(T cube) where T : Faces.IRotatable
-        {
-            for (int i = Count; i-- > 0;)
-            {
-                cube = Play(cube, i, true);
-            }
-            return cube;
-        }
-
         public MoveTrack Clone(uint[] transform = null)
         {
             MoveTrack dst = new MoveTrack();
@@ -324,5 +304,26 @@ namespace MagicCube
         // IEnumerable interface implementation:
         public IEnumerator<Move> GetEnumerator() => new SimpleEnumerator<Move>(ToArray());
         IEnumerator  IEnumerable.GetEnumerator() => new SimpleEnumerator<Move>(ToArray());
+    }
+
+    public static class MoveTrackExtension
+    {
+        public static T PlayForward<T>(this T cube, MoveTrack track) where T : Faces.IRotatable
+        {
+            for (int i = 0; i < track.Count; i++)
+            {
+                cube = cube.MoveForward(track[i]);
+            }
+            return cube;
+        }
+
+        public static T PlayBackward<T>(this T cube, MoveTrack track) where T : Faces.IRotatable
+        {
+            for (int i = track.Count; i-- > 0;)
+            {
+                cube = cube.MoveBackward(track[i]);
+            }
+            return cube;
+        }
     }
 }

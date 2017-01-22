@@ -78,7 +78,7 @@ namespace MagicCube
             void RotateFace(uint face);
         }
 
-        public static IEnumerable<T> Moves<T>(T cube) where T : IRotatable
+        public static IEnumerable<T> NextCubes<T>(T cube) where T : IRotatable
         {
             for (uint face = 0; face < Count; face++)
             {
@@ -92,6 +92,22 @@ namespace MagicCube
                 yield return cube;
 
                 cube.RotateFace(face); // restore
+            }
+        }
+
+        public static IEnumerable<KeyValuePair<Move, T>> NextMoves<T>(T cube) where T : IRotatable
+        {
+            foreach(var pair in Utils.Index(NextCubes(cube)))
+            {
+                yield return new KeyValuePair<Move, T>(new Move((uint)pair.Key), pair.Value);
+            }
+        }
+
+        public static IEnumerable<K> NextKeys<K, T>(K key, Func<K, T> KtoT, Func<T, K> TtoK) where T : IRotatable
+        {
+            foreach (T dst in NextCubes(KtoT(key)))
+            {
+                yield return TtoK(dst);
             }
         }
     }

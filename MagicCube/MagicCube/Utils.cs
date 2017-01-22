@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,24 @@ namespace MagicCube
 {
     public static class Utils
     {
+        public static void Save<T>(this IEnumerable<T> list, string fname, Action<BinaryWriter, T> writer)
+        {
+            using (BinaryWriter bw = new BinaryWriter(File.Open(fname, FileMode.Create)))
+            {
+                foreach (T val in list)
+                {
+                    writer(bw, val);
+                }
+            }
+        }
+
+        public static int FindRow<T>(this List<List<T>> lists, T key)
+        {
+            int i = lists.Count;
+            while (i-- > 0 && lists[i].BinarySearch(key) < 0);
+            return i;
+        }
+
         public static void DistinctValues<T>(this List<T> list)
         {
             list.Sort();
