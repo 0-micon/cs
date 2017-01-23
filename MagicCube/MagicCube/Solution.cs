@@ -19,7 +19,7 @@ namespace MagicCube
 
         public Solution()
         {
-            middle_rings = LoadRings(7/* + 1*/, "middle_key_ring_", "ulong");
+            middle_rings = LoadRings(7/* + 1*/, "_middle_key_ring_", "ulong");
             corner_rings = LoadRings(7/* + 1*/, "corner_key_ring_", "ulong");
             cube_rings = LoadKeyRings(6 + 1, "key_ring_", "ulong");
 
@@ -48,6 +48,64 @@ namespace MagicCube
             }
 
             test.Save("long_sequences_new.txt");
+            //*/
+            /*//
+            var test_rings = LoadRings(7, "_middle_key_ring_", "ulong");
+            foreach(var ring in test_rings)
+            {
+                var set = new HashSet<ulong>();
+
+                foreach(ulong key in ring)
+                {
+                    ulong[] key_array = new ulong[Faces.Count];
+                    key_array[0] = key;
+
+                    Cross a = key;
+                    // move up to front
+                    a.RotateDU();
+                    a.RotateLR();
+                    key_array[1] = a;   // up
+
+                    a.RotateLR();
+                    a.RotateFB();
+                    key_array[2] = a;   // right
+
+                    a.RotateDU();
+                    a.RotateLR();
+                    key_array[3] = a;   // back
+
+                    a.RotateLR();
+                    a.RotateFB();
+                    key_array[4] = a;   // down
+
+                    a.RotateDU();
+                    a.RotateLR();
+                    key_array[5] = a;   // left
+
+                    foreach(ulong k in key_array)
+                    {
+                        Debug.Assert(ring.BinarySearch(k) >= 0);
+                    }
+
+                    ulong min_key = key_array.Min();
+                    set.Add(min_key);
+                    //Cross b = key;
+                    //b.RotateLR();
+                    //b.RotateFB();
+                    //b.RotateFB();
+                    //b.RotateFB();
+
+                    //ulong key_a = a;
+                    //ulong key_b = b;
+
+                    //Debug.Assert(ring.BinarySearch(key_a) >= 0);
+                    //Debug.Assert(key_b == key_a);
+                }
+                if(ring.Count > 6)
+                {
+                    Debug.Assert(set.Count < ring.Count);
+                }
+            }
             //*/
         }
 
@@ -95,12 +153,13 @@ namespace MagicCube
 
         public static List<List<ulong>> LoadRings(int capacity, string fname, string extension)
         {
-            List<List<ulong>> rings = new List<List<ulong>>(capacity);
-            ElementReader<ulong> reader = (br) => { return br.ReadUInt64(); };
+            var rings = new List<List<ulong>>(capacity);
 
             for(int i = 0; i < capacity; i++)
             {
-                rings.Add(LoadList(fname + i + "." + extension, reader, sizeof(ulong)));
+                var list = new List<ulong>();
+                list.Load(fname + $"{i}." + extension, sizeof(ulong), br => br.ReadUInt64());
+                rings.Add(list);
             }
             return rings;
         }
@@ -339,7 +398,7 @@ namespace MagicCube
             }
         }
 
-        public MoveTrack SolveMiddle(ulong middle_key, int max_depth)
+        public MoveTrack SolveMiddle(ulong middle_key, int depth)
         {
             List<ulong> ring = new List<ulong>();
             ring.Add(middle_key);
@@ -347,62 +406,65 @@ namespace MagicCube
             List<List<ulong>> l_rings = new List<List<ulong>>();
             l_rings.Add(ring);
 
-            Cube cube = new Cube();
+            int solved_count = (new Cross(middle_key)).CountSolvedCubelets;
+            MoveTrack solution = null;
 
             int reserved = 18;
-            for (int depth = 0; depth < max_depth; depth++)
+            while (--depth > 0)
             {
                 List<ulong> next_ring = null;
-                if (depth + 1 < max_depth)
+                if (depth > 1)
                 {
                     next_ring = new List<ulong>(reserved);
                 }
 
-                foreach (ulong key in ring)
+                foreach (ulong src_key in ring)
                 {
-                    cube.MiddleKey = key;
-                    foreach (var c in Faces.NextCubes(cube))
+                    foreach (ulong dst_key in Cross.NextKeys(src_key))
                     {
-                        ulong next_key = cube.MiddleKey;
-                        int pos = middle_rings.FindRow(next_key);
-                        if (pos >= 0)
+                        Cross dst_cube = dst_key;
+                        int pos = middle_rings.FindRow(dst_key);
+                        if (pos >= 0 || dst_cube.CountSolvedCubelets > solved_count)
                         {
-                            var solution = new MoveTrack();
-
-                            var test_cube = new Cube(cube.Key);
-
+                            solved_count = dst_cube.CountSolvedCubelets;
+                            solution = new MoveTrack();
                             for (int l = l_rings.Count; l-- > 0;)
                             {
-                                foreach (var pair in Faces.NextMoves(test_cube))
+                                foreach (var pair in Faces.NextMoves(dst_cube))
                                 {
-                                    if (l_rings[l].BinarySearch(test_cube.MiddleKey) >= 0)
+                                    if (l_rings[l].BinarySearch(pair.Value) >= 0)
                                     {
                                         solution.Add(pair.Key);
+                                        dst_cube = pair.Value;
                                         break;
                                     }
                                 }
                             }
 
                             solution = solution.Reverse();
-                            test_cube = new Cube(cube.Key);
-
+                            dst_cube = dst_key;
                             for (int r = pos; r-- > 0;)
                             {
-                                foreach (var pair in Faces.NextMoves(test_cube))
+                                foreach (var pair in Faces.NextMoves(dst_cube))
                                 {
-                                    if (middle_rings[r].BinarySearch(test_cube.MiddleKey) >= 0)
+                                    if (middle_rings[r].BinarySearch(pair.Value) >= 0)
                                     {
                                         solution.Add(pair.Key);
+                                        dst_cube = pair.Value;
                                         break;
                                     }
                                 }
                             }
                             solution.Trim();
-                            return solution;
+
+                            if (pos >= 0)
+                            {
+                                return solution;
+                            }
                         }
-                        else if (next_ring != null && l_rings.FindRow(next_key) < 0)
+                        else if (next_ring != null && l_rings.FindRow(dst_key) < 0)
                         {
-                            next_ring.Add(next_key);
+                            next_ring.Add(dst_key);
                         }
                     }
                 }
@@ -415,7 +477,7 @@ namespace MagicCube
                     ring = next_ring;
                 }
             }
-            return null;
+            return solution;
         }
 
         public List<CubeKey> Solve(CubeKey start_key, int max_depth)

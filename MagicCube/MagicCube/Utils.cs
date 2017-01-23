@@ -21,6 +21,33 @@ namespace MagicCube
             }
         }
 
+        public static IEnumerable<T> Load<T>(string fname, int element_size, Func<BinaryReader, T> reader)
+        {
+            using (BinaryReader br = new BinaryReader(File.Open(fname, FileMode.Open)))
+            {
+                long flength = (new FileInfo(fname)).Length;
+                for(int count = (int)(flength / element_size); count-- > 0;)
+                {
+                    yield return reader(br);
+                }
+            }
+        }
+
+        public static void Load<T>(this List<T> list, string fname, int element_size, Func<BinaryReader, T> reader)
+        {
+            using (BinaryReader br = new BinaryReader(File.Open(fname, FileMode.Open)))
+            {
+                long flength = (new FileInfo(fname)).Length;
+                int count = (int)(flength / element_size);
+                list.Capacity = list.Count + count;
+
+                while (count-- > 0)
+                {
+                    list.Add(reader(br));
+                }
+            }
+        }
+
         public static int FindRow<T>(this List<List<T>> lists, T key)
         {
             int i = lists.Count;

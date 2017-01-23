@@ -114,6 +114,9 @@ namespace MagicCube
             }
 
             g.DrawString(selected_cube.ToString(), Font, Brushes.Black, 0f, 0f);
+            g.DrawString($"Corners:{xcross.CountSolvedCubelets}", Font, Brushes.Black, 0f, 10f);
+            g.DrawString($"Middles:{cross.CountSolvedCubelets}",  Font, Brushes.Black, 0f, 20f);
+
         }
 
         private void panel_Cube_MouseUp(object sender, MouseEventArgs e)
@@ -301,12 +304,15 @@ namespace MagicCube
         {
             button_Solve_Middle.Enabled = false;
             //Solution.PrecomputeMiddleMoves(7);
-            var path = solution.SolveMiddle(cube.MiddleKey, 7);
+            //var path = solution.SolveMiddle(cube.MiddleKey, 7);
+            MoveTrack total = null;
+            var path = solution.SolveMiddle(cross, 7);
             if (path != null)
             {
+                total = path;
                 textBox_Log.AppendText($"{path.Count}: {path}\r\n");
-                cube.PlayForward(path);
-                cross.PlayForward(path);
+
+                this.PlayForward(path);
 
                 comboBox_MoveUndo.Items.Clear();
                 comboBox_MoveRedo.Items.Clear();
@@ -319,9 +325,38 @@ namespace MagicCube
                 }
                 //comboBox_MoveUndo.SelectedIndex = 0;
             }
+
+            SaltireAlgorithms alg = new SaltireAlgorithms();
+            alg.Add(new MoveTrack("L F2 R2 D2 R D2 R F2 L2 U2 L U2"));
+            alg.Add(new MoveTrack("U R U' L' U R' U' L"));
+            alg.Add(new MoveTrack("F D F' D' F D F' D' F D F' D'"));
+            alg.Add(new MoveTrack("R' D' R D' R' D2 R Y L D L' D L D2 L'"));
             
 
+            alg.Add(new MoveTrack("L F' R F L' F' R' F"));
+            alg.Add(new MoveTrack("D2 B' U2 B D2 B' U2 B"));
+            alg.Add(new MoveTrack("F U2 F' D2 F U2 F' D2"));
+            alg.Add(new MoveTrack("F2 U' B U F2 U' B' U"));
 
+            alg.Add(new MoveTrack("R' F R' B2 R F' R' B2 R2"));
+            alg.Add(new MoveTrack("D F' L2 F D' F' D L2 D' F"));
+
+            alg.Add(new MoveTrack("U' F2 U R' B2 R U' F2 U R' B2 R"));
+            alg.Add(new MoveTrack("U2 R' B D2 B' R U2 R' B D2 B' R"));
+            alg.Add(new MoveTrack("F2 U2 B R' B' R U2 F2 R' B R B'"));
+
+            for (path = alg.RunOnce(xcross); path != null; path = alg.RunOnce(xcross))
+            {
+                total = total + path;
+                textBox_Log.AppendText($"{path.Count}: {path}\r\n");
+                this.PlayForward(path);
+            }
+
+
+            if(total != null)
+            {
+                textBox_Log.AppendText($"Total {total.Count}: {total}\r\n");
+            }
 
             button_Solve_Middle.Enabled = true;
             RepaintCube();

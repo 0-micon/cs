@@ -230,5 +230,55 @@ namespace MagicCube
                 return count;
             }
         }
+
+        public ulong Transform
+        {
+            set
+            {
+                Uint5Array transform = value;
+                Uint5Array old_cross = _key;
+
+                for (uint i = 0; i < CUBELET_NUM; i++)
+                {
+                    uint pos = transform[i];
+                    uint oci = old_cross[i];
+
+                    if (pos < CUBELET_NUM)
+                    {
+                        _key[pos] = oci;
+                    }
+                    else if (pos < CUBELET_NUM * 2)
+                    {
+                        _key[pos - CUBELET_NUM] = Rotate_120(oci);
+                    }
+                    else
+                    {
+                        _key[pos - CUBELET_NUM * 2] = Rotate_240(oci);
+                    }
+                }
+            }
+
+            get
+            {
+                Uint5Array transform = 0;
+                for (uint i = 0; i < CUBELET_NUM; i++)
+                {
+                    uint pos = _key[i];
+                    if (pos < CUBELET_NUM)
+                    {
+                        transform[pos] = i;
+                    }
+                    else if (pos < CUBELET_NUM * 2)
+                    {
+                        transform[pos - CUBELET_NUM] = Rotate_120(i);
+                    }
+                    else
+                    {
+                        transform[pos - CUBELET_NUM * 2] = Rotate_240(i);
+                    }
+                }
+                return transform;
+            }
+        }
     }
 }

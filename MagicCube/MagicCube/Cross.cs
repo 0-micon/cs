@@ -183,20 +183,10 @@ namespace MagicCube
             ROTATE_LR = tmp;
         }
 
-        public static uint IsLeftFaceDown(uint face)
-        {
-            return ((face & 1) == 1) ? 1U : 0U;
-        }
+        public static uint IsLeftFaceDown (uint face) => ((face & 1) == 1) ? 1U : 0U;
+        public static uint IsRightFaceDown(uint face) => ((face & 1) == 1) ? 0U : 1U;
 
-        public static uint IsRightFaceDown(uint face)
-        {
-            return ((face & 1) == 1) ? 0U : 1U;
-        }
-
-        public static uint Rotate_180(uint index)
-        {
-            return index < CUBELET_NUM ? index + CUBELET_NUM : index - CUBELET_NUM; 
-        }
+        public static uint Rotate_180(uint index) => index < CUBELET_NUM ? index + CUBELET_NUM : index - CUBELET_NUM;
 
         public MiddleCubelet CubeletAt(uint face, uint down)
         {
