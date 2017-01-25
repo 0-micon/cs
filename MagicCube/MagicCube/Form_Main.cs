@@ -16,6 +16,7 @@ namespace MagicCube
         Cube cube = new Cube();
         Solution solution = new Solution();
         Algorithm algorithm = new Algorithm();
+        SaltireAlgorithms _xalgorithms = new SaltireAlgorithms();
         Cross cross = Cross.IDENTITY;
         Saltire xcross = Saltire.IDENTITY;
 
@@ -52,6 +53,7 @@ namespace MagicCube
             }
             //*/
             algorithm.Load("sequences.txt");
+            _xalgorithms.Load("_xsequences.txt");
         }
 
         public void RepaintCube()
@@ -326,31 +328,37 @@ namespace MagicCube
                 //comboBox_MoveUndo.SelectedIndex = 0;
             }
 
-            SaltireAlgorithms alg = new SaltireAlgorithms();
-            alg.Add(new MoveTrack("L F2 R2 D2 R D2 R F2 L2 U2 L U2"));
-            alg.Add(new MoveTrack("U R U' L' U R' U' L"));
-            alg.Add(new MoveTrack("F D F' D' F D F' D' F D F' D'"));
-            alg.Add(new MoveTrack("R' D' R D' R' D2 R Y L D L' D L D2 L'"));
-            
+            while (cross.CountSolvedCubelets == Cross.CUBELET_NUM)
+            {
+                path = solution.Solve2(cube.Key, 7);
 
-            alg.Add(new MoveTrack("L F' R F L' F' R' F"));
-            alg.Add(new MoveTrack("D2 B' U2 B D2 B' U2 B"));
-            alg.Add(new MoveTrack("F U2 F' D2 F U2 F' D2"));
-            alg.Add(new MoveTrack("F2 U' B U F2 U' B' U"));
+                if(path == null)
+                {
+                    path = _xalgorithms.RunOnce(xcross);
+                }
+                else if (path.Count > 0 && _xalgorithms.Add(path) > 0)
+                {
+                    _xalgorithms.Save("_xsequences.txt");
+                }
 
-            alg.Add(new MoveTrack("R' F R' B2 R F' R' B2 R2"));
-            alg.Add(new MoveTrack("D F' L2 F D' F' D L2 D' F"));
+                if(path == null || path.Count == 0)
+                {
+                    break;
+                }
 
-            alg.Add(new MoveTrack("U' F2 U R' B2 R U' F2 U R' B2 R"));
-            alg.Add(new MoveTrack("U2 R' B D2 B' R U2 R' B D2 B' R"));
-            alg.Add(new MoveTrack("F2 U2 B R' B' R U2 F2 R' B R B'"));
+                total = total + path;
+                textBox_Log.AppendText($"{path.Count}: {path}\r\n");
+                this.PlayForward(path);
+            }
 
-            for (path = alg.RunOnce(xcross); path != null; path = alg.RunOnce(xcross))
+            /*//
+            for (path = _xalgorithms.RunOnce(xcross); path != null; path = _xalgorithms.RunOnce(xcross))
             {
                 total = total + path;
                 textBox_Log.AppendText($"{path.Count}: {path}\r\n");
                 this.PlayForward(path);
             }
+            //*/
 
 
             if(total != null)
@@ -502,6 +510,8 @@ namespace MagicCube
                     comboBox_MoveUndo.Items.Add(move);
                 }
                 comboBox_MoveUndo.SelectedIndex = 0;
+
+                textBox_Log.AppendText($"Solution {path.Count}: {path}\r\n");
             }
 
             button_Solve.Enabled = true;
@@ -545,7 +555,7 @@ namespace MagicCube
             Debug.Assert(Faces.LeftFace(face) == Faces.Up);
             Debug.Assert(Faces.RightFace(face) == Faces.Down);
 
-            var last = solution.cube_rings[1];//.Last();
+            var last = solution._cube_rings[1];//.Last();
             if (++selected_cube >= last.Count)
             {
                 selected_cube = 0;
@@ -834,7 +844,8 @@ namespace MagicCube
         {
             //string command = textBox_Command.Text.ToUpper();
             MoveTrack track = new MoveTrack(textBox_Command.Text, checkBox_SingmasterNotation.Checked);
-            algorithm.Add(track);
+            //algorithm.Add(track);
+            _xalgorithms.Add(track);
             //algorithm.Add(track.Reverse());
             /*
             OpenFileDialog dlg = new OpenFileDialog();
@@ -847,7 +858,8 @@ namespace MagicCube
 
         private void button_SaveCommand_Click(object sender, EventArgs e)
         {
-            algorithm.Save("sequences.txt");
+            //algorithm.Save("sequences.txt");
+            _xalgorithms.Save("_xsequences.txt");
         }
 
         private void checkBox_SingmasterNotation_CheckedChanged(object sender, EventArgs e)

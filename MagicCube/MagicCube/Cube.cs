@@ -10,74 +10,6 @@ using System.Diagnostics;
 
 namespace MagicCube
 {
-    public class MiddleElement
-    {
-        uint face1, face2;
-        uint color1, color2;
-
-        public override string ToString()
-        {
-            return string.Format(
-                "{0}({1}:{2},{3}:{4})",
-                GetType().Name,
-                FaceInfo.items[face1].name,
-                FaceInfo.items[color1].color,
-                FaceInfo.items[face2].name,
-                FaceInfo.items[color2].color
-            );
-        }
-
-        public MiddleElement(uint face1, uint color1, uint face2, uint color2)
-        {
-            if(face1 <= face2)
-            {
-                this.face1 = face1;
-                this.face2 = face2;
-                this.color1 = color1;
-                this.color2 = color2;
-            }
-            else
-            {
-                this.face1 = face2;
-                this.face2 = face1;
-                this.color1 = color2;
-                this.color2 = color1;
-            }
-        }
-
-        public uint Face1
-        {
-            get
-            {
-                return face1;
-            }
-        }
-
-        public uint Face2
-        {
-            get
-            {
-                return face2;
-            }
-        }
-
-        public uint Color1
-        {
-            get
-            {
-                return color1;
-            }
-        }
-
-        public uint Color2
-        {
-            get
-            {
-                return color2;
-            }
-        }
-    }
-
     public class Cube : Faces.IRotatable
     {
         static readonly uint[,] LAYOUT;
@@ -173,7 +105,7 @@ namespace MagicCube
 
             public override string ToString()
             {
-                return FaceInfo.items[Face].name + ", " + Turn + " time(s)";
+                return $"{Faces.Acronym[(int)Face]} , {Turn} time(s)";
             }
 
             public static Move KeysToMove(CubeKey src_key, CubeKey dst_key)
@@ -465,39 +397,6 @@ namespace MagicCube
                 nme = NeighbourMiddleElementAt(face, i, nme);
                 nce = NeighbourCornerElementAt(face, i, nce);
                 snc = SecondNeighbourCornerElementAt(face, i, snc);
-            }
-        }
-
-        public IEnumerable<MiddleElement> MiddleElements()
-        {
-            for(uint face1 = 0; face1 < Faces.Count; face1++)
-            {
-                uint direction = Direction.UP;
-                uint color1 = MiddleElementAt(face1, direction);
-                uint face2 = LAYOUT[face1, direction];
-                uint color2 = NeighbourMiddleElementAt(face1, direction);
-
-                yield return new MiddleElement(face1, color1, face2, color2);
-
-                direction = Direction.DOWN;
-                color1 = MiddleElementAt(face1, direction);
-                face2 = LAYOUT[face1, direction];
-                color2 = NeighbourMiddleElementAt(face1, direction);
-
-                yield return new MiddleElement(face1, color1, face2, color2);
-            }
-        }
-
-        public IEnumerable<MiddleElement> MiddleDiff(Cube other)
-        {
-            foreach(MiddleElement me in MiddleElements())
-            {
-                uint direction = NEIGHBOUR_POS[me.Face1, me.Face2];
-                if (me.Color1 != other.MiddleElementAt(me.Face1, direction) ||
-                    me.Color2 != other.NeighbourMiddleElementAt(me.Face1, direction))
-                {
-                    yield return me;
-                }
             }
         }
 

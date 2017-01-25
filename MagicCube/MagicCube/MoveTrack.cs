@@ -13,7 +13,7 @@ namespace MagicCube
         string _track;
 
         static SearchTree _substitute;
-        static string _substitute_fname = "substitutes.txt";
+        static string _substitute_fname = @"..\..\..\substitutes.txt";
 
         static MoveTrack()
         {

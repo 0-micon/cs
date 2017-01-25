@@ -69,5 +69,10 @@ namespace MagicCube
                 return (corners < other.corners) ? -1 : 1;
             }
         }
+
+        public override string ToString()
+        {
+            return $"{corners}:{middles}";
+        }
     }
 }

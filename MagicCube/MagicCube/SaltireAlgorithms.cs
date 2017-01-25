@@ -83,5 +83,53 @@ namespace MagicCube
             return dst_track;
         }
 
+        public void Save(string fname)
+        {
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(fname))
+            {
+                HashSet<ulong> done = new HashSet<ulong>();
+                foreach (KeyValuePair<ulong, MoveTrack> pair in _tracks)
+                {
+                    if (!done.Contains(pair.Key))
+                    {
+                        done.Add(pair.Key);
+
+                        Saltire cross = Saltire.IDENTITY;
+                        cross.Transform = pair.Key;
+
+                        int count = (int)Saltire.CUBELET_NUM - cross.CountSolvedCubelets;
+
+                        file.Write(pair.Value.Count);
+                        file.Write(';');
+                        file.Write(pair.Value.Track);
+                        file.Write(';');
+                        file.Write(count);
+                        file.Write(';');
+                        file.Write(pair.Key);
+                        file.Write('\n');
+
+                        foreach (var child in AllTransforms(pair.Value))
+                        {
+                            done.Add(child.Key);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void Load(string fname)
+        {
+            using (System.IO.StreamReader file = new System.IO.StreamReader(fname))
+            {
+                for (string buf; (buf = file.ReadLine()) != null;)
+                {
+                    string[] arr = buf.Split(';');
+                    if (arr.Length > 1)
+                    {
+                        Add(new MoveTrack(arr[1], false));
+                    }
+                }
+            }
+        }
     }
 }

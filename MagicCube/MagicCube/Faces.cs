@@ -110,6 +110,21 @@ namespace MagicCube
                 yield return TtoK(dst);
             }
         }
+
+        public static K RandomKey<K, T>(K key, Func<K, T> KtoT, Func<T, K> TtoK) where T : IRotatable
+        {
+            T cube = KtoT(key);
+
+            Random rnd = new Random();
+            int count = rnd.Next(100, 1000);
+            while(--count > 0)
+            {
+                uint face = (uint)rnd.Next((int)Count);
+                cube.RotateFace(face);
+
+            }
+            return TtoK(cube);
+        }
     }
 
     public class Rotator

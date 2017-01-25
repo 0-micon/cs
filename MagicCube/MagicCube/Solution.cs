@@ -12,16 +12,16 @@ namespace MagicCube
     public class Solution
     {
 
-        internal List<List<ulong>> middle_rings;
-        internal List<List<ulong>> corner_rings;
-        internal List<List<CubeKey>> cube_rings;
+        internal List<List<ulong>> _middle_rings;
+        internal List<List<ulong>> _corner_rings;
+        internal List<List<CubeKey>> _cube_rings;
 
 
         public Solution()
         {
-            middle_rings = LoadRings(7/* + 1*/, "_middle_key_ring_", "ulong");
-            corner_rings = LoadRings(7/* + 1*/, "corner_key_ring_", "ulong");
-            cube_rings = LoadKeyRings(6 + 1, "key_ring_", "ulong");
+            _middle_rings = LoadRings(7/* + 1*/, "_middle_key_ring_", "ulong");
+            _corner_rings = LoadRings(7/* + 1*/, "corner_key_ring_", "ulong");
+            _cube_rings = LoadKeyRings(6 + 1, "key_ring_", "ulong");
 
             // SaveShortSequences("short_sequences.txt");
             //SaveNextSequences("next_sequences.txt");
@@ -353,7 +353,7 @@ namespace MagicCube
                     foreach (var c in Faces.NextCubes(cube))
                     {
                         ulong next_key = cube.CornerKey;
-                        int pos = corner_rings.FindRow(next_key);
+                        int pos = _corner_rings.FindRow(next_key);
                         if (pos >= 0)
                         {
                             List<ulong> solution = new List<ulong>();
@@ -376,7 +376,7 @@ namespace MagicCube
                             {
                                 foreach (ulong prev_key in Cube.NextCornerKeys(solution.Last()))
                                 {
-                                    if (corner_rings[r].BinarySearch(prev_key) >= 0)
+                                    if (_corner_rings[r].BinarySearch(prev_key) >= 0)
                                     {
                                         solution.Add(prev_key);
                                         break;
@@ -399,6 +399,11 @@ namespace MagicCube
         }
 
         public MoveTrack SolveMiddle(ulong middle_key, int depth)
+        {
+            return SolveMiddle(middle_key, depth, _middle_rings);
+        }
+
+        public static MoveTrack SolveMiddle(ulong middle_key, int depth, List<List<ulong>> dst_rings)
         {
             List<ulong> ring = new List<ulong>();
             ring.Add(middle_key);
@@ -423,7 +428,7 @@ namespace MagicCube
                     foreach (ulong dst_key in Cross.NextKeys(src_key))
                     {
                         Cross dst_cube = dst_key;
-                        int pos = middle_rings.FindRow(dst_key);
+                        int pos = dst_rings.FindRow(dst_key);
                         if (pos >= 0 || dst_cube.CountSolvedCubelets > solved_count)
                         {
                             solved_count = dst_cube.CountSolvedCubelets;
@@ -447,7 +452,7 @@ namespace MagicCube
                             {
                                 foreach (var pair in Faces.NextMoves(dst_cube))
                                 {
-                                    if (middle_rings[r].BinarySearch(pair.Value) >= 0)
+                                    if (dst_rings[r].BinarySearch(pair.Value) >= 0)
                                     {
                                         solution.Add(pair.Key);
                                         dst_cube = pair.Value;
@@ -517,7 +522,7 @@ namespace MagicCube
                     {
                         CubeKey next_key = new CubeKey(cube);
 
-                        int pos = cube_rings.FindRow(next_key);
+                        int pos = _cube_rings.FindRow(next_key);
                         if (pos >= 0 ||
                             (next_key.corners == corner_key && l_rings.FindRow(next_key) < 0 && middle_count < cube.CountSolvedMiddles))
                         {
@@ -545,7 +550,7 @@ namespace MagicCube
                                 foreach (uint prev_move in c.Moves())
                                 {
                                     CubeKey prev_key = new CubeKey(c);
-                                    if (cube_rings[r].BinarySearch(prev_key) >= 0)
+                                    if (_cube_rings[r].BinarySearch(prev_key) >= 0)
                                     {
                                         solution.Add(prev_key);
                                         break;
@@ -572,6 +577,52 @@ namespace MagicCube
             return null;
         }
 
+        public static MoveTrack SolveCube(CubeKey start_key, int depth, List<List<CubeKey>> dst_rings)
+        {
+            List<CubeKey> ring = new List<CubeKey>();
+            ring.Add(start_key);
+
+            List<List<CubeKey>> l_rings = new List<List<CubeKey>>();
+            l_rings.Add(ring);
+
+            int reserved = 18;
+            while (--depth > 0)
+            {
+                List<CubeKey> next_ring = null;
+                if (depth > 0)
+                {
+                    next_ring = new List<CubeKey>(reserved);
+                }
+
+                foreach (CubeKey key in ring)
+                {
+                    foreach (CubeKey next_key in FastCube.NextKeys(key))
+                    {
+                        int pos = dst_rings.FindRow(next_key);
+                        if (pos >= 0)
+                        {
+                            MoveTrack solution = GetPath<CubeKey, FastCube>(next_key, l_rings, l_rings.Count - 1, -1, x=>x, x=>x);
+                            solution = solution.Reverse();
+                            solution += GetPath<CubeKey, FastCube>(next_key, dst_rings, dst_rings.Count - 1, -1, x=>x, x=>x);
+
+                            return solution;
+                        }
+                        else if (next_ring != null && l_rings.FindRow(next_key) < 0)
+                        {
+                            next_ring.Add(next_key);
+                        }
+                    }
+                }
+
+                reserved = next_ring.Count * 13;
+                next_ring.DistinctValues();
+                l_rings.Add(next_ring);
+                ring = next_ring;
+            }
+            return null;
+        }
+
+
         public MoveTrack Solve2(CubeKey start_key, int max_level)
         {
             List<CubeKey> ring = new List<CubeKey>();
@@ -583,9 +634,14 @@ namespace MagicCube
             Cube cube = new Cube();
 
             int reserved = 18;
-            while (true)
+            while (--max_level > 0)
             {
-                List<CubeKey> next_ring = new List<CubeKey>(reserved);
+                List<CubeKey> next_ring = null;
+                if (max_level > 0)
+                {
+                    next_ring = new List<CubeKey>(reserved);
+                }
+
                 foreach (CubeKey key in ring)
                 {
                     cube.Key = key;
@@ -594,17 +650,19 @@ namespace MagicCube
                     {
                         CubeKey next_key = cube.Key;
 
-                        int pos = cube_rings.FindRow(next_key);
+                        int pos = _cube_rings.FindRow(next_key);
                         if (pos >= 0)
                         {
                             MoveTrack solution = new MoveTrack();
                             GetMoveTrack(next_key, solution, l_rings, l_rings.Count - 1, -1);
                             solution = solution.Reverse();
-                            GetMoveTrack(next_key, solution, cube_rings, cube_rings.Count - 1, -1);
+                            GetMoveTrack(next_key, solution, _cube_rings, _cube_rings.Count - 1, -1);
+
+                            solution.Trim();
 
                             return solution;
                         }
-                        else if (l_rings.FindRow(next_key) < 0)
+                        else if (next_ring != null && l_rings.FindRow(next_key) < 0)
                         {
                             next_ring.Add(next_key);
                         }
@@ -615,12 +673,56 @@ namespace MagicCube
                 next_ring.DistinctValues();
                 l_rings.Add(next_ring);
                 ring = next_ring;
-
-                if (reserved > 10000000 || l_rings.Count + cube_rings.Count >= max_level)
-                {
-                    return null;
-                }
             }
+            return null;
+        }
+
+        public MoveTrack Solve3(FastCube start_key, int max_level)
+        {
+            List<CubeKey> ring = new List<CubeKey>();
+            ring.Add(start_key);
+
+            List<List<CubeKey>> l_rings = new List<List<CubeKey>>();
+            l_rings.Add(ring);
+
+            int reserved = 18;
+            while (--max_level > 0)
+            {
+                List<CubeKey> next_ring = null;
+                if (max_level > 0)
+                {
+                    next_ring = new List<CubeKey>(reserved);
+                }
+
+                foreach (CubeKey src_key in ring)
+                {
+                    foreach (CubeKey dst_key in FastCube.NextKeys(src_key))
+                    {
+                        int pos = _cube_rings.FindRow(dst_key);
+                        if (pos >= 0)
+                        {
+                            MoveTrack solution = new MoveTrack();
+                            GetMoveTrack(dst_key, solution, l_rings, l_rings.Count - 1, -1);
+                            solution = solution.Reverse();
+                            GetMoveTrack(dst_key, solution, _cube_rings, _cube_rings.Count - 1, -1);
+
+                            solution.Trim();
+
+                            return solution;
+                        }
+                        else if (next_ring != null && l_rings.FindRow(dst_key) < 0)
+                        {
+                            next_ring.Add(dst_key);
+                        }
+                    }
+                }
+
+                reserved = next_ring.Count * 13;
+                next_ring.DistinctValues();
+                l_rings.Add(next_ring);
+                ring = next_ring;
+            }
+            return null;
         }
 
         public void SaveShortSequences(string fname)
@@ -628,9 +730,9 @@ namespace MagicCube
             Algorithm alg = new Algorithm();
             ulong corner_key = (new Cube()).CornerKey;
 
-            for(int i = 1; i < cube_rings.Count; i++)
+            for(int i = 1; i < _cube_rings.Count; i++)
             {
-                foreach(CubeKey key in cube_rings[i])
+                foreach(CubeKey key in _cube_rings[i])
                 {
                     if(key.corners == corner_key)
                     {
@@ -645,7 +747,7 @@ namespace MagicCube
                             foreach(uint move in cube.Moves())
                             {
                                 CubeKey dst_key = new CubeKey(cube);
-                                if (cube_rings[j].BinarySearch(dst_key) >= 0)
+                                if (_cube_rings[j].BinarySearch(dst_key) >= 0)
                                 {
                                     src_key = dst_key;
                                     track.Add(new Move(move));
@@ -669,9 +771,9 @@ namespace MagicCube
             Algorithm alg = new Algorithm();
             ulong middle_key = (new Cube()).MiddleKey;
 
-            for (int i = 1; i < cube_rings.Count; i++)
+            for (int i = 1; i < _cube_rings.Count; i++)
             {
-                foreach (CubeKey key in cube_rings[i])
+                foreach (CubeKey key in _cube_rings[i])
                 {
                     if (key.middles == middle_key)
                     {
@@ -684,7 +786,7 @@ namespace MagicCube
                             foreach (uint move in cube.Moves())
                             {
                                 CubeKey dst_key = cube.Key;
-                                if (cube_rings[j].BinarySearch(dst_key) >= 0)
+                                if (_cube_rings[j].BinarySearch(dst_key) >= 0)
                                 {
                                     src_key = dst_key;
                                     track.Add(new Move(move));
@@ -709,7 +811,7 @@ namespace MagicCube
             Cube cube = new Cube();
             ulong corner_key = cube.CornerKey;
             
-            foreach (CubeKey key in cube_rings.Last())
+            foreach (CubeKey key in _cube_rings.Last())
             {
                 cube.CornerKey = key.corners;
                 cube.MiddleKey = key.middles;
@@ -717,10 +819,10 @@ namespace MagicCube
                 foreach(uint index in cube.Moves())
                 {
                     CubeKey src_key = new CubeKey(cube);
-                    if (src_key.corners == corner_key && cube_rings.FindRow(src_key) < 0)
+                    if (src_key.corners == corner_key && _cube_rings.FindRow(src_key) < 0)
                     {
                         MoveTrack track = new MoveTrack();
-                        GetMoveTrack(src_key, track, cube_rings, cube_rings.Count - 1, -1);
+                        GetMoveTrack(src_key, track, _cube_rings, _cube_rings.Count - 1, -1);
                         alg.Add(track);
                         alg.Add(track.Reverse());
                         break; // foreach move
@@ -751,7 +853,7 @@ namespace MagicCube
 
                     CubeKey key = new CubeKey(cube);
 
-                    if (cube_rings.FindRow(key) < 0)
+                    if (_cube_rings.FindRow(key) < 0)
                     {
                         //Debug.Assert(!alg_src.tracks.ContainsKey(key));
                         keyset.Add(key);
@@ -795,6 +897,26 @@ namespace MagicCube
             alg_dst.Save(fname_dst);
         }
 
+
+        public static MoveTrack GetPath<K, T>(K key, List<List<K>> rings, int start_ring, int stop_ring, Func<K, T> KtoT, Func<T, K> TtoK) where T : Faces.IRotatable
+        {
+            MoveTrack path = new MoveTrack();
+            for (int i = start_ring; i != stop_ring; i += (i > stop_ring ? -1 : 1))
+            {
+                foreach (var pair in Faces.NextMoves(KtoT(key)))
+                {
+                    K dst_key = TtoK(pair.Value);
+                    if (rings[i].BinarySearch(dst_key) >= 0)
+                    {
+                        key = dst_key;
+                        path.Add(pair.Key);
+                        break;
+                    }
+                }
+            }
+            return path;
+        }
+
         public static void GetMoveTrack(CubeKey key, MoveTrack track, List<List<CubeKey>> rings, int start_ring, int stop_ring)
         {
             Cube cube = new Cube();
@@ -818,7 +940,7 @@ namespace MagicCube
         public MoveTrack Analyze2(MoveTrack path, int depth)
         {
             //for(int length = path.Count; length >= depth + cube_rings.Count; length--)
-            for (int length = depth + cube_rings.Count; length <= path.Count; length++)
+            for (int length = depth + _cube_rings.Count; length <= path.Count; length++)
             {
                 for (int i = 0; i <= path.Count - length; i++)
                 //for (int i = path.Count - length; i >= 0; i--)
@@ -827,7 +949,7 @@ namespace MagicCube
 
                     Cube cube = (new Cube()).PlayBackward(test);
 
-                    MoveTrack result = Solve2(cube.Key, depth + cube_rings.Count);
+                    MoveTrack result = Solve2(cube.Key, depth + _cube_rings.Count);
                     if(result != null)
                     {
                         Debug.Assert(result.Count < test.Count);
@@ -856,7 +978,7 @@ namespace MagicCube
                 rings[i] = ComputeMoves(depth - 1, cube.Key);
                 cube.MoveForward(path[i]);
             }
-            rings[count] = cube_rings.GetRange(0, depth);
+            rings[count] = _cube_rings.GetRange(0, depth);
 
             for(int i = 0; i < count - depth; i++)
             {
