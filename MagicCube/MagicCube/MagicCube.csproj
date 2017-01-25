@@ -49,12 +49,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithm.cs" />
-    <Compile Include="Cross.cs" />
-    <Compile Include="Cube.cs" />
-    <Compile Include="CubeGeneralSolution.cs" />
-    <Compile Include="CubeKey.cs" />
-    <Compile Include="Direction.cs" />
+    <Compile Include="Algorithms\Algorithm.cs" />
+    <Compile Include="Cube\Cross.cs" />
+    <Compile Include="Cube\Cube.cs" />
+    <Compile Include="Algorithms\CubeGeneralSolution.cs" />
+    <Compile Include="Cube\CubeKey.cs" />
+    <Compile Include="General\Direction.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="FaceColorForm.cs">
       <SubType>Form</SubType>
@@ -62,26 +62,26 @@
     <Compile Include="FaceColorForm.Designer.cs">
       <DependentUpon>FaceColorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="FaceInfo.cs" />
-    <Compile Include="Faces.cs" />
-    <Compile Include="FastCube.cs" />
+    <Compile Include="General\FaceInfo.cs" />
+    <Compile Include="General\Faces.cs" />
+    <Compile Include="Cube\FastCube.cs" />
     <Compile Include="Form_Main.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form_Main.Designer.cs">
       <DependentUpon>Form_Main.cs</DependentUpon>
     </Compile>
-    <Compile Include="GeneralSolution.cs" />
-    <Compile Include="Move.cs" />
-    <Compile Include="MoveTrack.cs" />
+    <Compile Include="Algorithms\GeneralSolution.cs" />
+    <Compile Include="Cube\Move.cs" />
+    <Compile Include="Cube\MoveTrack.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Saltire.cs" />
-    <Compile Include="SaltireAlgorithms.cs" />
-    <Compile Include="SearchTree.cs" />
-    <Compile Include="Solution.cs" />
-    <Compile Include="Uint5Array.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Cube\Saltire.cs" />
+    <Compile Include="Algorithms\SaltireAlgorithms.cs" />
+    <Compile Include="Algorithms\SearchTree.cs" />
+    <Compile Include="Algorithms\Solution.cs" />
+    <Compile Include="Common\Uint5Array.cs" />
+    <Compile Include="Common\Utils.cs" />
     <EmbeddedResource Include="FaceColorForm.resx">
       <DependentUpon>FaceColorForm.cs</DependentUpon>
     </EmbeddedResource>
