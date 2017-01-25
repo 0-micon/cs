@@ -198,10 +198,10 @@ namespace MagicCube
         {
             switch (direction)
             {
-                case Direction.UP:    return CubeletAt(face, 0).FaceColor;
-                case Direction.DOWN:  return CubeletAt(face, 1).FaceColor;
-                case Direction.LEFT:  return CubeletAt(Faces.LeftFace(face),   face & 1     ).HeadColor;
-                case Direction.RIGHT: return CubeletAt(Faces.RightFace(face), (face & 1) ^ 1).HeadColor;
+                case Directions.Up:    return CubeletAt(face, 0).FaceColor;
+                case Directions.Down:  return CubeletAt(face, 1).FaceColor;
+                case Directions.Left:  return CubeletAt(Faces.LeftFace(face),   face & 1     ).HeadColor;
+                case Directions.Right: return CubeletAt(Faces.RightFace(face), (face & 1) ^ 1).HeadColor;
             }
             throw new ArgumentOutOfRangeException("direction");
         }

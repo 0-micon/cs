@@ -17,10 +17,10 @@ namespace MagicCube
 
         static Cube()
         {
-            uint[,] lt = new uint[Faces.Count, Direction.TURN_COUNT];
+            uint[,] lt = new uint[Faces.Count, Directions.Count];
             for (uint face = 0; face < Faces.Count; face++)
             {
-                for (uint direction = 0; direction < Direction.TURN_COUNT; direction++)
+                for (uint direction = 0; direction < Directions.Count; direction++)
                 {
                     lt[face, direction] = Faces.Neighbour(face, direction);
                 }
@@ -30,7 +30,7 @@ namespace MagicCube
             uint[,] np = new uint[Faces.Count, Faces.Count];
             for (uint face = 0; face < Faces.Count; face++)
             {
-                foreach (uint direction in Direction.Items())
+                foreach (uint direction in Directions.All())
                 {
                     uint neighbour = LAYOUT[face, direction];
                     np[face, neighbour] = direction;
@@ -95,11 +95,11 @@ namespace MagicCube
             {
                 get
                 {
-                    return (move / Faces.Count) % Direction.TURN_COUNT;
+                    return (move / Faces.Count) % Directions.Count;
                 }
                 set
                 {
-                    move = Face + Faces.Count * (value % Direction.TURN_COUNT);
+                    move = Face + Faces.Count * (value % Directions.Count);
                 }
             }
 
@@ -148,9 +148,9 @@ namespace MagicCube
             for (uint i = 0; i < Faces.Count; i++)
             {
                 uint start = (i + shift) % Faces.Count;
-                for(uint j = 0; j < Direction.TURN_COUNT; j++)
+                for(uint j = 0; j < Directions.Count; j++)
                 {
-                    uint me = middle_elements[start * Direction.TURN_COUNT + j];
+                    uint me = middle_elements[start * Directions.Count + j];
                     key *= Faces.Count;
                     key += (Faces.Count + me - shift) % Faces.Count;
                 }
@@ -222,16 +222,16 @@ namespace MagicCube
         {
             ulong key = 0;
             // front
-            foreach(uint direction in Direction.Items())
+            foreach(uint direction in Directions.All())
             {
                 key *= Faces.Count;
                 key += order[CornerElementAt(face, direction)];
             }
             // neighbours
-            foreach (uint direction in Direction.Items())
+            foreach (uint direction in Directions.All())
             {
                 uint nface = LAYOUT[face, direction];
-                foreach(uint ndirection in Direction.Items())
+                foreach(uint ndirection in Directions.All())
                 {
                     key *= Faces.Count;
                     key += order[CornerElementAt(nface, ndirection)];
@@ -239,7 +239,7 @@ namespace MagicCube
             }
             // back
             face = (face + 3) % Faces.Count;
-            foreach (uint direction in Direction.Items())
+            foreach (uint direction in Directions.All())
             {
                 key *= Faces.Count;
                 key += order[CornerElementAt(face, direction)];
@@ -331,14 +331,14 @@ namespace MagicCube
         {
             uint neighbour = LAYOUT[face, direction];
             uint neighbour_direction = NEIGHBOUR_POS[neighbour, face];
-            return CornerElementAt(neighbour, Direction.TurnLeft(neighbour_direction));
+            return CornerElementAt(neighbour, Directions.TurnLeft(neighbour_direction));
         }
 
         public uint SecondNeighbourCornerElementAt(uint face, uint direction, uint value)
         {
             uint neighbour = LAYOUT[face, direction];
             uint neighbour_direction = NEIGHBOUR_POS[neighbour, face];
-            return CornerElementAt(neighbour, Direction.TurnLeft(neighbour_direction), value);
+            return CornerElementAt(neighbour, Directions.TurnLeft(neighbour_direction), value);
         }
 
         public uint MiddleElementAt(uint face, uint direction)
@@ -372,13 +372,13 @@ namespace MagicCube
 
         static uint FaceIndex(uint face)
         {
-            return face * Direction.TURN_COUNT;
+            return face * Directions.Count;
         }
 
         public void RotateFace(uint face)
         {
             // Rotate clockwise: 0,1,2,3 => 3,0,1,2
-            const uint last = Direction.TURN_COUNT - 1;
+            const uint last = Directions.Count - 1;
 
             // self
             uint me = MiddleElementAt(face, last);
@@ -389,7 +389,7 @@ namespace MagicCube
             uint nce = NeighbourCornerElementAt(face, last);
             uint snc = SecondNeighbourCornerElementAt(face, last);
 
-            foreach (uint i in Direction.Items())
+            foreach (uint i in Directions.All())
             {
                 me = MiddleElementAt(face, i, me);
                 ce = CornerElementAt(face, i, ce);
@@ -407,14 +407,14 @@ namespace MagicCube
                 int count = 0;
                 for (uint face1 = 0; face1 < Faces.Count; face1++)
                 {
-                    uint direction = Direction.UP;
+                    uint direction = Directions.Up;
                     if (face1 == MiddleElementAt(face1, direction) &&
                         LAYOUT[face1, direction] == NeighbourMiddleElementAt(face1, direction))
                     {
                         count++;
                     }
 
-                    direction = Direction.DOWN;
+                    direction = Directions.Down;
                     if (face1 == MiddleElementAt(face1, direction) &&
                         LAYOUT[face1, direction] == NeighbourMiddleElementAt(face1, direction))
                     {
@@ -439,7 +439,7 @@ namespace MagicCube
                 int count = 0;
                 for (uint face1 = 0; face1 < Faces.Count; face1++)
                 {
-                    uint direction = Direction.UP;
+                    uint direction = Directions.Up;
 
                     uint ce = CornerElementAt(face1, direction);
                     uint ne = NeighbourCornerElementAt(face1, direction);
@@ -447,15 +447,15 @@ namespace MagicCube
 
                     if (face1 == CornerElementAt(face1, direction) &&
                         LAYOUT[face1, direction] == NeighbourCornerElementAt(face1, direction) &&
-                        LAYOUT[face1, Direction.TurnLeft(direction)] == SecondNeighbourCornerElementAt(face1, direction))
+                        LAYOUT[face1, Directions.TurnLeft(direction)] == SecondNeighbourCornerElementAt(face1, direction))
                     {
                         count++;
                     }
 
-                    direction = Direction.DOWN;
+                    direction = Directions.Down;
                     if (face1 == CornerElementAt(face1, direction) &&
                         LAYOUT[face1, direction] == NeighbourCornerElementAt(face1, direction) &&
-                        LAYOUT[face1, Direction.TurnLeft(direction)] == SecondNeighbourCornerElementAt(face1, direction))
+                        LAYOUT[face1, Directions.TurnLeft(direction)] == SecondNeighbourCornerElementAt(face1, direction))
                     {
                         count++;
                     }
@@ -480,9 +480,9 @@ namespace MagicCube
 
             Cube c = new Cube();
 
-            foreach (uint d in Direction.Items())
+            foreach (uint d in Directions.All())
             {
-                uint u = Direction.TurnAround(d);
+                uint u = Directions.TurnAround(d);
 
                 c.MiddleElementAt(Faces.Front, d, dict[MiddleElementAt(Faces.Left, d)]);
                 c.MiddleElementAt(Faces.Up, u, dict[MiddleElementAt(Faces.Front, d)]);
@@ -519,7 +519,7 @@ namespace MagicCube
             }
 
             const uint last = Faces.Count - 1;
-            for (uint src_dir = 0; src_dir < Direction.TURN_COUNT; src_dir++)
+            for (uint src_dir = 0; src_dir < Directions.Count; src_dir++)
             {
                 uint me = MiddleElementAt(last, src_dir);
                 uint ce = CornerElementAt(last, src_dir);
@@ -529,7 +529,7 @@ namespace MagicCube
                     ce = CornerElementAt(face, src_dir, ce);
                 }
             }
-            for (uint src_dir = 0; src_dir < Direction.TURN_COUNT; src_dir++)
+            for (uint src_dir = 0; src_dir < Directions.Count; src_dir++)
             {
                 uint me = MiddleElementAt(last, src_dir);
                 uint ce = CornerElementAt(last, src_dir);
@@ -548,10 +548,10 @@ namespace MagicCube
 
             uint[] order = { Faces.Down, Faces.Front, Faces.Right, Faces.Up, Faces.Back, Faces.Left };
 
-            foreach(uint direction in Direction.Items())
+            foreach(uint direction in Directions.All())
             {
-                uint dir_right = Direction.TurnRight(direction);
-                uint dir_left = Direction.TurnLeft(direction);
+                uint dir_right = Directions.TurnRight(direction);
+                uint dir_left = Directions.TurnLeft(direction);
 
                 // Left -> clockwise
                 tmp.MiddleElementAt(Faces.Left, dir_right, order[MiddleElementAt(Faces.Left, direction)]);
@@ -607,9 +607,9 @@ namespace MagicCube
                 }
             }
 
-            for (uint direction = 0; direction < Direction.TURN_COUNT; direction++)
+            for (uint direction = 0; direction < Directions.Count; direction++)
             {
-                uint mirror = Direction.TurnAround(direction);
+                uint mirror = Directions.TurnAround(direction);
 
                 MiddleElementAt(face_b, direction,
                     MiddleElementAt(face_a, mirror,

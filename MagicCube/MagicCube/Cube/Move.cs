@@ -9,7 +9,7 @@ namespace MagicCube
 {
     public struct Move
     {
-        const uint TURN_NUM = Direction.TURN_COUNT - 1;
+        const uint TURN_NUM = Directions.Count - 1;
 
         uint move_index;
 
@@ -42,13 +42,13 @@ namespace MagicCube
             get
             {
                 uint t = Turn;
-                if (t == Direction.LEFT)
+                if (t == Directions.Left)
                 {
-                    t = Direction.RIGHT;
+                    t = Directions.Right;
                 }
-                else if (t == Direction.RIGHT)
+                else if (t == Directions.Right)
                 {
-                    t = Direction.LEFT;
+                    t = Directions.Left;
                 }
                 return t;
             }

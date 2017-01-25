@@ -63,7 +63,7 @@ namespace MagicCube
                     int i = Faces.Acronym.IndexOf(ch);
                     if (i >= 0)
                     {
-                        sb.Append((new Move((uint)i, Direction.RIGHT)).ToChar());
+                        sb.Append((new Move((uint)i, Directions.Right)).ToChar());
                     }
                     else if (sb.Length > 0)
                     {
@@ -71,11 +71,11 @@ namespace MagicCube
                         if (ch == '\'' || ch == '3')
                         {
                             
-                            sb[last] = (new Move(Move.FromChar(sb[last]).Face, Direction.LEFT)).ToChar();
+                            sb[last] = (new Move(Move.FromChar(sb[last]).Face, Directions.Left)).ToChar();
                         }
                         else if (ch == '2')
                         {
-                            sb[last] = (new Move(Move.FromChar(sb[last]).Face, Direction.DOWN)).ToChar();
+                            sb[last] = (new Move(Move.FromChar(sb[last]).Face, Directions.Down)).ToChar();
                         }
                     }
                 }

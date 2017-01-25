@@ -8,7 +8,7 @@ namespace MagicCube
 {
     class Face
     {
-        const uint COUNT = Direction.TURN_COUNT;
+        const uint COUNT = Directions.Count;
 
         uint color;
         uint direction;
@@ -37,29 +37,29 @@ namespace MagicCube
 
         public uint MiddleColor(uint direction)
         {
-            return middle_elements[Direction.Sum(this.direction, direction)];
+            return middle_elements[Directions.Sum(this.direction, direction)];
         }
 
         public void MiddleColor(uint direction, uint color)
         {
-            middle_elements[Direction.Sum(this.direction, direction)] = color;
+            middle_elements[Directions.Sum(this.direction, direction)] = color;
         }
 
         public uint CornerColor(uint direction)
         {
-            return corner_elements[Direction.Sum(this.direction, direction)];
+            return corner_elements[Directions.Sum(this.direction, direction)];
         }
 
         public void CornerColor(uint direction, uint color)
         {
-            corner_elements[Direction.Sum(this.direction, direction)] = color;
+            corner_elements[Directions.Sum(this.direction, direction)] = color;
         }
 
 
         Edge EdgeColors(uint direction)
         {
             return new Edge(
-                CornerColor(Direction.TurnLeft(direction)),
+                CornerColor(Directions.TurnLeft(direction)),
                 MiddleColor(direction),
                 CornerColor(direction)
                 );
@@ -67,7 +67,7 @@ namespace MagicCube
 
         void EdgeColors(uint direction, Edge edge)
         {
-            CornerColor(Direction.TurnLeft(direction), edge.left);
+            CornerColor(Directions.TurnLeft(direction), edge.left);
             MiddleColor(direction, edge.middle);
             CornerColor(direction, edge.right);
         }
@@ -76,7 +76,7 @@ namespace MagicCube
         public void RotateRight()
         {
             // face rotation
-            direction = Direction.TurnRight(direction);
+            direction = Directions.TurnRight(direction);
 
             // neighbours rotation
             uint i = COUNT - 1;
@@ -94,7 +94,7 @@ namespace MagicCube
         public void RotateLeft()
         {
             // face rotation
-            direction = Direction.TurnLeft(direction);
+            direction = Directions.TurnLeft(direction);
 
             // neighbours rotation
             uint i = 0;

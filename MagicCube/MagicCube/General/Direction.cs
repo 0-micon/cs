@@ -6,97 +6,29 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    //enum Turn { Up, Right, Down, Left };
-
-    struct Turn
+    public static class Directions
     {
         public const uint
-            UP = 0,
-            RIGHT = 1,
-            DOWN = 2,
-            LEFT = 3,
-            COUNT = 4;
+            Up    = 0,
+            Right = 1,
+            Down  = 2,
+            Left  = 3,
+            Count = 4;
 
-        uint count;
-
-        public Turn(uint start = UP)
-        {
-            count = UP;
-            Value = start;
-        }
-
-        public uint Value {
-            get
-            {
-                return count;
-            }
-            set
-            {
-                count = value % COUNT;
-            }
-        }
-
-        // 90 degree clockwise rotation (right-hand rule)
-        public uint Next()
-        {
-            Value += RIGHT;
-            return Value;
-        }
-
-        // 90 degree anticlockwise rotation
-        public uint Prev()
-        {
-            Value += LEFT;
-            return Value;
-        }
-
-        // 180 degree turn
-        public uint Mirror()
-        {
-            Value += DOWN;
-            return Value;
-        }
-    }
-
-    class Direction
-    {
-        public const uint
-            UP = 0,
-            RIGHT = 1,
-            DOWN = 2,
-            LEFT = 3,
-            TURN_COUNT = 4;
+        static uint[] _all = { Up, Right, Down, Left };
 
         // relative rotation
-        public static uint Sum(uint a, uint b)
-        {
-            return (a + b) % TURN_COUNT;
-        }
+        public static uint Sum(uint a, uint b) => (a + b) % Count;
 
         // 90 degree clockwise rotation (right-hand rule)
-        public static uint TurnRight(uint direction)
-        {
-            return Sum(direction, RIGHT);
-        }
+        public static uint TurnRight(uint direction) => Sum(direction, Right);
 
         // 90 degree anticlockwise rotation
-        public static uint TurnLeft(uint direction)
-        {
-            return Sum(direction, LEFT);
-        }
+        public static uint TurnLeft(uint direction) => Sum(direction, Left);
 
         // 180 degree turn
-        public static uint TurnAround(uint direction)
-        {
-            return Sum(direction, DOWN);
-        }
+        public static uint TurnAround(uint direction) => Sum(direction, Down);
 
-        public static IEnumerable<uint> Items(uint first = UP, uint last = LEFT)
-        {
-            for (; first <= last; first++)
-            {
-                yield return first;
-            }
-        }
+        public static IEnumerable<uint> All() => _all;
     }
 }

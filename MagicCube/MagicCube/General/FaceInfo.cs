@@ -24,12 +24,12 @@ namespace MagicCube
 
         public static FaceInfo[] items =
         {
-            new FaceInfo("Front", "White",  Direction.UP,    new Point(1, 1)),
-            new FaceInfo("Up",    "Yellow", Direction.LEFT,  new Point(1, 0)),
-            new FaceInfo("Right", "Red",    Direction.LEFT,  new Point(2, 1)),
-            new FaceInfo("Back",  "Blue",   Direction.DOWN,  new Point(3, 1)),
-            new FaceInfo("Down",  "Green",  Direction.RIGHT, new Point(1, 2)),
-            new FaceInfo("Left",  "Orange", Direction.LEFT,  new Point(0, 1)),
+            new FaceInfo("Front", "White",  Directions.Up,    new Point(1, 1)),
+            new FaceInfo("Up",    "Yellow", Directions.Left,  new Point(1, 0)),
+            new FaceInfo("Right", "Red",    Directions.Left,  new Point(2, 1)),
+            new FaceInfo("Back",  "Blue",   Directions.Down,  new Point(3, 1)),
+            new FaceInfo("Down",  "Green",  Directions.Right, new Point(1, 2)),
+            new FaceInfo("Left",  "Orange", Directions.Left,  new Point(0, 1)),
         };
     }
 }

@@ -30,10 +30,10 @@ namespace MagicCube
         {
             switch (direction)
             {
-                case Direction.UP: return UpFace(face);
-                case Direction.RIGHT: return RightFace(face);
-                case Direction.DOWN: return DownFace(face);
-                case Direction.LEFT: return LeftFace(face);
+                case Directions.Up: return UpFace(face);
+                case Directions.Right: return RightFace(face);
+                case Directions.Down: return DownFace(face);
+                case Directions.Left: return LeftFace(face);
             }
 
             throw new ArgumentOutOfRangeException("direction");
@@ -46,15 +46,15 @@ namespace MagicCube
             HashSet<string> set = new HashSet<string>();
             var rot = new Rotator();
             set.Add(rot.ToString());
-            foreach (uint dir_x in Direction.Items())
+            foreach (uint dir_x in Directions.All())
             {
                 rot.RotateClockwise(Down);
                 set.Add(rot.ToString());
-                foreach (uint dir_y in Direction.Items())
+                foreach (uint dir_y in Directions.All())
                 {
                     rot.RotateClockwise(Left);
                     set.Add(rot.ToString());
-                    foreach (uint dir_z in Direction.Items())
+                    foreach (uint dir_z in Directions.All())
                     {
                         rot.RotateClockwise(Front);
                         set.Add(rot.ToString());
@@ -176,7 +176,7 @@ namespace MagicCube
         public void RotateClockwise(uint face)
         {
             // 0,1,2,3 => 3,0,1,2
-            uint direction = Direction.TURN_COUNT - 1;
+            uint direction = Directions.Count - 1;
             uint dst_pos = Faces.Neighbour(face, direction);
             uint last = faces[dst_pos];
             while (direction-- > 0)

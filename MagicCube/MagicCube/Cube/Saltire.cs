@@ -108,37 +108,37 @@ namespace MagicCube
                 case U:
                     switch (direction)
                     {
-                        case Direction.UP:    return this[0].HeadColor;
-                        case Direction.RIGHT: return this[3].SideColor;
-                        case Direction.DOWN:  return this[6].HeadColor;
-                        case Direction.LEFT:  return this[5].SideColor;
+                        case Directions.Up:    return this[0].HeadColor;
+                        case Directions.Right: return this[3].SideColor;
+                        case Directions.Down:  return this[6].HeadColor;
+                        case Directions.Left:  return this[5].SideColor;
                     }
                     break;
                 case D:
                     switch (direction)
                     {
-                        case Direction.UP:    return this[2].HeadColor;
-                        case Direction.RIGHT: return this[1].SideColor;
-                        case Direction.DOWN:  return this[4].HeadColor;
-                        case Direction.LEFT:  return this[7].SideColor;
+                        case Directions.Up:    return this[2].HeadColor;
+                        case Directions.Right: return this[1].SideColor;
+                        case Directions.Down:  return this[4].HeadColor;
+                        case Directions.Left:  return this[7].SideColor;
                     }
                     break;
                 case R:
                     switch (direction)
                     {
-                        case Direction.UP:    return this[4].SideColor;
-                        case Direction.RIGHT: return this[1].HeadColor;
-                        case Direction.DOWN:  return this[0].SideColor;
-                        case Direction.LEFT:  return this[5].HeadColor;
+                        case Directions.Up:    return this[4].SideColor;
+                        case Directions.Right: return this[1].HeadColor;
+                        case Directions.Down:  return this[0].SideColor;
+                        case Directions.Left:  return this[5].HeadColor;
                     }
                     break;
                 case L:
                     switch (direction)
                     {
-                        case Direction.UP:    return this[2].SideColor;
-                        case Direction.RIGHT: return this[7].HeadColor;
-                        case Direction.DOWN:  return this[6].SideColor;
-                        case Direction.LEFT:  return this[3].HeadColor;
+                        case Directions.Up:    return this[2].SideColor;
+                        case Directions.Right: return this[7].HeadColor;
+                        case Directions.Down:  return this[6].SideColor;
+                        case Directions.Left:  return this[3].HeadColor;
                     }
                     break;
             }

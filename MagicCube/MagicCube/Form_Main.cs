@@ -70,15 +70,15 @@ namespace MagicCube
                 g.DrawRectangle(Pens.Black, x + cx - 1, y + cy - 1, cx, cy);
             }
 
-            foreach(uint i in Direction.Items())
+            foreach(uint i in Directions.All())
             {
-                br = new SolidBrush(Color.FromName(FaceInfo.items[cube.MiddleElementAt(face, Direction.Sum(direction, i))].color));
+                br = new SolidBrush(Color.FromName(FaceInfo.items[cube.MiddleElementAt(face, Directions.Sum(direction, i))].color));
                 g.FillRectangle(br, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx - 1, cy - 1);
 
-                br = new SolidBrush(Color.FromName(FaceInfo.items[cube.CornerElementAt(face, Direction.Sum(direction, i))].color));
+                br = new SolidBrush(Color.FromName(FaceInfo.items[cube.CornerElementAt(face, Directions.Sum(direction, i))].color));
                 g.FillRectangle(br, x + cx * corner_positions[i].X, y + cy * corner_positions[i].Y, cx - 1, cy - 1);
 
-                using (SolidBrush sb = new SolidBrush(Color.FromName(FaceInfo.items[cross.MiddleElementAt(face, Direction.Sum(direction, i))].color)))
+                using (SolidBrush sb = new SolidBrush(Color.FromName(FaceInfo.items[cross.MiddleElementAt(face, Directions.Sum(direction, i))].color)))
                 {
                     g.FillEllipse(sb, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx - 1, cy - 1);
                 }
@@ -88,7 +88,7 @@ namespace MagicCube
                     g.DrawEllipse(pen, x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx - 1, cy - 1);
                 }
 
-                using (SolidBrush sb = new SolidBrush(Color.FromName(FaceInfo.items[xcross.CornerElementAt(face, Direction.Sum(direction, i))].color)))
+                using (SolidBrush sb = new SolidBrush(Color.FromName(FaceInfo.items[xcross.CornerElementAt(face, Directions.Sum(direction, i))].color)))
                 {
                     g.FillEllipse(sb, x + cx * corner_positions[i].X, y + cy * corner_positions[i].Y, cx - 1, cy - 1);
                 }
@@ -132,16 +132,16 @@ namespace MagicCube
                 {
                     if (e.Button == MouseButtons.Right)
                     {
-                        foreach (uint i in Direction.Items())
+                        foreach (uint i in Directions.All())
                         {
                             RectangleF rc_elem = new RectangleF(x + cx * element_positions[i].X, y + cy * element_positions[i].Y, cx, cy);
                             if (rc_elem.Contains(e.Location))
                             {
                                 using (var frm = new FaceColorForm())
                                 {
-                                    frm.selection = cube.MiddleElementAt(face, Direction.Sum(FaceInfo.items[face].direction, i));
+                                    frm.selection = cube.MiddleElementAt(face, Directions.Sum(FaceInfo.items[face].direction, i));
                                     frm.ShowDialog(this);
-                                    cube.MiddleElementAt(face, Direction.Sum(FaceInfo.items[face].direction, i), frm.selection);
+                                    cube.MiddleElementAt(face, Directions.Sum(FaceInfo.items[face].direction, i), frm.selection);
                                     RepaintCube();
                                 }
                             }
@@ -150,9 +150,9 @@ namespace MagicCube
                             {
                                 using (var frm = new FaceColorForm())
                                 {
-                                    frm.selection = cube.CornerElementAt(face, Direction.Sum(FaceInfo.items[face].direction, i));
+                                    frm.selection = cube.CornerElementAt(face, Directions.Sum(FaceInfo.items[face].direction, i));
                                     frm.ShowDialog(this);
-                                    cube.CornerElementAt(face, Direction.Sum(FaceInfo.items[face].direction, i), frm.selection);
+                                    cube.CornerElementAt(face, Directions.Sum(FaceInfo.items[face].direction, i), frm.selection);
                                     RepaintCube();
                                 }
                             }
@@ -171,9 +171,9 @@ namespace MagicCube
         {
             textBox_Log.AppendText(FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Left\r\n");
 
-            UpdateUndoMove(selected_face, Direction.RIGHT);
+            UpdateUndoMove(selected_face, Directions.Right);
 
-            RotateCube(selected_face, Direction.LEFT);
+            RotateCube(selected_face, Directions.Left);
 
             RepaintCube();
         }
@@ -182,7 +182,7 @@ namespace MagicCube
         {
             if (comboBox_MoveUndo.Items.Count > 0 && ((Cube.Move)comboBox_MoveUndo.Items[0]).Face == face)
             {
-                turn = Direction.Sum(turn, ((Cube.Move)comboBox_MoveUndo.Items[0]).Turn);
+                turn = Directions.Sum(turn, ((Cube.Move)comboBox_MoveUndo.Items[0]).Turn);
                 comboBox_MoveUndo.Items.RemoveAt(0);
             }
             if (turn > 0)
@@ -217,9 +217,9 @@ namespace MagicCube
         {
             textBox_Log.AppendText(FaceInfo.items[selected_face].name + " face (" + FaceInfo.items[selected_face].color + "): Rotate Right\r\n");
 
-            UpdateUndoMove(selected_face, Direction.LEFT);
+            UpdateUndoMove(selected_face, Directions.Left);
 
-            RotateCube(selected_face, Direction.RIGHT);
+            RotateCube(selected_face, Directions.Right);
             RepaintCube();
         }
 
@@ -406,7 +406,7 @@ namespace MagicCube
             
             Random rnd = new Random();
             selected_face = (uint) rnd.Next(0, (int)Faces.Count);
-            for (int i = rnd.Next(1, (int)Direction.TURN_COUNT); i-- > 0;)
+            for (int i = rnd.Next(1, (int)Directions.Count); i-- > 0;)
             {
                 button_RotateRight_Click(sender, e);
             }
@@ -443,9 +443,9 @@ namespace MagicCube
             {
                 Cube.Move undo_move = (Cube.Move)undoBox.Items[0];
                 uint turn = undo_move.Turn;
-                if (turn == Direction.RIGHT || turn == Direction.LEFT)
+                if (turn == Directions.Right || turn == Directions.Left)
                 {
-                    turn = Direction.TurnAround(turn);
+                    turn = Directions.TurnAround(turn);
                 }
 
                 undoBox.Items.RemoveAt(0);
