@@ -35,5 +35,10 @@ namespace MagicCube
             _corners.RotateFace(face);
             _middles.RotateFace(face);
         }
+
+        public override string ToString()
+        {
+            return $"key={(CubeKey)this} corners={Corners.CountSolvedCubelets} middles={Middles.CountSolvedCubelets}";
+        }
     }
 }

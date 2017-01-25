@@ -43,50 +43,59 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MagicCube\Algorithm.cs">
-      <Link>Algorithm.cs</Link>
+    <Compile Include="..\MagicCube\Algorithms\Algorithm.cs">
+      <Link>MagicCube\Algorithm.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Cross.cs">
-      <Link>Cross.cs</Link>
+    <Compile Include="..\MagicCube\Algorithms\CubeGeneralSolution.cs">
+      <Link>MagicCube\CubeGeneralSolution.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Cube.cs">
-      <Link>Cube.cs</Link>
+    <Compile Include="..\MagicCube\Algorithms\GeneralSolution.cs">
+      <Link>MagicCube\GeneralSolution.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\CubeKey.cs">
-      <Link>CubeKey.cs</Link>
+    <Compile Include="..\MagicCube\Algorithms\SaltireAlgorithms.cs">
+      <Link>MagicCube\SaltireAlgorithms.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Direction.cs">
-      <Link>Direction.cs</Link>
+    <Compile Include="..\MagicCube\Algorithms\SearchTree.cs">
+      <Link>MagicCube\SearchTree.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Faces.cs">
-      <Link>Faces.cs</Link>
+    <Compile Include="..\MagicCube\Algorithms\Solution.cs">
+      <Link>MagicCube\Solution.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\FastCube.cs">
-      <Link>FastCube.cs</Link>
+    <Compile Include="..\MagicCube\Common\Uint5Array.cs">
+      <Link>MagicCube\Uint5Array.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Move.cs">
-      <Link>Move.cs</Link>
+    <Compile Include="..\MagicCube\Common\Utils.cs">
+      <Link>MagicCube\Utils.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\MoveTrack.cs">
-      <Link>MoveTrack.cs</Link>
+    <Compile Include="..\MagicCube\Cube\Cross.cs">
+      <Link>MagicCube\Cross.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Saltire.cs">
-      <Link>Saltire.cs</Link>
+    <Compile Include="..\MagicCube\Cube\Cube.cs">
+      <Link>MagicCube\Cube.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\SaltireAlgorithms.cs">
-      <Link>SaltireAlgorithms.cs</Link>
+    <Compile Include="..\MagicCube\Cube\CubeKey.cs">
+      <Link>MagicCube\CubeKey.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\SearchTree.cs">
-      <Link>SearchTree.cs</Link>
+    <Compile Include="..\MagicCube\Cube\FastCube.cs">
+      <Link>MagicCube\FastCube.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Solution.cs">
-      <Link>Solution.cs</Link>
+    <Compile Include="..\MagicCube\Cube\Move.cs">
+      <Link>MagicCube\Move.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Uint5Array.cs">
-      <Link>Uint5Array.cs</Link>
+    <Compile Include="..\MagicCube\Cube\MoveTrack.cs">
+      <Link>MagicCube\MoveTrack.cs</Link>
     </Compile>
-    <Compile Include="..\MagicCube\Utils.cs">
-      <Link>Utils.cs</Link>
+    <Compile Include="..\MagicCube\Cube\Saltire.cs">
+      <Link>MagicCube\Saltire.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\General\Constants.cs">
+      <Link>MagicCube\Constants.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\General\Direction.cs">
+      <Link>MagicCube\Direction.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\General\Faces.cs">
+      <Link>MagicCube\Faces.cs</Link>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

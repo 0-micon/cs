@@ -10,23 +10,47 @@ namespace GetXSequences
 {
     class Program
     {
-        const string _fname_xalgorithms = @"..\..\..\_xsequences.txt";
-
         static void Main(string[] args)
         {
+            const int max_depth = 7;
+
             // 1. Generate cube rings
             CubeKey key = FastCube.Identity;
+            var cube_solution = new CubeGeneralSolution<CubeKey, FastCube>();
 
-            Console.Write("Precomputing Moves... ");
-            var cube_rings = Solution.PrecomputeMoves(key, 7, 18, 13, FastCube.NextKeys);
-            Console.WriteLine("done!");
+            try
+            {
+                Console.Write("Loading Moves... ");
+                cube_solution.Load(Constants.FnameCubeRings, Constants.ExtensionCubeRings, max_depth,
+                    sizeof(ulong) * 2, br => new CubeKey(br.ReadUInt64(), br.ReadUInt64()));
+                Console.WriteLine("done!");
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
 
-            var middle_rings = new List<List<ulong>>(cube_rings.Count);
-            foreach (var ring in cube_rings)
+                Console.Write("Precomputing Moves... ");
+                cube_solution.PrecomputeMoves(key, max_depth, 18, 13, FastCube.NextKeys);
+                Console.WriteLine("done!");
+
+                Action<System.IO.BinaryWriter, CubeKey> saver = (bw, k) =>
+                {
+                    bw.Write(k.corners);
+                    bw.Write(k.middles);
+                };
+
+                Console.Write("Saving Moves... ");
+                cube_solution.Save(Constants.FnameCubeRings, Constants.ExtensionCubeRings, saver);
+                Console.WriteLine("done!");
+            }
+
+
+            var middle_solution = new CubeGeneralSolution<ulong, Cross>();
+            foreach (var ring in cube_solution)
             {
                 List<ulong> middles = new List<ulong>(from k in ring select k.middles);
                 middles.DistinctValues();
-                middle_rings.Add(middles);
+                middle_solution.Add(middles);
 
                 Console.WriteLine($"{ring.Count}:{middles.Count}");
             }
@@ -34,13 +58,16 @@ namespace GetXSequences
             // 2. Load xsequences
             Console.Write("Loading saltire sequences... ");
             SaltireAlgorithms xalgorithms = new SaltireAlgorithms();
-            xalgorithms.Load(_fname_xalgorithms);
+            xalgorithms.Load(Constants.FnameXAlgorithms);
             Console.WriteLine("done!");
             Console.WriteLine(xalgorithms.Tracks.Count);
 
             while (true)
             {
             Loop_start:
+
+                DateTime time = DateTime.Now;
+
                 Console.WriteLine("");
                 key = Faces.RandomKey<CubeKey, FastCube>(key, x => x, x => x);
 
@@ -58,7 +85,7 @@ namespace GetXSequences
                 while (solved_middles < Cross.CUBELET_NUM)
                 {
                     Console.Write("Solving middles... ");
-                    MoveTrack path = Solution.SolveMiddle(cube.Middles, 7, middle_rings);
+                    MoveTrack path = middle_solution.SolveCube(cube.Middles, max_depth, x => x, x => x);
                     if (path != null)
                     {
                         Console.WriteLine($"done! {path.Count}: {path}");
@@ -82,8 +109,7 @@ namespace GetXSequences
                 {
                     Console.Write("Solving corners... ");
 
-
-                    MoveTrack path = Solution.SolveCube(cube, 7, cube_rings);
+                    MoveTrack path = cube_solution.SolveCube(cube, max_depth, x => x, x => x);
                     if (path == null)
                     {
                         path = xalgorithms.RunOnce(cube.Corners);
@@ -91,7 +117,7 @@ namespace GetXSequences
                     else if (path.Count > 0 && xalgorithms.Add(path) > 0)
                     {
                         Console.Write("New xsequences! ");
-                        xalgorithms.Save(_fname_xalgorithms);
+                        xalgorithms.Save(Constants.FnameXAlgorithms);
                     }
 
                     if (path == null || path.Count == 0)
@@ -110,6 +136,9 @@ namespace GetXSequences
                 key = cube;
                 Console.WriteLine($"Cube (2): key={key}, corners={solved_corners}, middles={solved_middles}");
                 Console.WriteLine($"Total {total.Count}: {total}");
+
+                TimeSpan delta = DateTime.Now - time;
+                Console.WriteLine("Time: " + delta.ToString(@"mm\:ss\.fff"));
                 //break;
             }
             

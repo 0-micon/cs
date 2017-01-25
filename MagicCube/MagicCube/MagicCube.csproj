@@ -54,6 +54,7 @@
     <Compile Include="Cube\Cube.cs" />
     <Compile Include="Algorithms\CubeGeneralSolution.cs" />
     <Compile Include="Cube\CubeKey.cs" />
+    <Compile Include="General\Constants.cs" />
     <Compile Include="General\Direction.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="FaceColorForm.cs">
