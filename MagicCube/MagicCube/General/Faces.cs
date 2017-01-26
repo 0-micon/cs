@@ -105,7 +105,8 @@ namespace MagicCube
 
         public static IEnumerable<K> NextKeys<K, T>(K key, Func<K, T> KtoT, Func<T, K> TtoK) where T : IRotatable
         {
-            foreach (T dst in NextCubes(KtoT(key)))
+            T cube = KtoT(key);
+            foreach (T dst in NextCubes(cube))
             {
                 yield return TtoK(dst);
             }
