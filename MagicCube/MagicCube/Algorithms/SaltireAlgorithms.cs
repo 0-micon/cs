@@ -55,6 +55,9 @@ namespace MagicCube
             return result;
         }
 
+        public IEnumerable<KeyValuePair<Saltire, MoveTrack>> Run(Saltire cube) =>
+            from path in _tracks.Values select new KeyValuePair<Saltire, MoveTrack>(cube.PlayForward(path), path);
+
         public MoveTrack RunOnce(Saltire cube)
         {
             MoveTrack dst_track = null;
@@ -63,7 +66,7 @@ namespace MagicCube
             foreach (var pair in _tracks)
             {
                 Saltire dst = new Saltire(cube);
-                dst.Transform = pair.Key; // pair.Value.PlayForward(cross);
+                dst.Transform = pair.Key; // pair.Value.PlayForward(cube);
 
                 int i = dst.CountSolvedCubelets;
                 if (i > solved_count)
@@ -130,6 +133,134 @@ namespace MagicCube
                     }
                 }
             }
+        }
+
+        public class SearchEntry : IComparable<SearchEntry>
+        {
+            public ulong _dst_key;
+            public int  _solved_middles;
+            public MoveTrack _path;
+            public bool _handled;
+
+            public SearchEntry(Saltire dst, MoveTrack path)
+            {
+                _dst_key = dst;
+                _solved_middles = dst.CountSolvedCubelets;
+                _path = path;
+                _handled = false;
+            }
+
+            public int CompareTo(SearchEntry other)
+            {
+                int result = _solved_middles - other._solved_middles;
+                if (result == 0)
+                {
+                    result = other._path.Count - _path.Count;
+                    if (result == 0)
+                    {
+                        result = _dst_key.CompareTo(other._dst_key);
+                    }
+                }
+                return result;
+            }
+        }
+
+        public void FirstIteration(Saltire src, Dictionary<ulong, SearchEntry> done)
+        {
+            foreach (var pair in _tracks)
+            {
+                Saltire dst = new Saltire(src);
+                dst.Transform = pair.Key;
+
+                MoveTrack dst_path = pair.Value;
+                ulong dst_key = dst;
+
+                if (!done.ContainsKey(dst_key))
+                {
+                    done[dst_key] = new SearchEntry(dst, dst_path);
+                }
+                else if (done[dst_key]._path.Count > dst_path.Count)
+                {
+                    done[dst_key]._path = dst_path;
+                }
+            }
+        }
+
+        public void NextIteration(Saltire src, MoveTrack path, Dictionary<ulong, SearchEntry> done, int threshold)
+        {
+            foreach (var pair in _tracks)
+            {
+                if (pair.Value.Count + path.Count >= threshold)
+                {
+                    continue;
+                }
+
+                Saltire dst = src;
+                dst.Transform = pair.Key;
+
+                ulong dst_key = dst;
+                MoveTrack dst_path = path + pair.Value;
+
+                if (!done.ContainsKey(dst_key))
+                {
+                    done[dst_key] = new SearchEntry(dst, dst_path);
+                }
+                else if (done[dst_key]._path.Count > dst_path.Count)
+                {
+                    done[dst_key]._path    = dst_path;
+                    done[dst_key]._handled = false;
+                }
+            }
+        }
+
+        public MoveTrack Solve(Saltire src, int breadth)
+        {
+            ulong win_key = Saltire.IDENTITY;
+
+            MoveTrack path = null;
+            var done = new Dictionary<ulong, SearchEntry>();
+
+            FirstIteration(src, done);
+
+            int threshold = 10000;
+            for (int try_count = 0; ; try_count++)
+            {
+                if (done.ContainsKey(win_key) && !done[win_key]._handled)
+                {
+                    path = done[win_key]._path;
+                    done[win_key]._handled = true;
+                    threshold = path.Count;
+                }
+
+                if (try_count > 10)
+                {
+                    break;
+                }
+                // make list
+                // get top ten
+                // test them
+
+                var list = new List<SearchEntry>(
+                    from entry in done.Values
+                    where entry._path.Count < threshold - 6 && !entry._handled
+                    select entry);
+
+                list.Sort();
+                list.Reverse();
+                if (list.Count > breadth)
+                {
+                    list.RemoveRange(breadth, list.Count - breadth);
+                }
+
+                foreach (var entry in list)
+                {
+                    entry._handled = true;
+                    NextIteration(entry._dst_key, entry._path, done, threshold);
+                }
+            }
+
+
+            return path;
         }
     }
 }

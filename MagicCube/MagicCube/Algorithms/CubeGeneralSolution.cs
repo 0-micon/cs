@@ -36,10 +36,10 @@ namespace MagicCube
             l_rings.Add(ring);
 
             int reserved = 18;
-            while (--depth > 0)
+            while (true)
             {
                 List<K> next_ring = null;
-                if (depth > 0)
+                if (--depth > 0)
                 {
                     next_ring = new List<K>(reserved);
                 }
@@ -63,12 +63,16 @@ namespace MagicCube
                     }
                 }
 
+                if (next_ring == null)
+                {
+                    return null;
+                }
+
                 reserved = next_ring.Count * 13;
                 next_ring.DistinctValues();
                 l_rings.Add(next_ring);
                 ring = next_ring;
             }
-            return null;
         }
     }
 }

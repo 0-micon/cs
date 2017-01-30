@@ -44,7 +44,8 @@ namespace GetXSequences
                 Console.WriteLine("done!");
             }
 
-
+#if GET_SHORT_XSEQUENCES
+#else
             var middle_solution = new CubeGeneralSolution<ulong, Cross>();
             foreach (var ring in cube_solution)
             {
@@ -54,17 +55,69 @@ namespace GetXSequences
 
                 Console.WriteLine($"{ring.Count}:{middles.Count}");
             }
-
+#endif
             // 2. Load xsequences
             Console.Write("Loading saltire sequences... ");
             SaltireAlgorithms xalgorithms = new SaltireAlgorithms();
-            xalgorithms.Load(Constants.FnameXAlgorithms);
-            Console.WriteLine("done!");
+            try
+            {
+                xalgorithms.Load(Constants.FnameXAlgorithms);
+                Console.WriteLine("done!");
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             Console.WriteLine(xalgorithms.Tracks.Count);
 
+#if GET_SHORT_XSEQUENCES
+            List<CubeKey> last = cube_solution.Last();
+            int count = last.Count;
+            int step = count / 10;
+            for (int i = 0; i < count; i++)
+            {
+                if (i == step)
+                {
+                    int ratio = (step + 1) * 100 / count;
+                    Console.WriteLine($"done {ratio}%");
+                    step = (ratio + 10) * count / 100;
+                }
+
+                FastCube cube_src = last[i];
+                foreach (var move_0 in Faces.NextMoves(cube_src))
+                {
+                    foreach (var move_1 in Faces.NextMoves(move_0.Value))
+                    {
+                        foreach (var move_2 in Faces.NextMoves(move_1.Value))
+                        {
+                            if (move_2.Value.Middles.CountSolvedCubelets == Cross.CUBELET_NUM)
+                            {
+                                MoveTrack path = cube_solution.PathTo(move_0.Value, x => x, x => x);
+                                path = path.Reverse();
+                                path.Add(move_1.Key);
+                                path.Add(move_2.Key);
+                                path.Trim();
+
+                                int result = xalgorithms.Add(path);
+                                if (result > 0)
+                                {
+                                    Console.WriteLine($"New xsequences! {path.Count}: {path}");
+                                    xalgorithms.Save(Constants.FnameXAlgorithms);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+#else
             while (true)
             {
             Loop_start:
+
+                if (Console.ReadLine().ToUpper().StartsWith("Q"))
+                {
+                    break;
+                }
 
                 DateTime time = DateTime.Now;
 
@@ -109,15 +162,20 @@ namespace GetXSequences
                 {
                     Console.Write("Solving corners... ");
 
-                    MoveTrack path = cube_solution.SolveCube(cube, max_depth, x => x, x => x);
+                    MoveTrack path = xalgorithms.Solve(cube.Corners, 25);
                     if (path == null)
                     {
-                        path = xalgorithms.RunOnce(cube.Corners);
-                    }
-                    else if (path.Count > 0 && xalgorithms.Add(path) > 0)
-                    {
-                        Console.Write("New xsequences! ");
-                        xalgorithms.Save(Constants.FnameXAlgorithms);
+                        path = cube_solution.SolveCube(cube, max_depth, x => x, x => x);
+                        if (path != null && path.Count > 0 && xalgorithms.Add(path) > 0)
+                        {
+                            Console.Write("New xsequences! ");
+                            xalgorithms.Save(Constants.FnameXAlgorithms);
+                        }
+
+                        if (path == null)
+                        {
+                            path = xalgorithms.RunOnce(cube.Corners);
+                        }
                     }
 
                     if (path == null || path.Count == 0)
@@ -141,8 +199,7 @@ namespace GetXSequences
                 Console.WriteLine("Time: " + delta.ToString(@"mm\:ss\.fff"));
                 //break;
             }
-            
+#endif            
         }
-
     }
 }
