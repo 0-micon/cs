@@ -115,6 +115,14 @@ namespace MagicCube
             _track = string.Empty;
         }
 
+        public MoveTrack(IEnumerable<Move> moves) : this()
+        {
+            foreach(Move m in moves)
+            {
+                Add(m);
+            }
+        }
+
         public MoveTrack Clone(uint[] transform = null)
         {
             MoveTrack dst = new MoveTrack();

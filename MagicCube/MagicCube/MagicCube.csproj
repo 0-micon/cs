@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\Algorithm.cs" />
+    <Compile Include="Algorithms\Algorithms.cs" />
     <Compile Include="Cube\Cross.cs" />
     <Compile Include="Cube\Cube.cs" />
     <Compile Include="Algorithms\CubeGeneralSolution.cs" />

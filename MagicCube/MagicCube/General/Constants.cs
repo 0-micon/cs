@@ -10,7 +10,8 @@ namespace MagicCube
     {
         public static string ExtensionCubeRings => "txt";
         public static string FnameCubeRings     => @"..\..\..\_key_ring_";
-        
+
+        public static string FnameAlgorithms  => @"..\..\..\_sequences.txt";
         public static string FnameXAlgorithms => @"..\..\..\_xsequences.txt";
         public static string FnameCAlgorithms => @"..\..\..\_csequences.txt";
 

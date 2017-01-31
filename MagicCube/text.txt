@@ -21,6 +21,9 @@ U2 B2 R U2 F2 L' U D' B U' D' L F2
 U R' F2 L R F U2 L2 U2 F L' U'
 
 
+B L2 D2 L2 B R' L B2 R L D2
+
+
 Solved Cube
 Middle Key: 731796345686735
 Corner Key: 731796345686735

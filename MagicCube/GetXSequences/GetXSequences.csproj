@@ -62,6 +62,9 @@
     <Compile Include="..\MagicCube\Algorithms\Algorithm.cs">
       <Link>MagicCube\Algorithm.cs</Link>
     </Compile>
+    <Compile Include="..\MagicCube\Algorithms\Algorithms.cs">
+      <Link>MagicCube\Algorithms.cs</Link>
+    </Compile>
     <Compile Include="..\MagicCube\Algorithms\CubeGeneralSolution.cs">
       <Link>MagicCube\CubeGeneralSolution.cs</Link>
     </Compile>

@@ -8,8 +8,51 @@ using MagicCube;
 
 namespace GetXSequences
 {
+    class FastCubeClass : Faces.IRotatable, Faces.IConvertible<CubeKey>
+    {
+        public FastCube _cube;
+
+        public FastCubeClass()
+        {
+            _cube = FastCube.Identity;
+        }
+
+        public CubeKey Key
+        {
+            get
+            {
+                return _cube.Key;
+            }
+
+            set
+            {
+                _cube.Key = value;
+            }
+        }
+
+        public void RotateFace(uint face)
+        {
+            _cube.RotateFace(face);
+        }
+    }
+
     class Program
     {
+        static IEnumerable<MoveTrack> Load(string fname)
+        {
+            using (System.IO.StreamReader file = new System.IO.StreamReader(fname))
+            {
+                for (string buf; (buf = file.ReadLine()) != null;)
+                {
+                    string[] arr = buf.Split(';');
+                    if (arr.Length > 1)
+                    {
+                        yield return new MoveTrack(arr[1], false);
+                    }
+                }
+            }
+        }
+
         static void Main(string[] args)
         {
             const int max_depth = 7;
@@ -44,6 +87,19 @@ namespace GetXSequences
                 Console.WriteLine("done!");
             }
 
+            /*//
+            var test = from x in cube_solution.Last() where (new FastCube(x.corners, x.middles)).CountSolvedCubelets >= 12 select x;
+            var list = new List<CubeKey>(test);
+            Console.WriteLine(list.Count);
+
+            var alg = new Algorithms<CubeKey, FastCubeClass>();
+            foreach(var c in list)
+            {
+                alg.Add(cube_solution.PathTo(c, x => x, x => x));
+            }
+            alg.Save(Constants.FnameAlgorithms);
+            //*/
+
 #if GET_SHORT_XSEQUENCES
 #else
             var middle_solution = new CubeGeneralSolution<ulong, Cross>();
@@ -62,6 +118,10 @@ namespace GetXSequences
             try
             {
                 xalgorithms.Load(Constants.FnameXAlgorithms);
+                //foreach(var path in Load(Constants.FnameXAlgorithms))
+                //{
+                //    xalgorithms.Add(cube_solution.SolveCube(FastCube.Identity.PlayForward(path), max_depth, x => x, x => x));
+                //}
                 Console.WriteLine("done!");
             }
             catch (System.IO.FileNotFoundException ex)
@@ -69,20 +129,113 @@ namespace GetXSequences
                 Console.WriteLine(ex.Message);
             }
             Console.WriteLine(xalgorithms.Tracks.Count);
+            //xalgorithms.Save(Constants.FnameXAlgorithms);
 
+            /*//
+            Console.Write("Loading common sequences... ");
+            var algorithms = new Algorithms<CubeKey, FastCubeClass>();
+            try
+            {
+                algorithms.Load(Constants.FnameAlgorithms);
+                Console.WriteLine("done!");
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            Console.WriteLine(algorithms.Tracks.Count);
+            //*/
 #if GET_SHORT_XSEQUENCES
             List<CubeKey> last = cube_solution.Last();
             int count = last.Count;
-            int step = count / 10;
+
+            var dict = new Dictionary<ulong, List<ulong>>();
+
+            for (int i = 1; i < cube_solution.Count; i++)
+            {
+                var list = cube_solution[i];
+                foreach(var src in list)
+                {
+                    if (!dict.ContainsKey(src.middles))
+                    {
+                        dict.Add(src.middles, new List<ulong>());
+                    }
+                    dict[src.middles].Add(src.corners);
+                }
+            }
+
+            if (dict.ContainsKey(Cross.IDENTITY))
+            {
+                dict.Remove(Cross.IDENTITY);
+            }
+
+            var less_than_two = new List<ulong>(from p in dict where p.Value.Count < 2 select p.Key);
+            foreach(var src in less_than_two)
+            {
+                dict.Remove(src);
+            }
+            less_than_two = null;
+
+            //var two_or_more = from p in dict where p.Value.Count >= 2 select p;
+            foreach (var pair in dict)
+            {
+                ulong middles = pair.Key;
+                var corners_list = pair.Value;
+                for(int i = 0; i < corners_list.Count; i++)
+                {
+                    CubeKey src = new CubeKey(corners_list[i], middles);
+
+                    for (int j = i + 1; j < corners_list.Count; j++)
+                    {
+                        CubeKey dst = new CubeKey(corners_list[j], middles);
+
+                        MoveTrack back = cube_solution.PathTo(dst, x => x, x => x);
+                        MoveTrack head = cube_solution.PathTo(src, x => x, x => x);
+                        MoveTrack path = head.Reverse() + back;
+
+                        if(xalgorithms.Add(path) > 0)
+                        {
+                            Console.WriteLine(xalgorithms.Tracks.Count);
+                        }
+                    }
+                }
+            }
+
+            xalgorithms.Save(Constants.FnameXAlgorithms);
+
+            /*//
+            int step = count / 100;
             for (int i = 0; i < count; i++)
             {
                 if (i == step)
                 {
                     int ratio = (step + 1) * 100 / count;
                     Console.WriteLine($"done {ratio}%");
-                    step = (ratio + 10) * count / 100;
+                    step = (ratio + 1) * count / 100;
                 }
 
+                var src = last[i];
+                foreach (var corners in from c in dict[src.middles] where c != src.corners select c)
+                {
+                    CubeKey dst = new CubeKey(corners, src.middles);
+                    MoveTrack back = cube_solution.PathTo(dst, x => x, x => x);
+                    MoveTrack head = cube_solution.PathTo(src, x => x, x => x);
+                    MoveTrack path = head.Reverse() + back;
+
+                    int result = xalgorithms.Add(path);
+                    if (result > 0)
+                    {
+                        FastCube cube = FastCube.Identity.PlayForward(path);
+                        path = cube_solution.SolveCube(cube, max_depth, x => x, x => x);
+                        xalgorithms.Add(path);
+
+                        Console.WriteLine($"New xsequences! {path.Count}: {path}");
+                        xalgorithms.Save(Constants.FnameXAlgorithms);
+                    }
+                }
+                //*/
+
+                /*//
                 FastCube cube_src = last[i];
                 foreach (var move_0 in Faces.NextMoves(cube_src))
                 {
@@ -108,7 +261,10 @@ namespace GetXSequences
                         }
                     }
                 }
+                //*/
+                /*//
             }
+            //*/
 #else
             while (true)
             {
@@ -119,20 +275,24 @@ namespace GetXSequences
                     break;
                 }
 
-                DateTime time = DateTime.Now;
-
+                FastCube cube = FastCube.Identity.Random();
                 Console.WriteLine("");
-                key = Faces.RandomKey<CubeKey, FastCube>(key, x => x, x => x);
 
-                FastCube cube = key;
+                DateTime time = DateTime.Now;
 
                 int solved_corners = cube.Corners.CountSolvedCubelets;
                 int solved_middles = cube.Middles.CountSolvedCubelets;
+                key = cube; // Faces.RandomKey<CubeKey, FastCube>(key, x => x, x => x);
 
                 // 3. Randomize
                 Console.WriteLine($"Cube (0): key={key}, corners={solved_corners}, middles={solved_middles}");
 
-                MoveTrack total = new MoveTrack();
+                MoveTrack total = null;
+                //total = algorithms.Solve(cube.Key, FastCube.Identity, 50, c => c._cube.CountSolvedCubelets);
+                if (total == null)
+                {
+                    total = new MoveTrack();
+                }
 
                 // 4. Solve middles
                 while (solved_middles < Cross.CUBELET_NUM)
@@ -162,7 +322,7 @@ namespace GetXSequences
                 {
                     Console.Write("Solving corners... ");
 
-                    MoveTrack path = xalgorithms.Solve(cube.Corners, 25);
+                    MoveTrack path = xalgorithms.Solve(cube.Corners, 10);
                     if (path == null)
                     {
                         path = cube_solution.SolveCube(cube, max_depth, x => x, x => x);

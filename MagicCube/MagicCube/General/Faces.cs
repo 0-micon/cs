@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    public class Faces
+    public static class Faces
     {
         public const uint
             Front   = 0,
@@ -78,6 +78,11 @@ namespace MagicCube
             void RotateFace(uint face);
         }
 
+        public interface IConvertible<TKey>
+        {
+            TKey Key { get; set; }
+        }
+
         public static IEnumerable<T> NextCubes<T>(T cube) where T : IRotatable
         {
             for (uint face = 0; face < Count; face++)
@@ -112,19 +117,31 @@ namespace MagicCube
             }
         }
 
+        public static IEnumerable<TKey> NextKeys<TKey, TCube>(TCube src) where TCube : IRotatable, IConvertible<TKey>
+        {
+            foreach (TCube dst in NextCubes(src))
+            {
+                yield return dst.Key;
+            }
+        }
+
         public static K RandomKey<K, T>(K key, Func<K, T> KtoT, Func<T, K> TtoK) where T : IRotatable
         {
             T cube = KtoT(key);
+            return TtoK(cube.Random());
+        }
 
+        public static TCube Random<TCube>(this TCube src) where TCube : IRotatable
+        {
             Random rnd = new Random();
             int count = rnd.Next(100, 1000);
-            while(--count > 0)
+            while (--count > 0)
             {
                 uint face = (uint)rnd.Next((int)Count);
-                cube.RotateFace(face);
+                src.RotateFace(face);
 
             }
-            return TtoK(cube);
+            return src;
         }
     }
 

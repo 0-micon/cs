@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    public struct FastCube : Faces.IRotatable
+    public struct FastCube : Faces.IRotatable, Faces.IConvertible<CubeKey>
     {
         Saltire _corners;
         Cross _middles;
@@ -38,7 +38,23 @@ namespace MagicCube
 
         public override string ToString()
         {
-            return $"key={(CubeKey)this} corners={Corners.CountSolvedCubelets} middles={Middles.CountSolvedCubelets}";
+            return $"key={Key} corners={Corners.CountSolvedCubelets} middles={Middles.CountSolvedCubelets}";
+        }
+
+        public int CountSolvedCubelets => _corners.CountSolvedCubelets + _middles.CountSolvedCubelets;
+
+        public CubeKey Key
+        {
+            get
+            {
+                return new CubeKey(_corners, _middles);
+            }
+
+            set
+            {
+                _corners = value.corners;
+                _middles = value.middles;
+            }
         }
     }
 }

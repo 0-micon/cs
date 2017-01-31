@@ -500,6 +500,8 @@ namespace MagicCube
             var path = solution.Solve(cube.Key, 7);
             if(path != null)
             {
+                MoveTrack track = new MoveTrack();
+
                 comboBox_MoveUndo.Items.Clear();
                 comboBox_MoveRedo.Items.Clear();
                 for (int i = 1; i < path.Count; i++)
@@ -508,10 +510,13 @@ namespace MagicCube
                     textBox_Log.AppendText(path[i].ToString() + ": " + move.ToString() + "\r\n");
 
                     comboBox_MoveUndo.Items.Add(move);
+
+                    track.Add(new Move(move.Face, move.Turn));
                 }
                 comboBox_MoveUndo.SelectedIndex = 0;
 
-                textBox_Log.AppendText($"Solution {path.Count}: {path}\r\n");
+                track.Trim();
+                textBox_Log.AppendText($"Solution {track.Count}: {track}\r\n");
             }
 
             button_Solve.Enabled = true;

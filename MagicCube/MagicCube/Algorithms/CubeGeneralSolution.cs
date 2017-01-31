@@ -13,6 +13,11 @@ namespace MagicCube
             MoveTrack path = new MoveTrack();
             for (int i = Count; i-- > 0;)
             {
+                if (this[i].BinarySearch(key) >= 0)
+                {
+                    continue;
+                }
+
                 foreach (var pair in Faces.NextMoves(KtoT(key)))
                 {
                     K dst_key = TtoK(pair.Value);
