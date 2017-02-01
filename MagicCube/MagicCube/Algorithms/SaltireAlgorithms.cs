@@ -167,27 +167,34 @@ namespace MagicCube
 
         public void FirstIteration(Saltire src, Dictionary<ulong, SearchEntry> done)
         {
+            int count = src.CountSolvedCubelets;
             foreach (var pair in _tracks)
             {
                 Saltire dst = new Saltire(src);
                 dst.Transform = pair.Key;
 
-                MoveTrack dst_path = pair.Value;
-                ulong dst_key = dst;
+                if (dst.CountSolvedCubelets > count)
+                {
+                    MoveTrack dst_path = pair.Value;
+                    ulong dst_key = dst;
 
-                if (!done.ContainsKey(dst_key))
-                {
-                    done[dst_key] = new SearchEntry(dst, dst_path);
+                    if (!done.ContainsKey(dst_key))
+                    {
+                        done[dst_key] = new SearchEntry(dst, dst_path);
+                    }
+                    else if (done[dst_key]._path.Count > dst_path.Count)
+                    {
+                        done[dst_key]._path = dst_path;
+                    }
                 }
-                else if (done[dst_key]._path.Count > dst_path.Count)
-                {
-                    done[dst_key]._path = dst_path;
-                }
+
             }
         }
 
         public void NextIteration(Saltire src, MoveTrack path, Dictionary<ulong, SearchEntry> done, int threshold)
         {
+            int count = src.CountSolvedCubelets;
+
             foreach (var pair in _tracks)
             {
                 if (pair.Value.Count + path.Count >= threshold)
@@ -198,22 +205,25 @@ namespace MagicCube
                 Saltire dst = src;
                 dst.Transform = pair.Key;
 
-                ulong dst_key = dst;
-                MoveTrack dst_path = path + pair.Value;
+                if (dst.CountSolvedCubelets > count)
+                {
+                    ulong dst_key = dst;
+                    MoveTrack dst_path = path + pair.Value;
 
-                if (!done.ContainsKey(dst_key))
-                {
-                    done[dst_key] = new SearchEntry(dst, dst_path);
-                }
-                else if (done[dst_key]._path.Count > dst_path.Count)
-                {
-                    done[dst_key]._path    = dst_path;
-                    done[dst_key]._handled = false;
+                    if (!done.ContainsKey(dst_key))
+                    {
+                        done[dst_key] = new SearchEntry(dst, dst_path);
+                    }
+                    else if (done[dst_key]._path.Count > dst_path.Count)
+                    {
+                        done[dst_key]._path = dst_path;
+                        done[dst_key]._handled = false;
+                    }
                 }
             }
         }
 
-        public MoveTrack Solve(Saltire src, int breadth)
+        public MoveTrack Solve(Saltire src, int min_breadth)
         {
             ulong win_key = Saltire.IDENTITY;
 
@@ -232,7 +242,7 @@ namespace MagicCube
                     threshold = path.Count;
                 }
 
-                if (try_count > 10)
+                if (try_count > 12)
                 {
                     break;
                 }
@@ -247,9 +257,27 @@ namespace MagicCube
 
                 list.Sort();
                 list.Reverse();
-                if (list.Count > breadth)
+                if (list.Count > min_breadth)
                 {
-                    list.RemoveRange(breadth, list.Count - breadth);
+                    int i = min_breadth;
+                    int solved = list[i]._solved_middles;
+                    while(++i < list.Count)
+                    {
+                        if(list[i]._solved_middles != solved)
+                        {
+                            break;
+                        }
+                    }
+
+                    if(i > min_breadth * 3 && path != null)
+                    {
+                        i = min_breadth * 3;
+                    }
+
+                    if (list.Count > i)
+                    {
+                        list.RemoveRange(i, list.Count - i);
+                    }
                 }
 
                 foreach (var entry in list)

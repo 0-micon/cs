@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MagicCube;
+using MagicCube.Algorithms;
 
 namespace GetXSequences
 {
@@ -294,6 +295,31 @@ namespace GetXSequences
                     total = new MoveTrack();
                 }
 
+                /*//
+                // Solve for max elements
+                //while (true)
+                {
+                    Console.Write("Solving ... ");
+                    //MoveTrack path = cube_solution.SolveCube(cube, max_depth - 1, x => x, x => x, x => x.CountSolvedCubelets);
+                    MoveTrack path = cube.Solve(cube_solution, max_depth - 1);
+                    if (path != null)
+                    {
+                        Console.WriteLine($"done! {path.Count}: {path}");
+                        cube = cube.PlayForward(path);
+                        total += path;
+                        solved_middles = cube.Middles.CountSolvedCubelets;
+                        solved_corners = cube.Corners.CountSolvedCubelets;
+
+                        Console.WriteLine($"Cube (1): {cube}");
+                    }
+                    else
+                    {
+                        //Console.WriteLine("error!");
+                        //break;
+                    }
+                }
+                //*/
+
                 // 4. Solve middles
                 while (solved_middles < Cross.CUBELET_NUM)
                 {
@@ -322,7 +348,7 @@ namespace GetXSequences
                 {
                     Console.Write("Solving corners... ");
 
-                    MoveTrack path = xalgorithms.Solve(cube.Corners, 10);
+                    MoveTrack path = xalgorithms.Solve(cube.Corners, 12);
                     if (path == null)
                     {
                         path = cube_solution.SolveCube(cube, max_depth, x => x, x => x);

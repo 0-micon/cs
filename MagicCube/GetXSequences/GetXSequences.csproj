@@ -68,6 +68,9 @@
     <Compile Include="..\MagicCube\Algorithms\CubeGeneralSolution.cs">
       <Link>MagicCube\CubeGeneralSolution.cs</Link>
     </Compile>
+    <Compile Include="..\MagicCube\Algorithms\FastCubeExtension.cs">
+      <Link>MagicCube\FastCubeExtension.cs</Link>
+    </Compile>
     <Compile Include="..\MagicCube\Algorithms\GeneralSolution.cs">
       <Link>MagicCube\GeneralSolution.cs</Link>
     </Compile>

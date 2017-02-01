@@ -79,5 +79,63 @@ namespace MagicCube
                 ring = next_ring;
             }
         }
+
+        public MoveTrack SolveCube(K start_key, int depth, Func<K, T> KtoT, Func<T, K> TtoK, Func<T, int> solved_counter)
+        {
+            List<K> ring = new List<K>();
+            ring.Add(start_key);
+
+            CubeGeneralSolution<K, T> l_rings = new CubeGeneralSolution<K, T>();
+            l_rings.Add(ring);
+
+            int solved = solved_counter(KtoT(start_key));
+            int reserved = 18;
+            MoveTrack path = null;
+
+            while (true)
+            {
+                List<K> next_ring = null;
+                if (--depth > 0)
+                {
+                    next_ring = new List<K>(reserved);
+                }
+
+                foreach (K key in ring)
+                {
+                    foreach (K next_key in Faces.NextKeys(key, KtoT, TtoK))
+                    {
+                        int pos = this.FindRow(next_key);
+                        if (pos >= 0)
+                        {
+                            path = l_rings.PathTo(next_key, KtoT, TtoK);
+                            path = path.Reverse();
+                            path += PathTo(next_key, KtoT, TtoK);
+                            return path;
+                        }
+                        else if (solved_counter(KtoT(next_key)) > solved)
+                        {
+                            path = l_rings.PathTo(next_key, KtoT, TtoK);
+                            path = path.Reverse();
+
+                            solved = solved_counter(KtoT(next_key));
+                        }
+                        else if (next_ring != null && l_rings.FindRow(next_key) < 0)
+                        {
+                            next_ring.Add(next_key);
+                        }
+                    }
+                }
+
+                if (next_ring == null)
+                {
+                    return path;
+                }
+
+                reserved = next_ring.Count * 13;
+                next_ring.DistinctValues();
+                l_rings.Add(next_ring);
+                ring = next_ring;
+            }
+        }
     }
 }
