@@ -59,7 +59,6 @@ namespace GetXSequences
             const int max_depth = 7;
 
             // 1. Generate cube rings
-            CubeKey key = FastCube.Identity;
             var cube_solution = new CubeGeneralSolution<CubeKey, FastCube>();
 
             try
@@ -74,7 +73,7 @@ namespace GetXSequences
                 Console.WriteLine(ex.Message);
 
                 Console.Write("Precomputing Moves... ");
-                cube_solution.PrecomputeMoves(key, max_depth, 18, 13, FastCube.NextKeys);
+                cube_solution.PrecomputeMoves(FastCube.Identity, max_depth, 18, 13, FastCube.NextKeys);
                 Console.WriteLine("done!");
 
                 Action<System.IO.BinaryWriter, CubeKey> saver = (bw, k) =>
@@ -283,10 +282,9 @@ namespace GetXSequences
 
                 int solved_corners = cube.Corners.CountSolvedCubelets;
                 int solved_middles = cube.Middles.CountSolvedCubelets;
-                key = cube; // Faces.RandomKey<CubeKey, FastCube>(key, x => x, x => x);
 
                 // 3. Randomize
-                Console.WriteLine($"Cube (0): key={key}, corners={solved_corners}, middles={solved_middles}");
+                Console.WriteLine($"Cube (0): {cube}");
 
                 MoveTrack total = null;
                 //total = algorithms.Solve(cube.Key, FastCube.Identity, 50, c => c._cube.CountSolvedCubelets);
@@ -340,8 +338,7 @@ namespace GetXSequences
                     }
                 }
 
-                key = cube;
-                Console.WriteLine($"Cube (1): key={key}, corners={solved_corners}, middles={solved_middles}");
+                Console.WriteLine($"Cube (1): {cube}");
 
                 // 5. Solve corners
                 while (solved_middles == Cross.CUBELET_NUM && solved_corners != Saltire.CUBELET_NUM)
@@ -377,8 +374,7 @@ namespace GetXSequences
                     solved_corners = cube.Corners.CountSolvedCubelets;
                 }
 
-                key = cube;
-                Console.WriteLine($"Cube (2): key={key}, corners={solved_corners}, middles={solved_middles}");
+                Console.WriteLine($"Cube (2): {cube}");
                 Console.WriteLine($"Total {total.Count}: {total}");
 
                 TimeSpan delta = DateTime.Now - time;

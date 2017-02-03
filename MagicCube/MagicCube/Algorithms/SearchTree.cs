@@ -54,6 +54,43 @@ namespace MagicCube
             return null;
         }
 
+        public IEnumerable<string> AllReplacements(string text)
+        {
+            for (int start = 0; start < text.Length - 1; start++)
+            {
+                SearchNode node = _root;
+                for (int i = start; i < text.Length; i++)
+                {
+                    int idx = text[i] - 'a';
+                    node = node.children[idx];
+                    if (node == null)
+                    {
+                        break;
+                    }
+                    if (node.result != null)
+                    {
+                        yield return text.Replace(text.Substring(start, i + 1 - start), node.result);
+                    }
+                }
+            }
+        }
+
+        public string Replace(string text)
+        {
+            string result = null;
+            foreach (string s in AllReplacements(text))
+            {
+                string r = Replace(s);
+
+                if (result == null || result.Length > r.Length)
+                {
+                    result = r;
+                }
+            }
+
+            return result != null ? result : text;
+        }
+
         public void Add(string key, string val)
         {
             SearchNode node = _root;

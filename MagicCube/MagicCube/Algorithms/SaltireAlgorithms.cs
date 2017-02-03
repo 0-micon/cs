@@ -232,7 +232,7 @@ namespace MagicCube
 
             FirstIteration(src, done);
 
-            int threshold = 10000;
+            int threshold = 100;
             for (int try_count = 0; ; try_count++)
             {
                 if (done.ContainsKey(win_key) && !done[win_key]._handled)
@@ -240,6 +240,8 @@ namespace MagicCube
                     path = done[win_key]._path;
                     done[win_key]._handled = true;
                     threshold = path.Count;
+
+                    //Console.WriteLine($"\n found {path.Count}:{path}");
                 }
 
                 if (try_count > 12)
@@ -254,6 +256,38 @@ namespace MagicCube
                     from entry in done.Values
                     where entry._path.Count < threshold - 6 && !entry._handled
                     select entry);
+
+                /*//
+                var numbers = new Dictionary<int, int>();
+                int max_solved = 0;
+                foreach(var entry in list)
+                {
+                    int key = entry._solved_middles;
+
+                    if (numbers.ContainsKey(key))
+                    {
+                        numbers[key] += 1;
+                    }
+                    else
+                    {
+                        numbers[key] = 1;
+                    }
+                    
+                    if(max_solved < key)
+                    {
+                        max_solved = key;
+                    }
+                }
+
+                Console.WriteLine($"\nRound {try_count}:");
+                for(int i = max_solved; i >= 0; i--)
+                {
+                    if (numbers.ContainsKey(i))
+                    {
+                        Console.WriteLine($"{i}:{numbers[i]}");
+                    }
+                }
+                //*/
 
                 list.Sort();
                 list.Reverse();
@@ -280,6 +314,7 @@ namespace MagicCube
                     }
                 }
 
+                //Console.WriteLine($"\tlist size: {list.Count}");
                 foreach (var entry in list)
                 {
                     entry._handled = true;

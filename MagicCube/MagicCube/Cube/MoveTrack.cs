@@ -32,6 +32,9 @@ namespace MagicCube
 
         public void Trim()
         {
+            _track = _substitute.Replace(_track);
+          
+            /*//  
             for(int i = 0; i < _track.Length - 1; i++)
             {
                 int j = i;
@@ -44,6 +47,7 @@ namespace MagicCube
                     return;
                 }
             }
+            //*/
         }
 
         // Notation (known as "Singmaster notation"):

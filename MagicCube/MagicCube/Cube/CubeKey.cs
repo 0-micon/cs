@@ -72,7 +72,7 @@ namespace MagicCube
 
         public override string ToString()
         {
-            return $"{corners}:{middles}";
+            return $"0x{corners:X}:0x{middles:X}";
         }
     }
 }
