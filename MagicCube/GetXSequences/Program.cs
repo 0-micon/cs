@@ -322,7 +322,18 @@ namespace GetXSequences
                 while (solved_middles < Cross.CUBELET_NUM)
                 {
                     Console.Write("Solving middles... ");
-                    MoveTrack path = middle_solution.SolveCube(cube.Middles, max_depth, x => x, x => x);
+
+                    DateTime t0 = DateTime.Now;
+                    MoveTrack path = cube.Middles.Solve(middle_solution, max_depth);
+                    Console.WriteLine($"{path.Count}:{path}");
+                    TimeSpan dt = DateTime.Now - time;
+                    Console.WriteLine("Time: " + dt.ToString(@"mm\:ss\.fff"));
+
+                    t0 = DateTime.Now;
+                    path = middle_solution.SolveCube(cube.Middles, max_depth, x => x, x => x);
+                    dt = DateTime.Now - time;
+                    Console.WriteLine("Time: " + dt.ToString(@"mm\:ss\.fff"));
+
                     if (path != null)
                     {
                         Console.WriteLine($"done! {path.Count}: {path}");

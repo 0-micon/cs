@@ -18,18 +18,18 @@ namespace MagicCube
             public SearchNode[] children = new SearchNode[MOVE_COUNT];
             public string result = null;
 
-            public void Save(System.IO.StreamWriter file, string key)
+            public void ForEach(Action<string, string> action, string key = "")
             {
                 if (result != null)
                 {
-                    file.WriteLine(key + ";" + result);
+                    action(key, result);
                 }
 
                 for (int i = 0; i < MOVE_COUNT; i++)
                 {
                     if (children[i] != null)
                     {
-                        children[i].Save(file, key + (char)('a' + i));
+                        children[i].ForEach(action, key + (char)('a' + i));
                     }
                 }
             }
@@ -132,7 +132,8 @@ namespace MagicCube
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(fname))
             {
-                _root.Save(file, string.Empty);
+                Action<string, string> saver = (key, value) => file.WriteLine(key + ";" + value);
+                _root.ForEach(saver);
             }
         }
 
@@ -182,6 +183,18 @@ namespace MagicCube
         public void Clear()
         {
             _root = new SearchNode();
+        }
+
+        public List<string> Keys
+        {
+            get
+            {
+                var list = new List<string>();
+                Action<string, string> add_to_list = (key, value) => list.Add(key);
+                _root.ForEach(add_to_list);
+
+                return list;
+            }
         }
     }
 }

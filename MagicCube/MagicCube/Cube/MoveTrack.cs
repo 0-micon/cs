@@ -13,12 +13,21 @@ namespace MagicCube
         string _track;
 
         static SearchTree _substitute;
-        static string _substitute_fname = @"..\..\..\substitutes.txt";
 
         static MoveTrack()
         {
             _substitute = new SearchTree();
-            _substitute.Load(_substitute_fname);
+            try
+            {
+                _substitute.Load(Constants.FnameSubstitutes);
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine($"Creating a new substitute file '{Constants.FnameSubstitutes}'.");
+                MakeReplaces();
+            }
+            
         }
 
         public Move this[int i] => Move.FromChar(_track[i]);
@@ -190,7 +199,7 @@ namespace MagicCube
 
         public static void MakeReplaces()
         {
-            Dictionary<string, string> synonyms = new Dictionary<string, string>();
+            SearchTree synonyms = new SearchTree();
 
             Cube cube = new Cube();
             Dictionary<CubeKey, MoveTrack> done = new Dictionary<CubeKey, MoveTrack>();
@@ -275,15 +284,34 @@ namespace MagicCube
                 }
             }
 
-            _substitute.Save(_substitute_fname);
-
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("synonyms.txt"))
+            List<string> keys = _substitute.Keys;
+            foreach (var src_key in keys)
             {
-                foreach (KeyValuePair<string, string> pair in synonyms)
+                var src_val = _substitute[src_key];
+                foreach (string dst_key in synonyms.AllReplacements(src_key))
                 {
-                    file.WriteLine(pair.Key + ";" + pair.Value);
+                    if (!_substitute.ContainsKey(dst_key))
+                    {
+                        _substitute[dst_key] = src_val;
+                    }
+                    else
+                    {
+                        var dst_val = _substitute[dst_key];
+                        if (dst_val.Length < src_val.Length)
+                        {
+                            _substitute[src_key] = dst_val;
+                            src_val = dst_val;
+                        }
+                        else if (src_val.Length < dst_val.Length)
+                        {
+                            _substitute[dst_key] = src_val;
+                        }
+                    }
                 }
             }
+
+            _substitute.Save(Constants.FnameSubstitutes);
+            //synonyms.Save("synonyms.txt");
         }
 
         //
@@ -316,6 +344,12 @@ namespace MagicCube
         // IEnumerable interface implementation:
         public IEnumerator<Move> GetEnumerator() => new SimpleEnumerator<Move>(ToArray());
         IEnumerator  IEnumerable.GetEnumerator() => new SimpleEnumerator<Move>(ToArray());
+
+        public static int Main(string[] args)
+        {
+            MakeReplaces();
+            return 0;
+        }
     }
 
     public static class MoveTrackExtension
