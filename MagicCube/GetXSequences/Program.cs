@@ -54,6 +54,45 @@ namespace GetXSequences
             }
         }
 
+        static IEnumerable<FastCube> NextCubes(CubeGeneralSolution<CubeKey, FastCube> solution)
+        {
+            var ring = solution.Last();
+            for (int i = 0; i < ring.Count; i++)
+            {
+                var src_key = ring[i];
+                FastCube src_cube = src_key;
+                foreach (var dst_cube in Faces.NextCubes(src_cube))
+                {
+                    if (solution.FindRow(dst_cube) < 0)
+                    {
+                        yield return dst_cube;
+                    }
+                }
+            }
+        }
+
+        static void MakeXSequences(CubeGeneralSolution<CubeKey, FastCube> cube_solution, CubeGeneralSolution<ulong, Cross> cross_solution,
+            SaltireAlgorithms xalg)
+        {
+            SaltireAlgorithms alg = new SaltireAlgorithms();
+
+            foreach (var dst_cube in NextCubes(cube_solution))
+            {
+                MoveTrack path_a = cube_solution.PathTo(dst_cube, x => x, x => x);
+                MoveTrack path_b = dst_cube.Middles.Solve(cross_solution, path_a.Count);
+                if (path_a.Count > path_b.Count)
+                {
+                    ulong key = dst_cube.PlayForward(path_b).Corners.Transform;
+                    if (!xalg.Tracks.ContainsKey(key) && !alg.Tracks.ContainsKey(key))
+                    {
+                        MoveTrack path = path_a.Reverse() + path_b;
+                        alg.Add(path);
+                    }
+                }
+            }
+            alg.Save("_test.txt");
+        }
+
         static void Main(string[] args)
         {
             const int max_depth = 7;
@@ -112,6 +151,7 @@ namespace GetXSequences
                 Console.WriteLine($"{ring.Count}:{middles.Count}");
             }
 #endif
+
             // 2. Load xsequences
             Console.Write("Loading saltire sequences... ");
             SaltireAlgorithms xalgorithms = new SaltireAlgorithms();
@@ -129,7 +169,58 @@ namespace GetXSequences
                 Console.WriteLine(ex.Message);
             }
             Console.WriteLine(xalgorithms.Tracks.Count);
+
+            
+            Console.Write("Loading additional saltire sequences... ");
+            //var xalg = new SaltireAlgorithms();
+            try
+            {
+                /*
+                xalg.Load("_test_13_2.txt");
+                xalg.Load("_test_13_3.txt");
+                xalg.Load("_test_13_4.txt");
+                xalg.Load("_test_13_5.txt");
+                xalg.Load("_test_13_6.txt");
+                xalg.Load("_test_13_7.txt");
+                xalg.Load("_test_13_8.txt");
+                */
+                xalgorithms.Load("_xsequences.13.new.txt");
+                Console.WriteLine("done!");
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            Console.WriteLine(xalgorithms.Tracks.Count);
+            //*/
+            /*//
+            var short_tracks = new List<MoveTrack>(from track in xalgorithms.Tracks.Values where track.Count < 12 select track);
+            foreach(var track_a in short_tracks)
+            {
+                foreach (var track_b in short_tracks)
+                {
+                    MoveTrack path = track_a + track_b;
+                    if (path.Count <= 12)
+                    {
+                        var key = FastCube.Identity.Corners.PlayForward(path).Transform;
+                        if (xalgorithms.Tracks.ContainsKey(key))
+                        {
+                            //MoveTrack path_13 = xalg.Tracks[key];
+                            if (xalgorithms.Tracks[key].Count >= path.Count)
+                            {
+                                xalgorithms.Tracks.Remove(key);
+                            }
+
+                        }
+                    }
+                }
+                Console.WriteLine(xalgorithms.Tracks.Count);
+            }
+
+            xalgorithms.Save("_xsequences.new.txt");
+            //*/
             //xalgorithms.Save(Constants.FnameXAlgorithms);
+            //MakeXSequences(cube_solution, middle_solution, xalgorithms);
 
             /*//
             Console.Write("Loading common sequences... ");
@@ -266,6 +357,8 @@ namespace GetXSequences
             }
             //*/
 #else
+            int max_count = 0;
+            var long_algs = new SaltireAlgorithms();
             while (true)
             {
             Loop_start:
@@ -323,16 +416,16 @@ namespace GetXSequences
                 {
                     Console.Write("Solving middles... ");
 
-                    DateTime t0 = DateTime.Now;
+                    //DateTime t0 = DateTime.Now;
                     MoveTrack path = cube.Middles.Solve(middle_solution, max_depth);
-                    Console.WriteLine($"{path.Count}:{path}");
-                    TimeSpan dt = DateTime.Now - time;
-                    Console.WriteLine("Time: " + dt.ToString(@"mm\:ss\.fff"));
+                    //Console.WriteLine($"{path.Count}:{path}");
+                    //TimeSpan dt = DateTime.Now - time;
+                    //Console.WriteLine("Time: " + dt.ToString(@"mm\:ss\.fff"));
 
-                    t0 = DateTime.Now;
-                    path = middle_solution.SolveCube(cube.Middles, max_depth, x => x, x => x);
-                    dt = DateTime.Now - time;
-                    Console.WriteLine("Time: " + dt.ToString(@"mm\:ss\.fff"));
+                    //t0 = DateTime.Now;
+                    //path = middle_solution.SolveCube(cube.Middles, max_depth, x => x, x => x);
+                    //dt = DateTime.Now - time;
+                    //Console.WriteLine("Time: " + dt.ToString(@"mm\:ss\.fff"));
 
                     if (path != null)
                     {
@@ -383,15 +476,27 @@ namespace GetXSequences
                     total += path;
                     solved_middles = cube.Middles.CountSolvedCubelets;
                     solved_corners = cube.Corners.CountSolvedCubelets;
+
+                    if (max_count < total.Count)
+                    {
+                        max_count = total.Count;
+                        long_algs.Tracks.Clear();
+                    }
+
+                    if (max_count == total.Count)
+                    {
+                        long_algs.Add(path);
+                    }
                 }
 
                 Console.WriteLine($"Cube (2): {cube}");
-                Console.WriteLine($"Total {total.Count}: {total}");
+                Console.WriteLine($"Total {total.Count} ({max_count}): {total}");
 
                 TimeSpan delta = DateTime.Now - time;
                 Console.WriteLine("Time: " + delta.ToString(@"mm\:ss\.fff"));
-                //break;
             }
+
+            long_algs.Save("_long_sequences.txt");
 #endif            
         }
     }

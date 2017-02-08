@@ -90,31 +90,36 @@ namespace MagicCube
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(fname))
             {
-                HashSet<ulong> done = new HashSet<ulong>();
-                foreach (KeyValuePair<ulong, MoveTrack> pair in _tracks)
+                var done = new HashSet<ulong>();
+
+                foreach (var pair in _tracks)
                 {
                     if (!done.Contains(pair.Key))
                     {
-                        done.Add(pair.Key);
+                        var save = pair;
+
+                        foreach (var tran in AllTransforms(pair.Value))
+                        {
+                            done.Add(tran.Key);
+                            if (tran.Key < save.Key)
+                            {
+                                save = tran;
+                            }
+                        }
 
                         Saltire cross = Saltire.IDENTITY;
-                        cross.Transform = pair.Key;
+                        cross.Transform = save.Key;
 
                         int count = (int)Saltire.CUBELET_NUM - cross.CountSolvedCubelets;
 
-                        file.Write(pair.Value.Count);
+                        file.Write(save.Value.Count);
                         file.Write(';');
-                        file.Write(pair.Value.Track);
+                        file.Write(save.Value.Track);
                         file.Write(';');
                         file.Write(count);
                         file.Write(';');
-                        file.Write(pair.Key);
+                        file.Write(save.Key);
                         file.Write('\n');
-
-                        foreach (var child in AllTransforms(pair.Value))
-                        {
-                            done.Add(child.Key);
-                        }
                     }
                 }
             }
@@ -205,7 +210,7 @@ namespace MagicCube
                 Saltire dst = src;
                 dst.Transform = pair.Key;
 
-                if (dst.CountSolvedCubelets > count)
+                if (dst.CountSolvedCubelets >= count)
                 {
                     ulong dst_key = dst;
                     MoveTrack dst_path = path + pair.Value;
@@ -232,7 +237,7 @@ namespace MagicCube
 
             FirstIteration(src, done);
 
-            int threshold = 100;
+            int threshold = 25;
             for (int try_count = 0; ; try_count++)
             {
                 if (done.ContainsKey(win_key) && !done[win_key]._handled)
@@ -241,7 +246,7 @@ namespace MagicCube
                     done[win_key]._handled = true;
                     threshold = path.Count;
 
-                    //Console.WriteLine($"\n found {path.Count}:{path}");
+                    Console.WriteLine($"\n found {path.Count}:{path}");
                 }
 
                 if (try_count > 12)
@@ -254,7 +259,7 @@ namespace MagicCube
 
                 var list = new List<SearchEntry>(
                     from entry in done.Values
-                    where entry._path.Count < threshold - 6 && !entry._handled
+                    where entry._path.Count < threshold && !entry._handled
                     select entry);
 
                 /*//
