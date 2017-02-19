@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    public struct FastCube : Faces.IRotatable, Faces.IConvertible<CubeKey>
+    public struct FastCube : Faces.IRotatable, Faces.IConvertible<CubeKey>, IComparable<FastCube>
     {
         Saltire _corners;
         Cross _middles;
@@ -39,6 +39,17 @@ namespace MagicCube
         public override string ToString()
         {
             return $"key={Key} corners={Corners.CountSolvedCubelets} middles={Middles.CountSolvedCubelets}";
+        }
+
+        // IComparable implementation
+        public int CompareTo(FastCube other)
+        {
+            int result = _corners.CompareTo(other._corners);
+            if (result == 0)
+            {
+                result = _middles.CompareTo(other._middles);
+            }
+            return result;
         }
 
         public int CountSolvedCubelets => _corners.CountSolvedCubelets + _middles.CountSolvedCubelets;

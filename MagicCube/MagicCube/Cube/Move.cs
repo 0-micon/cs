@@ -65,6 +65,11 @@ namespace MagicCube
             move_index = index;
         }
 
+        public Move(int index)
+        {
+            move_index = (uint)index;
+        }
+
         public Move Reverse()
         {
             return new Move(Face, TurnBack);

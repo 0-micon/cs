@@ -83,6 +83,14 @@ namespace MagicCube
             TKey Key { get; set; }
         }
 
+        public interface ICube : IRotatable
+        {
+            int CountUnsolvedElements
+            {
+                get;
+            }
+        }
+
         public static IEnumerable<T> NextCubes<T>(T cube) where T : IRotatable
         {
             for (uint face = 0; face < Count; face++)

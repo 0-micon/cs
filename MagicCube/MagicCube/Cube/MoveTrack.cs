@@ -12,7 +12,7 @@ namespace MagicCube
     {
         string _track;
 
-        static SearchTree _substitute;
+        public static SearchTree _substitute;
 
         static MoveTrack()
         {
@@ -106,10 +106,7 @@ namespace MagicCube
             return moves;
         }
 
-        public override string ToString()
-        {
-            return string.Join(" ", ToArray());
-        }
+        public override string ToString() => string.Join(" ", ToArray());
 
         public MoveTrack(string src, bool singmaster_notation = true)
         {
@@ -130,9 +127,17 @@ namespace MagicCube
 
         public MoveTrack(IEnumerable<Move> moves) : this()
         {
-            foreach(Move m in moves)
+            foreach (Move m in moves)
             {
                 Add(m);
+            }
+        }
+
+        public MoveTrack(IEnumerable<int> move_indices) : this()
+        {
+            foreach (int i in move_indices)
+            {
+                Add(new Move(i));
             }
         }
 
@@ -156,15 +161,18 @@ namespace MagicCube
             return dst;
         }
 
-        public MoveTrack Reverse()
+        public MoveTrack Reverse
         {
-            MoveTrack dst = new MoveTrack();
-            for (int i = Count; i-- > 0;)
+            get
             {
-                Move m = this[i];
-                dst.Add(new Move(m.Face, m.TurnBack));
+                MoveTrack dst = new MoveTrack();
+                for (int i = Count; i-- > 0;)
+                {
+                    Move m = this[i];
+                    dst.Add(new Move(m.Face, m.TurnBack));
+                }
+                return dst;
             }
-            return dst;
         }
 
         public void Add(Move move)
@@ -189,7 +197,7 @@ namespace MagicCube
 
         public IEnumerable<MoveTrack> AllTransforms()
         {
-            MoveTrack reverse = Reverse();
+            MoveTrack reverse = Reverse;
             foreach (uint[] transform in Faces.Orientations)
             {
                 yield return Clone(transform);

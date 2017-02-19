@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    public struct Uint5Array
+    public struct Uint5Array : IComparable<Uint5Array>
     {
         ulong _key;
 
@@ -19,6 +19,9 @@ namespace MagicCube
 
         //  Conversion from ulong to Uint5Array
         public static implicit operator Uint5Array(ulong i) => new Uint5Array(i);
+
+        // IComparable implementation
+        public int CompareTo(Uint5Array other) => _key.CompareTo(other._key);
 
         public Uint5Array(ulong key)
         {

@@ -37,7 +37,7 @@ namespace MagicCube
     }
 
     // X-shaped cross
-    public struct Saltire : Faces.IRotatable
+    public struct Saltire : Faces.IRotatable, IComparable<Saltire>
     {
         Uint5Array _key;
 
@@ -46,6 +46,9 @@ namespace MagicCube
 
         //  Conversion from ulong to Saltire
         public static implicit operator Saltire(ulong i) => new Saltire(i);
+
+        // IComparable implementation
+        public int CompareTo(Saltire other) => _key.CompareTo(other._key);
 
         public static IEnumerable<ulong> NextKeys(ulong src) => Faces.NextKeys<ulong, Saltire>(src, x => x, x => x);
 
@@ -215,6 +218,7 @@ namespace MagicCube
             }
         }
 
+        
         public int CountSolvedCubelets
         {
             get

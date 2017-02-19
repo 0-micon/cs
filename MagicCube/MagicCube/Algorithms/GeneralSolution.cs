@@ -10,7 +10,7 @@ namespace MagicCube
     // GeneralSolution is a very general problem-solving technique that
     // consists of systematically enumerating all possible candidates for the
     // solution and checking whether each candidate satisfies the problem's statement.
-    class GeneralSolution<K> : List<List<K>>
+    public class GeneralSolution<K> : List<List<K>> where K : IComparable<K>
     {
         public void PrecomputeMoves(K start_key, int max_depth, int reserved, int growth_rate, Func<K, IEnumerable<K>> next)
         {
@@ -41,6 +41,49 @@ namespace MagicCube
 
                 Add(next_ring);
                 src_ring = next_ring;
+            }
+        }
+
+        public IEnumerable<int> PathTo(K start_key, int count, Func<K, IEnumerable<K>> next)
+        {
+            for (int i = count; i-- > 0;)
+            {
+                if (this[i].BinarySearch(start_key) >= 0)
+                {
+                    continue;
+                }
+
+                foreach (var pair in Utils.Index(next(start_key)))
+                {
+                    if (this[i].BinarySearch(pair.Value) >= 0)
+                    {
+                        start_key = pair.Value;
+                        yield return pair.Key;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void ForAllSolutions(K start_key, int max_depth, int reserved, int growth_rate, Func<K, IEnumerable<K>> next,
+            Func<IEnumerable<int>, IEnumerable<int>, bool> on_solved)
+        {
+            var l_rings = new GeneralSolution<K>();
+            l_rings.PrecomputeMoves(start_key, max_depth, reserved, growth_rate, next);
+
+            // for each intersection
+            for (int r = Count; r-- > 0;)
+            {
+                for (int l = l_rings.Count; l-- > 0;)
+                {
+                    foreach (K c in this[r].Intersection(l_rings[l]))
+                    {
+                        if (on_solved(l_rings.PathTo(c, l, next), PathTo(c, r, next)))
+                        {
+                            return;
+                        }
+                    }
+                }
             }
         }
 

@@ -78,19 +78,115 @@ namespace GetXSequences
 
             foreach (var dst_cube in NextCubes(cube_solution))
             {
-                MoveTrack path_a = cube_solution.PathTo(dst_cube, x => x, x => x);
+                MoveTrack path_a = cube_solution.PathTo(dst_cube, cube_solution.Count, x => x, x => x);
                 MoveTrack path_b = dst_cube.Middles.Solve(cross_solution, path_a.Count);
                 if (path_a.Count > path_b.Count)
                 {
                     ulong key = dst_cube.PlayForward(path_b).Corners.Transform;
                     if (!xalg.Tracks.ContainsKey(key) && !alg.Tracks.ContainsKey(key))
                     {
-                        MoveTrack path = path_a.Reverse() + path_b;
+                        MoveTrack path = path_a.Reverse + path_b;
                         alg.Add(path);
                     }
                 }
             }
             alg.Save("_test.txt");
+        }
+
+        static bool Increment(char[] path)
+        {
+            char ch_min = 'a';
+            char ch_max = (char)('a' + 18 - 1);
+
+            int i = path.Length;
+            while (i-- > 0)
+            {
+                if (path[i] == ch_max)
+                {
+                    path[i] = ch_min;
+                }
+                else
+                {
+                    path[i]++;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static void MakeReplaces(CubeGeneralSolution<CubeKey, FastCube> cube_solution)
+        {
+            char[] path = { 'a', 'a', 'a', 'a', 'a', 'a', 'a' };
+
+            SearchTree substitute = new SearchTree();
+
+            do
+            {
+                MoveTrack src_track = new MoveTrack(new string(path), false);
+                src_track.Trim();
+
+                if (src_track.Count == path.Length)
+                {
+                    CubeKey key = FastCube.Identity.PlayForward(src_track).Key;
+
+                    int pos = cube_solution.FindRow(key);
+                    if (pos >= 0)
+                    {
+                        MoveTrack dst_track = cube_solution.PathTo(key, pos, x => x, x => x);
+                        dst_track = dst_track.Reverse;
+
+                        int delta = src_track.Count - dst_track.Count;
+                        if(delta > 2)
+                        {
+                            int beg = 0;                 // left trim count
+                            int end = dst_track.Count;   // dst_track.Count - right trim count
+
+                            while (beg < end && dst_track.Track[beg] == src_track.Track[beg])
+                            {
+                                beg++;
+                            }
+
+                            while (end > beg && dst_track.Track[end - 1] == src_track.Track[end - 1 + delta])
+                            {
+                                end--;
+                            }
+
+                            MoveTrack dst = dst_track.SubTrack(beg, end - beg);
+                            MoveTrack src = src_track.SubTrack(beg, end - beg + delta);
+
+                            if (!substitute.ContainsKey(src.Track))
+                            {
+                                substitute.Add(src.Track, dst.Track);
+                            }
+                            //break;
+                        }
+                    }
+                }
+            }
+            while (Increment(path));
+
+            substitute.Save("subs.txt");
+        }
+
+        static IEnumerable<MoveTrack> Optimize(MoveTrack path, CubeGeneralSolution<CubeKey, FastCube> cube_solution)
+        {
+            int min_length = 11;
+            for (int i = 0; i < path.Count - min_length; i++)
+            {
+                for (int length = path.Count - i; length > min_length; length--)
+                {
+                    MoveTrack src = path.SubTrack(i, length);
+
+                    FastCube cube = FastCube.Identity.PlayBackward(src);
+
+                    MoveTrack dst = cube.Solve(cube_solution, min_length - cube_solution.Count + 1);
+                    if(dst != null)
+                    {
+                        dst = path.SubTrack(0, i) + dst + path.SubTrack(length, path.Count - length);
+                        yield return dst;
+                    }
+                }
+            }
         }
 
         static void Main(string[] args)
@@ -125,6 +221,8 @@ namespace GetXSequences
                 cube_solution.Save(Constants.FnameCubeRings, Constants.ExtensionCubeRings, saver);
                 Console.WriteLine("done!");
             }
+
+            //MakeReplaces(cube_solution);
 
             /*//
             var test = from x in cube_solution.Last() where (new FastCube(x.corners, x.middles)).CountSolvedCubelets >= 12 select x;
@@ -192,6 +290,18 @@ namespace GetXSequences
                 Console.WriteLine(ex.Message);
             }
             Console.WriteLine(xalgorithms.Tracks.Count);
+
+            Console.Write("Loading additional substitutes... ");
+            //var substitutes = new SearchTree();
+            try
+            {
+                MoveTrack._substitute.Load("subs.txt");
+                Console.WriteLine("done!");
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             //*/
             /*//
             var short_tracks = new List<MoveTrack>(from track in xalgorithms.Tracks.Values where track.Count < 12 select track);
@@ -416,8 +526,27 @@ namespace GetXSequences
                 {
                     Console.Write("Solving middles... ");
 
+                    MoveTrack min_path = null;
+                    int min_count = 0;
+
                     //DateTime t0 = DateTime.Now;
-                    MoveTrack path = cube.Middles.Solve(middle_solution, max_depth);
+                    Predicate<MoveTrack> on_solved = (mt) =>
+                    {
+                        int count = cube.Corners.PlayForward(mt).CountSolvedCubelets;
+                        if(min_path == null || count > min_count)
+                        {
+                            min_count = count;
+                            min_path = mt;
+                            Console.WriteLine($"found {count}: {mt}");
+                        }
+                        return mt.Count > 12;
+                    };
+
+                    MoveTrack path = cube.Middles.Solve(middle_solution, max_depth, on_solved);
+                    if(min_path != null)
+                    {
+                        path = min_path;
+                    }
                     //Console.WriteLine($"{path.Count}:{path}");
                     //TimeSpan dt = DateTime.Now - time;
                     //Console.WriteLine("Time: " + dt.ToString(@"mm\:ss\.fff"));
@@ -494,6 +623,16 @@ namespace GetXSequences
 
                 TimeSpan delta = DateTime.Now - time;
                 Console.WriteLine("Time: " + delta.ToString(@"mm\:ss\.fff"));
+
+               // MoveTrack test = new MoveTrack(substitutes.Replace(total.Track), false);
+               // if(test.Count < total.Count)
+               // {
+               //     Console.WriteLine($"Total substitute {test.Count} ({max_count}): {test}");
+               // }
+               //foreach(var dst in Optimize(total, cube_solution))
+               //{
+               //     Console.WriteLine($"Optimized {dst.Count} ({max_count}): {dst}");
+               //}
             }
 
             long_algs.Save("_long_sequences.txt");

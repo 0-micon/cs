@@ -446,7 +446,7 @@ namespace MagicCube
                                 }
                             }
 
-                            solution = solution.Reverse();
+                            solution = solution.Reverse;
                             dst_cube = dst_key;
                             for (int r = pos; r-- > 0;)
                             {
@@ -602,7 +602,7 @@ namespace MagicCube
                         if (pos >= 0)
                         {
                             MoveTrack solution = GetPath<CubeKey, FastCube>(next_key, l_rings, l_rings.Count - 1, -1, x=>x, x=>x);
-                            solution = solution.Reverse();
+                            solution = solution.Reverse;
                             solution += GetPath<CubeKey, FastCube>(next_key, dst_rings, dst_rings.Count - 1, -1, x=>x, x=>x);
 
                             return solution;
@@ -655,7 +655,7 @@ namespace MagicCube
                         {
                             MoveTrack solution = new MoveTrack();
                             GetMoveTrack(next_key, solution, l_rings, l_rings.Count - 1, -1);
-                            solution = solution.Reverse();
+                            solution = solution.Reverse;
                             GetMoveTrack(next_key, solution, _cube_rings, _cube_rings.Count - 1, -1);
 
                             solution.Trim();
@@ -703,7 +703,7 @@ namespace MagicCube
                         {
                             MoveTrack solution = new MoveTrack();
                             GetMoveTrack(dst_key, solution, l_rings, l_rings.Count - 1, -1);
-                            solution = solution.Reverse();
+                            solution = solution.Reverse;
                             GetMoveTrack(dst_key, solution, _cube_rings, _cube_rings.Count - 1, -1);
 
                             solution.Trim();
@@ -758,7 +758,7 @@ namespace MagicCube
                         }
 
                         alg.Add(track);
-                        alg.Add(track.Reverse());
+                        alg.Add(track.Reverse);
                     }
                 }
             }
@@ -824,7 +824,7 @@ namespace MagicCube
                         MoveTrack track = new MoveTrack();
                         GetMoveTrack(src_key, track, _cube_rings, _cube_rings.Count - 1, -1);
                         alg.Add(track);
-                        alg.Add(track.Reverse());
+                        alg.Add(track.Reverse);
                         break; // foreach move
                     }
                 }
@@ -1015,7 +1015,7 @@ namespace MagicCube
                     {
                         MoveTrack track = new MoveTrack();
                         GetMoveTrack(key, track, ring_a, i - 1, -1);
-                        track = track.Reverse();
+                        track = track.Reverse;
                         GetMoveTrack(key, track, ring_b, j - 1, -1);
 
                         Cube cube_a = new Cube(ring_a[0][0]);

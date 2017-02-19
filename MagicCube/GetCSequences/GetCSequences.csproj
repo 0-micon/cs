@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{56C1F7CE-22CF-4DD0-B099-D9AC77F131AD}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GetCSequences</RootNamespace>
+    <AssemblyName>GetCSequences</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>GetCSequences.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\MagicCube\Algorithms\Algorithms.cs">
+      <Link>MagicCube\Algorithms.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Algorithms\CrossAlgorithms.cs">
+      <Link>MagicCube\CrossAlgorithms.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Algorithms\CrossExtension.cs">
+      <Link>MagicCube\CrossExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Algorithms\CubeGeneralSolution.cs">
+      <Link>MagicCube\CubeGeneralSolution.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Algorithms\FastCubeExtension.cs">
+      <Link>MagicCube\FastCubeExtension.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Algorithms\GeneralSolution.cs">
+      <Link>MagicCube\GeneralSolution.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Algorithms\SaltireAlgorithms.cs">
+      <Link>MagicCube\SaltireAlgorithms.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Algorithms\SearchTree.cs">
+      <Link>MagicCube\SearchTree.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Common\Uint5Array.cs">
+      <Link>MagicCube\Uint5Array.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Common\Utils.cs">
+      <Link>MagicCube\Utils.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Cube\Cross.cs">
+      <Link>MagicCube\Cross.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Cube\Cube.cs">
+      <Link>MagicCube\Cube.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Cube\CubeKey.cs">
+      <Link>MagicCube\CubeKey.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Cube\FastCube.cs">
+      <Link>MagicCube\FastCube.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Cube\Move.cs">
+      <Link>MagicCube\Move.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Cube\MoveTrack.cs">
+      <Link>MagicCube\MoveTrack.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\Cube\Saltire.cs">
+      <Link>MagicCube\Saltire.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\General\Constants.cs">
+      <Link>MagicCube\Constants.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\General\Direction.cs">
+      <Link>MagicCube\Direction.cs</Link>
+    </Compile>
+    <Compile Include="..\MagicCube\General\Faces.cs">
+      <Link>MagicCube\Faces.cs</Link>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

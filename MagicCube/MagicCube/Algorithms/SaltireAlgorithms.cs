@@ -237,7 +237,7 @@ namespace MagicCube
 
             FirstIteration(src, done);
 
-            int threshold = 25;
+            int threshold = 35;
             for (int try_count = 0; ; try_count++)
             {
                 if (done.ContainsKey(win_key) && !done[win_key]._handled)
@@ -308,9 +308,14 @@ namespace MagicCube
                         }
                     }
 
-                    if(i > min_breadth * 3 && path != null)
+                    if (i > min_breadth * 3 && path != null)
                     {
                         i = min_breadth * 3;
+                    }
+
+                    if (i > min_breadth * 5)
+                    {
+                        i = min_breadth * 5;
                     }
 
                     if (list.Count > i)

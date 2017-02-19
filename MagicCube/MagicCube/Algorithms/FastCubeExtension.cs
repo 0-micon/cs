@@ -71,12 +71,13 @@ namespace MagicCube.Algorithms
                         if (pos >= 0)
                         {
                             path = next_cube.PathTo(l_rings);
-                            path = path.Reverse();
+                            path = path.Reverse;
                             path += next_cube.PathTo(r_rings, pos);
                             return path;
                         }
                         else
                         {
+                            /*//
                             if (middles > solved_middles || (middles == solved_middles && corners > solved_corners))
                             {
                                 path = next_cube.PathTo(l_rings);
@@ -85,6 +86,7 @@ namespace MagicCube.Algorithms
                                 solved_corners = corners;
                                 solved_middles = middles;
                             }
+                            //*/
 
                             if (next_ring != null && l_rings.FindRow(next_cube) < 0)
                             {

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicCube", "MagicCube\Magi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetXSequences", "GetXSequences\GetXSequences.csproj", "{AFE8CDD3-FED9-442F-9ACE-F2C0F7EC76B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetCSequences", "GetCSequences\GetCSequences.csproj", "{56C1F7CE-22CF-4DD0-B099-D9AC77F131AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AFE8CDD3-FED9-442F-9ACE-F2C0F7EC76B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFE8CDD3-FED9-442F-9ACE-F2C0F7EC76B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFE8CDD3-FED9-442F-9ACE-F2C0F7EC76B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56C1F7CE-22CF-4DD0-B099-D9AC77F131AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56C1F7CE-22CF-4DD0-B099-D9AC77F131AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56C1F7CE-22CF-4DD0-B099-D9AC77F131AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56C1F7CE-22CF-4DD0-B099-D9AC77F131AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

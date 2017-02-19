@@ -37,7 +37,7 @@ namespace MagicCube.Algorithms
             return path;
         }
 
-        public static MoveTrack Solve(this Cross cube, List<List<ulong>> r_rings, int depth)
+        public static MoveTrack Solve(this Cross cube, List<List<ulong>> r_rings, int depth, Predicate<MoveTrack> on_solved = null)
         {
             var ring = new List<ulong>();
             ring.Add(cube);
@@ -68,17 +68,20 @@ namespace MagicCube.Algorithms
                         int pos = r_rings.FindRow(next_cube);
                         if (pos >= 0)
                         {
-                            path = next_cube.PathTo(l_rings);
-                            path = path.Reverse();
-                            path += next_cube.PathTo(r_rings, pos);
-                            return path;
+                            path = next_cube.PathTo(l_rings).Reverse + next_cube.PathTo(r_rings, pos);
+                            if (on_solved == null || on_solved(path))
+                            {
+                                return path; 
+                            }
+                            // no need in next_ring anymore?
+                            //next_ring = null;
                         }
                         else
                         {
                             if (middles > solved_middles)
                             {
                                 path = next_cube.PathTo(l_rings);
-                                path = path.Reverse();
+                                path = path.Reverse;
 
                                 solved_middles = middles;
                             }
@@ -100,6 +103,27 @@ namespace MagicCube.Algorithms
                 next_ring.DistinctValues();
                 l_rings.Add(next_ring);
                 ring = next_ring;
+            }
+        }
+
+        public static IEnumerable<MoveTrack> AllSolutions(this Cross cube, List<List<ulong>> r_rings, int depth)
+        {
+            var l_rings = new GeneralSolution<ulong>();
+            l_rings.PrecomputeMoves(cube, depth, 18, 13, Cross.NextKeys);
+
+            // for each intersection
+            for (int r = r_rings.Count; r-- > 0;)
+            {
+                var dst = r_rings[r];
+                for(int l = l_rings.Count; l-- > 0;)
+                {
+                    var src = l_rings[l];
+
+                    foreach(Cross c in dst.Intersection(src))
+                    {
+                        yield return c.PathTo(l_rings, l).Reverse + c.PathTo(r_rings, r);
+                    }
+                }
             }
         }
     }

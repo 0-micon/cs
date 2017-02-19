@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.IO;
 
 namespace MagicCube
 {
@@ -476,6 +477,27 @@ namespace MagicCube
         {
             button_SolveCorners.Enabled = false;
 
+            var s = new CubeGeneralSolution<Saltire>();
+            s.PrecomputeMoves(Saltire.IDENTITY, 7, 18, 13, Faces.NextCubes);
+            int solved = -1;
+            MoveTrack sp = null;
+            foreach(MoveTrack p in s.AllSolutions(xcross, 7))
+            {
+                Cross c = cross.PlayForward(p);
+                int x = c.CountSolvedCubelets;
+                if (x > solved)
+                {
+                    solved = x;
+                    sp = p;
+                    textBox_Log.AppendText($"{solved}:{p}\r\n");
+                }
+                else if(x == solved && p.Count < sp.Count)
+                {
+                    sp = p;
+                    textBox_Log.AppendText($"{solved}:{p}\r\n");
+                }
+            }
+
             //Solution.PrecomputeCornerMoves(8);
             var path = solution.SolveCorners(cube.CornerKey);
 
@@ -524,6 +546,47 @@ namespace MagicCube
 
         private void button_ShowNext_Click(object sender, EventArgs e)
         {
+            const int max_depth = 7;
+
+            // 1. Generate cube rings
+            var cube_solution = new CubeGeneralSolution<FastCube>();
+
+            try
+            {
+                Console.Write("Loading Moves... ");
+                cube_solution.Load(Constants.FnameCubeRings, Constants.ExtensionCubeRings, max_depth,
+                    sizeof(ulong) * 2, br => new FastCube(br.ReadUInt64(), br.ReadUInt64()));
+                Console.WriteLine("done!");
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+
+                Console.Write("Precomputing Moves... ");
+                cube_solution.PrecomputeMoves(FastCube.Identity, max_depth, 18, 13, Faces.NextCubes);
+                Console.WriteLine("done!");
+
+                Action<BinaryWriter, FastCube> saver = (bw, k) =>
+                {
+                    CubeKey key = k;
+                    bw.Write(key.corners);
+                    bw.Write(key.middles);
+                };
+
+                Console.Write("Saving Moves... ");
+                cube_solution.Save(Constants.FnameCubeRings, Constants.ExtensionCubeRings, saver);
+                Console.WriteLine("done!");
+            }
+
+            CrossAlgorithms ca = new CrossAlgorithms();
+            ca.Load("short_algorithms.txt");
+            ca.Load("long_algorithms.txt");
+            //ca.AddShortAlgorithms(cube_solution);
+            //ca.AddLongAlgorithms(cube_solution, 1);
+            //ca.AddLongAlgorithms(cube_solution, 2);
+            ca.Save("long_algorithms.new.txt");
+
+
             uint face = Faces.Front;
             Debug.Assert(Faces.UpFace(face) == Faces.Up);
             Debug.Assert(Faces.DownFace(face) == Faces.Down);
@@ -835,7 +898,7 @@ namespace MagicCube
         {
             string command = textBox_Command.Text;
 
-            MoveTrack alg = new MoveTrack(command, checkBox_SingmasterNotation.Checked).Reverse();
+            MoveTrack alg = new MoveTrack(command, checkBox_SingmasterNotation.Checked).Reverse;
 
             textBox_Log.AppendText(alg.ToString() + "\r\n");
 

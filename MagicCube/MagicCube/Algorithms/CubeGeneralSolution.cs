@@ -6,64 +6,39 @@ using System.Threading.Tasks;
 
 namespace MagicCube
 {
-    class CubeGeneralSolution<K, T> : GeneralSolution<K> where T : Faces.IRotatable
+    public class CubeGeneralSolution<TCube> : GeneralSolution<TCube> where TCube : Faces.IRotatable, IComparable<TCube>
     {
-        public MoveTrack PathTo(K key, Func<K, T> KtoT, Func<T, K> TtoK)
+        public MoveTrack PathTo(TCube cube, int count) => new MoveTrack(PathTo(cube, count, Faces.NextCubes));
+
+        public MoveTrack SolveCube(TCube src, int depth)
         {
-            MoveTrack path = new MoveTrack();
-            for (int i = Count; i-- > 0;)
-            {
-                if (this[i].BinarySearch(key) >= 0)
-                {
-                    continue;
-                }
+            var ring = new List<TCube>();
+            ring.Add(src);
 
-                foreach (var pair in Faces.NextMoves(KtoT(key)))
-                {
-                    K dst_key = TtoK(pair.Value);
-                    if (this[i].BinarySearch(dst_key) >= 0)
-                    {
-                        key = dst_key;
-                        path.Add(pair.Key);
-                        break;
-                    }
-                }
-            }
-            return path;
-        }
-
-        public MoveTrack SolveCube(K start_key, int depth, Func<K, T> KtoT, Func<T, K> TtoK)
-        {
-            List<K> ring = new List<K>();
-            ring.Add(start_key);
-
-            CubeGeneralSolution<K, T> l_rings = new CubeGeneralSolution<K, T>();
+            var l_rings = new CubeGeneralSolution<TCube>();
             l_rings.Add(ring);
 
             int reserved = 18;
             while (true)
             {
-                List<K> next_ring = null;
+                List<TCube> next_ring = null;
                 if (--depth > 0)
                 {
-                    next_ring = new List<K>(reserved);
+                    next_ring = new List<TCube>(reserved);
                 }
 
-                foreach (K key in ring)
+                foreach (var cube in ring)
                 {
-                    foreach (K next_key in Faces.NextKeys(key, KtoT, TtoK))
+                    foreach (var dst_cube in Faces.NextCubes(cube))
                     {
-                        int pos = this.FindRow(next_key);
+                        int pos = this.FindRow(dst_cube);
                         if (pos >= 0)
                         {
-                            MoveTrack path = l_rings.PathTo(next_key, KtoT, TtoK);
-                            path = path.Reverse();
-                            path += PathTo(next_key, KtoT, TtoK);
-                            return path;
+                            return l_rings.PathTo(dst_cube, l_rings.Count).Reverse + PathTo(dst_cube, pos);
                         }
-                        else if (next_ring != null && l_rings.FindRow(next_key) < 0)
+                        else if (next_ring != null && l_rings.FindRow(dst_cube) < 0)
                         {
-                            next_ring.Add(next_key);
+                            next_ring.Add(dst_cube);
                         }
                     }
                 }
@@ -80,62 +55,21 @@ namespace MagicCube
             }
         }
 
-        public MoveTrack SolveCube(K start_key, int depth, Func<K, T> KtoT, Func<T, K> TtoK, Func<T, int> solved_counter)
+        public IEnumerable<MoveTrack> AllSolutions(TCube cube, int depth)
         {
-            List<K> ring = new List<K>();
-            ring.Add(start_key);
+            var solutions = new HashSet<MoveTrack>();
 
-            CubeGeneralSolution<K, T> l_rings = new CubeGeneralSolution<K, T>();
-            l_rings.Add(ring);
-
-            int solved = solved_counter(KtoT(start_key));
-            int reserved = 18;
-            MoveTrack path = null;
-
-            while (true)
+            Func<IEnumerable<int>, IEnumerable<int>, bool> on_solved = (l_path, r_path) =>
             {
-                List<K> next_ring = null;
-                if (--depth > 0)
-                {
-                    next_ring = new List<K>(reserved);
-                }
+                var a = new MoveTrack(l_path);
+                var b = new MoveTrack(r_path);
+                solutions.Add(a.Reverse + b);
+                return false;
+            };
 
-                foreach (K key in ring)
-                {
-                    foreach (K next_key in Faces.NextKeys(key, KtoT, TtoK))
-                    {
-                        int pos = this.FindRow(next_key);
-                        if (pos >= 0)
-                        {
-                            path = l_rings.PathTo(next_key, KtoT, TtoK);
-                            path = path.Reverse();
-                            path += PathTo(next_key, KtoT, TtoK);
-                            return path;
-                        }
-                        else if (solved_counter(KtoT(next_key)) > solved)
-                        {
-                            path = l_rings.PathTo(next_key, KtoT, TtoK);
-                            path = path.Reverse();
+            ForAllSolutions(cube, depth, 18, 13, Faces.NextCubes, on_solved);
 
-                            solved = solved_counter(KtoT(next_key));
-                        }
-                        else if (next_ring != null && l_rings.FindRow(next_key) < 0)
-                        {
-                            next_ring.Add(next_key);
-                        }
-                    }
-                }
-
-                if (next_ring == null)
-                {
-                    return path;
-                }
-
-                reserved = next_ring.Count * 13;
-                next_ring.DistinctValues();
-                l_rings.Add(next_ring);
-                ring = next_ring;
-            }
+            return solutions;
         }
     }
 }

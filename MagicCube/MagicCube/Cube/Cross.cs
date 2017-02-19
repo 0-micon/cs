@@ -55,7 +55,7 @@ namespace MagicCube
         }
     }
 
-    public struct Cross : Faces.IRotatable
+    public struct Cross : Faces.IRotatable, IComparable<Cross>
     {
         Uint5Array _key;
 
@@ -64,6 +64,9 @@ namespace MagicCube
 
         //  Conversion from ulong to Cross
         public static implicit operator Cross(ulong i) => new Cross(i);
+
+        // IComparable implementation
+        public int CompareTo(Cross other) => _key.CompareTo(other._key);
 
         public static IEnumerable<ulong> NextKeys(ulong src) => Faces.NextKeys<ulong, Cross>(src, x => x, x => x);
 
