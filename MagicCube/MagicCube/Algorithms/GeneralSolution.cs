@@ -86,7 +86,7 @@ namespace MagicCube
                 }
             }
 
-            /*//
+            ///*//
             var last = l_rings.Last();
             foreach(K k in last)
             {

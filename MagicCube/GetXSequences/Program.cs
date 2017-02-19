@@ -266,12 +266,8 @@ namespace GetXSequences
                 Console.WriteLine(ex.Message);
             }
             Console.WriteLine(xalgorithms.Tracks.Count);
-            //xalgorithms.Purge(from pair in xalgorithms.Tracks where pair.Value.Count < 12 select pair.Key);
-            //xalgorithms.Save(Constants.FnameXAlgorithms);
-            Console.WriteLine(xalgorithms.Tracks.Count);
 
-
-            Console.Write("Loading additional saltire sequences... ");
+            //Console.Write("Loading additional saltire sequences... ");
             //var xalg = new SaltireAlgorithms();
             try
             {
@@ -285,13 +281,19 @@ namespace GetXSequences
                 xalg.Load("_test_13_8.txt");
                 */
                 //xalgorithms.Load("_xsequences.13.new.txt");
-                Console.WriteLine("done!");
+               // Console.WriteLine("done!");
             }
             catch (System.IO.FileNotFoundException ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            Console.WriteLine(xalgorithms.Tracks.Count);
+            //Console.WriteLine(xalgorithms.Tracks.Count);
+
+            //Console.Write("Purging saltire sequences... ");
+            //xalgorithms.Purge(from pair in xalgorithms.Tracks where pair.Value.Count <= 11 select pair.Key);
+            //Console.WriteLine("done!");
+            //xalgorithms.Save(Constants.FnameXAlgorithms);
+            //Console.WriteLine(xalgorithms.Tracks.Count);
 
             Console.Write("Loading additional substitutes... ");
             //var substitutes = new SearchTree();
@@ -530,7 +532,7 @@ namespace GetXSequences
 
                     MoveTrack path = null;
                     int corners = 0;
-                    foreach(MoveTrack p in middle_solution.AllSolutions(cube.Middles, max_depth))
+                    foreach(MoveTrack p in middle_solution.AllSolutions(cube.Middles, max_depth-1))
                     {
                         int csc = cube.Corners.PlayForward(p).CountSolvedCubelets;
                         if (path == null || corners < csc || (corners == csc && path.Count > p.Count))

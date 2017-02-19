@@ -101,7 +101,7 @@ namespace MagicCube
             }
         }
 
-        public void FirstIteration(Saltire src, Dictionary<ulong, SearchEntry> done)
+        public void FirstIteration(Saltire src, Dictionary<ulong, SearchEntry> done, SearchEntry dst_entry)
         {
             int count = src.CountSolvedCubelets;
             var tracks = Tracks;
@@ -110,12 +110,20 @@ namespace MagicCube
                 Saltire dst = new Saltire(src);
                 dst.Transform = pair.Key;
 
-                if (dst.CountSolvedCubelets > count)
+                //if (dst.CountSolvedCubelets > count)
                 {
                     MoveTrack dst_path = pair.Value;
                     ulong dst_key = dst;
 
-                    if (!done.ContainsKey(dst_key))
+                    if (dst_entry._dst_key == dst_key)
+                    {
+                        if (dst_entry._path == null || dst_entry._path.Count > dst_path.Count)
+                        {
+                            dst_entry._path = dst_path;
+                            Console.WriteLine($"\n found {dst_path.Count}:{dst_path}");
+                        }
+                    }
+                    else if (!done.ContainsKey(dst_key))
                     {
                         done[dst_key] = new SearchEntry(dst, dst_path);
                     }
@@ -128,13 +136,16 @@ namespace MagicCube
             }
         }
 
-        public void NextIteration(Saltire src, MoveTrack path, Dictionary<ulong, SearchEntry> done, int threshold)
+        public void NextIteration(Saltire src, MoveTrack path, Dictionary<ulong, SearchEntry> done, SearchEntry dst_entry)
         {
+            int threshold = dst_entry._path == null ? 35 : dst_entry._path.Count;
+
             int count = src.CountSolvedCubelets;
             var tracks = Tracks;
             foreach (var pair in tracks)
             {
-                if (pair.Value.Count + path.Count >= threshold)
+                MoveTrack dst_path = path + pair.Value;
+                if (dst_path.Count >= threshold)
                 {
                     continue;
                 }
@@ -142,12 +153,20 @@ namespace MagicCube
                 Saltire dst = src;
                 dst.Transform = pair.Key;
 
-                if (dst.CountSolvedCubelets >= count)
+                if (dst.CountSolvedCubelets > count)
                 {
                     ulong dst_key = dst;
-                    MoveTrack dst_path = path + pair.Value;
 
-                    if (!done.ContainsKey(dst_key))
+                    if (dst_entry._dst_key == dst_key)
+                    {
+                        if (dst_entry._path == null || dst_entry._path.Count > dst_path.Count)
+                        {
+                            dst_entry._path = dst_path;
+                            threshold = dst_path.Count;
+                            Console.WriteLine($"\n found {dst_path.Count}:{dst_path}");
+                        }
+                    }
+                    else if (!done.ContainsKey(dst_key))
                     {
                         done[dst_key] = new SearchEntry(dst, dst_path);
                     }
@@ -162,16 +181,18 @@ namespace MagicCube
 
         public MoveTrack Solve(Saltire src, int min_breadth)
         {
-            ulong win_key = Saltire.IDENTITY;
+            var dst_entry = new SearchEntry(Saltire.IDENTITY, null);
+            //ulong win_key = Saltire.IDENTITY;
 
-            MoveTrack path = null;
+            //MoveTrack path = null;
             var done = new Dictionary<ulong, SearchEntry>();
 
-            FirstIteration(src, done);
+            FirstIteration(src, done, dst_entry);
 
-            int threshold = 35;
-            for (int try_count = 0; ; try_count++)
+            //int threshold = 35;
+            for (int try_count = 0; try_count < 12; try_count++)
             {
+                /*//
                 if (done.ContainsKey(win_key) && !done[win_key]._handled)
                 {
                     path = done[win_key]._path;
@@ -180,15 +201,18 @@ namespace MagicCube
 
                     Console.WriteLine($"\n found {path.Count}:{path}");
                 }
+                
 
                 if (try_count > 12)
                 {
                     break;
                 }
+                //*/
                 // make list
                 // get top ten
                 // test them
 
+                int threshold = dst_entry._path == null ? 35 : dst_entry._path.Count - 1;
                 var list = new List<SearchEntry>(
                     from entry in done.Values
                     where entry._path.Count < threshold && !entry._handled
@@ -240,9 +264,9 @@ namespace MagicCube
                         }
                     }
 
-                    if (i > min_breadth * 3 && path != null)
+                    if (i > min_breadth * 2 && dst_entry._path != null)
                     {
-                        i = min_breadth * 3;
+                        i = min_breadth * 2;
                     }
 
                     if (i > min_breadth * 5)
@@ -260,12 +284,17 @@ namespace MagicCube
                 foreach (var entry in list)
                 {
                     entry._handled = true;
-                    NextIteration(entry._dst_key, entry._path, done, threshold);
+                    NextIteration(entry._dst_key, entry._path, done, dst_entry);
+                }
+
+                if(dst_entry._path != null && try_count < 9)
+                {
+                    try_count = 9;
                 }
             }
 
 
-            return path;
+            return dst_entry._path;
         }
     }
 }
