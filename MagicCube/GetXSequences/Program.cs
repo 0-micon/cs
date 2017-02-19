@@ -54,13 +54,12 @@ namespace GetXSequences
             }
         }
 
-        static IEnumerable<FastCube> NextCubes(CubeGeneralSolution<CubeKey, FastCube> solution)
+        static IEnumerable<FastCube> NextCubes(CubeGeneralSolution<FastCube> solution)
         {
             var ring = solution.Last();
             for (int i = 0; i < ring.Count; i++)
             {
-                var src_key = ring[i];
-                FastCube src_cube = src_key;
+                FastCube src_cube = ring[i];
                 foreach (var dst_cube in Faces.NextCubes(src_cube))
                 {
                     if (solution.FindRow(dst_cube) < 0)
@@ -71,15 +70,15 @@ namespace GetXSequences
             }
         }
 
-        static void MakeXSequences(CubeGeneralSolution<CubeKey, FastCube> cube_solution, CubeGeneralSolution<ulong, Cross> cross_solution,
+        static void MakeXSequences(CubeGeneralSolution<FastCube> cube_solution, CubeGeneralSolution<Cross> cross_solution,
             SaltireAlgorithms xalg)
         {
             SaltireAlgorithms alg = new SaltireAlgorithms();
 
             foreach (var dst_cube in NextCubes(cube_solution))
             {
-                MoveTrack path_a = cube_solution.PathTo(dst_cube, cube_solution.Count, x => x, x => x);
-                MoveTrack path_b = dst_cube.Middles.Solve(cross_solution, path_a.Count);
+                MoveTrack path_a = cube_solution.PathTo(dst_cube, cube_solution.Count);
+                MoveTrack path_b = cross_solution.SolveCube(dst_cube.Middles, path_a.Count);
                 if (path_a.Count > path_b.Count)
                 {
                     ulong key = dst_cube.PlayForward(path_b).Corners.Transform;
@@ -114,7 +113,7 @@ namespace GetXSequences
             return false;
         }
 
-        static void MakeReplaces(CubeGeneralSolution<CubeKey, FastCube> cube_solution)
+        static void MakeReplaces(CubeGeneralSolution<FastCube> cube_solution)
         {
             char[] path = { 'a', 'a', 'a', 'a', 'a', 'a', 'a' };
 
@@ -132,7 +131,7 @@ namespace GetXSequences
                     int pos = cube_solution.FindRow(key);
                     if (pos >= 0)
                     {
-                        MoveTrack dst_track = cube_solution.PathTo(key, pos, x => x, x => x);
+                        MoveTrack dst_track = cube_solution.PathTo(key, pos);
                         dst_track = dst_track.Reverse;
 
                         int delta = src_track.Count - dst_track.Count;
@@ -168,7 +167,7 @@ namespace GetXSequences
             substitute.Save("subs.txt");
         }
 
-        static IEnumerable<MoveTrack> Optimize(MoveTrack path, CubeGeneralSolution<CubeKey, FastCube> cube_solution)
+        static IEnumerable<MoveTrack> Optimize(MoveTrack path, CubeGeneralSolution<FastCube> cube_solution)
         {
             int min_length = 11;
             for (int i = 0; i < path.Count - min_length; i++)
@@ -179,7 +178,7 @@ namespace GetXSequences
 
                     FastCube cube = FastCube.Identity.PlayBackward(src);
 
-                    MoveTrack dst = cube.Solve(cube_solution, min_length - cube_solution.Count + 1);
+                    MoveTrack dst = cube_solution.SolveCube(cube, min_length - cube_solution.Count + 1);
                     if(dst != null)
                     {
                         dst = path.SubTrack(0, i) + dst + path.SubTrack(length, path.Count - length);
@@ -194,7 +193,7 @@ namespace GetXSequences
             const int max_depth = 7;
 
             // 1. Generate cube rings
-            var cube_solution = new CubeGeneralSolution<CubeKey, FastCube>();
+            var cube_solution = new CubeGeneralSolution<FastCube>();
 
             try
             {
@@ -208,13 +207,13 @@ namespace GetXSequences
                 Console.WriteLine(ex.Message);
 
                 Console.Write("Precomputing Moves... ");
-                cube_solution.PrecomputeMoves(FastCube.Identity, max_depth, 18, 13, FastCube.NextKeys);
+                cube_solution.PrecomputeMoves(FastCube.Identity, max_depth, 18, 13, Faces.NextCubes);
                 Console.WriteLine("done!");
 
-                Action<System.IO.BinaryWriter, CubeKey> saver = (bw, k) =>
+                Action<System.IO.BinaryWriter, FastCube> saver = (bw, k) =>
                 {
-                    bw.Write(k.corners);
-                    bw.Write(k.middles);
+                    bw.Write(k.Corners);
+                    bw.Write(k.Middles);
                 };
 
                 Console.Write("Saving Moves... ");
@@ -239,10 +238,10 @@ namespace GetXSequences
 
 #if GET_SHORT_XSEQUENCES
 #else
-            var middle_solution = new CubeGeneralSolution<ulong, Cross>();
+            var middle_solution = new CubeGeneralSolution<Cross>();
             foreach (var ring in cube_solution)
             {
-                List<ulong> middles = new List<ulong>(from k in ring select k.middles);
+                var middles = new List<Cross>(from k in ring select k.Middles);
                 middles.DistinctValues();
                 middle_solution.Add(middles);
 
@@ -526,27 +525,20 @@ namespace GetXSequences
                 {
                     Console.Write("Solving middles... ");
 
-                    MoveTrack min_path = null;
-                    int min_count = 0;
+                    MoveTrack path = null;
+                    int corners = 0;
+                    foreach(MoveTrack p in middle_solution.AllSolutions(cube.Middles, max_depth))
+                    {
+                        int csc = cube.Corners.PlayForward(p).CountSolvedCubelets;
+                        if (path == null || corners < csc)
+                        {
+                            path = p;
+                            corners = csc;
+                        }
+                    }
 
                     //DateTime t0 = DateTime.Now;
-                    Predicate<MoveTrack> on_solved = (mt) =>
-                    {
-                        int count = cube.Corners.PlayForward(mt).CountSolvedCubelets;
-                        if(min_path == null || count > min_count)
-                        {
-                            min_count = count;
-                            min_path = mt;
-                            Console.WriteLine($"found {count}: {mt}");
-                        }
-                        return mt.Count > 12;
-                    };
 
-                    MoveTrack path = cube.Middles.Solve(middle_solution, max_depth, on_solved);
-                    if(min_path != null)
-                    {
-                        path = min_path;
-                    }
                     //Console.WriteLine($"{path.Count}:{path}");
                     //TimeSpan dt = DateTime.Now - time;
                     //Console.WriteLine("Time: " + dt.ToString(@"mm\:ss\.fff"));
@@ -581,7 +573,7 @@ namespace GetXSequences
                     MoveTrack path = xalgorithms.Solve(cube.Corners, 12);
                     if (path == null)
                     {
-                        path = cube_solution.SolveCube(cube, max_depth, x => x, x => x);
+                        path = cube_solution.SolveCube(cube, max_depth);
                         if (path != null && path.Count > 0 && xalgorithms.Add(path) > 0)
                         {
                             Console.Write("New xsequences! ");
