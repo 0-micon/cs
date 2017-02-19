@@ -137,7 +137,7 @@ namespace MagicCube
             {
                 if (!outset.Contains(key))
                 {
-                    Tracks.Remove(key);
+                    _tracks.Remove(key);
                 }
             }
         }

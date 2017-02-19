@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,63 +8,47 @@ using System.Threading.Tasks;
 namespace MagicCube
 {
     // Collection of move tracks which can change Saltire only and should leave Cross intact.
-    class SaltireAlgorithms
+    public class SaltireAlgorithms : GeneralAlgorithms<ulong>
     {
-        Dictionary<ulong, MoveTrack> _tracks = new Dictionary<ulong, MoveTrack>();
-
-        public Dictionary<ulong, MoveTrack> Tracks => _tracks;
-
-        public static IEnumerable<KeyValuePair<ulong, MoveTrack>> AllTransforms(MoveTrack src_track)
+        // Base class abstract function implementation:
+        public override ulong ToKey(MoveTrack track)
         {
-            foreach (MoveTrack dst_track in src_track.AllTransforms())
-            {
-                Saltire dst = Saltire.IDENTITY;
-                dst = dst.PlayForward(dst_track);
-
-                yield return new KeyValuePair<ulong, MoveTrack>(dst.Transform, dst_track);
-            }
+            Saltire salti = Saltire.IDENTITY;
+            return salti.PlayForward(track).Transform;
         }
 
-        public int Add(MoveTrack track)
+        public override bool CanAdd(MoveTrack track)
         {
-            int result = 0;
-            foreach (KeyValuePair<ulong, MoveTrack> pair in AllTransforms(track))
+            Cross cross = Cross.IDENTITY;
+            if (Cross.IDENTITY != cross.PlayForward(track))
             {
-                if (_tracks.ContainsKey(pair.Key))
-                {
-                    if (pair.Value.Count < _tracks[pair.Key].Count)
-                    {
-                        Console.WriteLine($"{pair.Key}: {_tracks[pair.Key]} => {pair.Value}");
-                        _tracks[pair.Key] = pair.Value;
-                        result++;
-                    }
-                }
-                else
-                {
-                    _tracks.Add(pair.Key, pair.Value);
-                    result++;
-
-                    Cross cross = Cross.IDENTITY;
-                    cross = cross.PlayForward(pair.Value);
-
-                    if (Cross.IDENTITY != cross)
-                    {
-                        Console.WriteLine($"Warning: invalid saltire track: {pair.Value}");
-                    }
-                }
+                Console.WriteLine($"Warning: invalid cross track: {track}");
+                return false;
             }
-            return result;
+            return true;
+        }
+
+        public override int CountChangedElements(MoveTrack track)
+        {
+            Saltire salti = Saltire.IDENTITY;
+            return (int)(Saltire.CUBELET_NUM - salti.PlayForward(track).CountSolvedCubelets);
+        }
+
+        public override void SaveKey(StreamWriter file, ulong key)
+        {
+            file.Write(key);
         }
 
         public IEnumerable<KeyValuePair<Saltire, MoveTrack>> Run(Saltire cube) =>
-            from path in _tracks.Values select new KeyValuePair<Saltire, MoveTrack>(cube.PlayForward(path), path);
+            from path in Tracks.Values select new KeyValuePair<Saltire, MoveTrack>(cube.PlayForward(path), path);
 
         public MoveTrack RunOnce(Saltire cube)
         {
             MoveTrack dst_track = null;
             int solved_count = cube.CountSolvedCubelets;
 
-            foreach (var pair in _tracks)
+            var tracks = Tracks;
+            foreach (var pair in tracks)
             {
                 Saltire dst = new Saltire(cube);
                 dst.Transform = pair.Key; // pair.Value.PlayForward(cube);
@@ -84,60 +69,6 @@ namespace MagicCube
             }
 
             return dst_track;
-        }
-
-        public void Save(string fname)
-        {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(fname))
-            {
-                var done = new HashSet<ulong>();
-
-                foreach (var pair in _tracks)
-                {
-                    if (!done.Contains(pair.Key))
-                    {
-                        var save = pair;
-
-                        foreach (var tran in AllTransforms(pair.Value))
-                        {
-                            done.Add(tran.Key);
-                            if (tran.Key < save.Key)
-                            {
-                                save = tran;
-                            }
-                        }
-
-                        Saltire cross = Saltire.IDENTITY;
-                        cross.Transform = save.Key;
-
-                        int count = (int)Saltire.CUBELET_NUM - cross.CountSolvedCubelets;
-
-                        file.Write(save.Value.Count);
-                        file.Write(';');
-                        file.Write(save.Value.Track);
-                        file.Write(';');
-                        file.Write(count);
-                        file.Write(';');
-                        file.Write(save.Key);
-                        file.Write('\n');
-                    }
-                }
-            }
-        }
-
-        public void Load(string fname)
-        {
-            using (System.IO.StreamReader file = new System.IO.StreamReader(fname))
-            {
-                for (string buf; (buf = file.ReadLine()) != null;)
-                {
-                    string[] arr = buf.Split(';');
-                    if (arr.Length > 1)
-                    {
-                        Add(new MoveTrack(arr[1], false));
-                    }
-                }
-            }
         }
 
         public class SearchEntry : IComparable<SearchEntry>
@@ -173,7 +104,8 @@ namespace MagicCube
         public void FirstIteration(Saltire src, Dictionary<ulong, SearchEntry> done)
         {
             int count = src.CountSolvedCubelets;
-            foreach (var pair in _tracks)
+            var tracks = Tracks;
+            foreach (var pair in tracks)
             {
                 Saltire dst = new Saltire(src);
                 dst.Transform = pair.Key;
@@ -199,8 +131,8 @@ namespace MagicCube
         public void NextIteration(Saltire src, MoveTrack path, Dictionary<ulong, SearchEntry> done, int threshold)
         {
             int count = src.CountSolvedCubelets;
-
-            foreach (var pair in _tracks)
+            var tracks = Tracks;
+            foreach (var pair in tracks)
             {
                 if (pair.Value.Count + path.Count >= threshold)
                 {

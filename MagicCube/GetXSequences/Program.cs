@@ -266,8 +266,11 @@ namespace GetXSequences
                 Console.WriteLine(ex.Message);
             }
             Console.WriteLine(xalgorithms.Tracks.Count);
+            //xalgorithms.Purge(from pair in xalgorithms.Tracks where pair.Value.Count < 12 select pair.Key);
+            //xalgorithms.Save(Constants.FnameXAlgorithms);
+            Console.WriteLine(xalgorithms.Tracks.Count);
 
-            
+
             Console.Write("Loading additional saltire sequences... ");
             //var xalg = new SaltireAlgorithms();
             try
@@ -281,7 +284,7 @@ namespace GetXSequences
                 xalg.Load("_test_13_7.txt");
                 xalg.Load("_test_13_8.txt");
                 */
-                xalgorithms.Load("_xsequences.13.new.txt");
+                //xalgorithms.Load("_xsequences.13.new.txt");
                 Console.WriteLine("done!");
             }
             catch (System.IO.FileNotFoundException ex)
@@ -530,7 +533,7 @@ namespace GetXSequences
                     foreach(MoveTrack p in middle_solution.AllSolutions(cube.Middles, max_depth))
                     {
                         int csc = cube.Corners.PlayForward(p).CountSolvedCubelets;
-                        if (path == null || corners < csc)
+                        if (path == null || corners < csc || (corners == csc && path.Count > p.Count))
                         {
                             path = p;
                             corners = csc;

@@ -85,6 +85,24 @@ namespace MagicCube
                     }
                 }
             }
+
+            /*//
+            var last = l_rings.Last();
+            foreach(K k in last)
+            {
+                foreach(K c in next(k))
+                {
+                    int pos = this.FindRow(c);
+                    if (pos >= 0 && l_rings.FindRow(c) < 0)
+                    {
+                        if (on_solved(l_rings.PathTo(c, l_rings.Count, next), PathTo(c, pos, next)))
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            //*/
         }
 
         public void Save(string fname, string extension, Action<BinaryWriter, K> saver)
