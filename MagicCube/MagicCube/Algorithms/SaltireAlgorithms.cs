@@ -14,7 +14,7 @@ namespace MagicCube
         public override ulong ToKey(MoveTrack track)
         {
             Saltire salti = Saltire.IDENTITY;
-            return salti.PlayForward(track).Transform;
+            return salti.PlayBackward(track);
         }
 
         public override bool CanAdd(MoveTrack track)
@@ -50,8 +50,7 @@ namespace MagicCube
             var tracks = Tracks;
             foreach (var pair in tracks)
             {
-                Saltire dst = new Saltire(cube);
-                dst.Transform = pair.Key; // pair.Value.PlayForward(cube);
+                Saltire dst = cube.PlayForward(pair.Value);
 
                 int i = dst.CountSolvedCubelets;
                 if (i > solved_count)
@@ -70,6 +69,57 @@ namespace MagicCube
 
             return dst_track;
         }
+
+        public MoveTrack Solve(Saltire src_cube, MoveTrack total)
+        {
+            MoveTrack dst_track = null;
+
+            foreach (var track in Tracks.Values)
+            {
+                Saltire dst_cube = src_cube.PlayForward(track);
+
+                // One algorithm solution.
+                if (dst_cube == Saltire.IDENTITY)
+                {
+                    if (dst_track == null)
+                    {
+                        dst_track = track;
+                    }
+                    else
+                    {
+                        MoveTrack a = total + dst_track;
+                        MoveTrack b = total + track;
+                        if (b.Count < a.Count)
+                        {
+                            dst_track = track;
+                        }
+                    }
+                }
+
+                // Two algorithms solution.
+                if (Tracks.ContainsKey(dst_cube))
+                {
+                    MoveTrack t = track + Tracks[dst_cube];
+
+                    if (dst_track == null)
+                    {
+                        dst_track = t;
+                    }
+                    else
+                    {
+                        MoveTrack a = total + dst_track;
+                        MoveTrack b = total + t;
+                        if (b.Count < a.Count)
+                        {
+                            dst_track = t;
+                        }
+                    }
+                }
+            }
+
+            return dst_track;
+        }
+
 
         public class SearchEntry : IComparable<SearchEntry>
         {
@@ -105,23 +155,28 @@ namespace MagicCube
         {
             int count = src.CountSolvedCubelets;
             var tracks = Tracks;
-            foreach (var pair in tracks)
+            foreach (var dst_path in tracks.Values)
             {
-                Saltire dst = new Saltire(src);
-                dst.Transform = pair.Key;
+                Saltire dst = src.PlayForward(dst_path);
+                ulong dst_key = dst;
+
+                if (tracks.ContainsKey(dst_key))
+                {
+                    MoveTrack path = dst_path + tracks[dst_key];
+                    if (dst_entry._path == null || dst_entry._path.Count > path.Count)
+                    {
+                        dst_entry._path = path;
+                        Console.WriteLine($"\n FI2 found {path.Count}:{path}");
+                    }
+                }
 
                 //if (dst.CountSolvedCubelets > count)
+                if (dst_entry._path == null || dst_entry._path.Count > dst_path.Count)
                 {
-                    MoveTrack dst_path = pair.Value;
-                    ulong dst_key = dst;
-
                     if (dst_entry._dst_key == dst_key)
                     {
-                        if (dst_entry._path == null || dst_entry._path.Count > dst_path.Count)
-                        {
-                            dst_entry._path = dst_path;
-                            Console.WriteLine($"\n found {dst_path.Count}:{dst_path}");
-                        }
+                        dst_entry._path = dst_path;
+                        Console.WriteLine($"\n FI1 found {dst_path.Count}:{dst_path}");
                     }
                     else if (!done.ContainsKey(dst_key))
                     {
@@ -150,13 +205,21 @@ namespace MagicCube
                     continue;
                 }
 
-                Saltire dst = src;
-                dst.Transform = pair.Key;
+                Saltire dst = src.PlayForward(pair.Value);
+                ulong dst_key = dst;
+
+                if (tracks.ContainsKey(dst_key))
+                {
+                    MoveTrack x = dst_path + tracks[dst_key];
+                    if (dst_entry._path == null || dst_entry._path.Count > x.Count)
+                    {
+                        dst_entry._path = x;
+                        Console.WriteLine($"\n NI2 found {x.Count}:{x}");
+                    }
+                }
 
                 if (dst.CountSolvedCubelets > count)
                 {
-                    ulong dst_key = dst;
-
                     if (dst_entry._dst_key == dst_key)
                     {
                         if (dst_entry._path == null || dst_entry._path.Count > dst_path.Count)

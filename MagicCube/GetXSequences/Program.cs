@@ -531,6 +531,9 @@ namespace GetXSequences
                     Console.Write("Solving middles... ");
 
                     MoveTrack path = null;
+                    path = middle_solution.SolveCube(cube.Middles, max_depth);
+
+                    /*//
                     int corners = 0;
                     foreach(MoveTrack p in middle_solution.AllSolutions(cube.Middles, max_depth-1))
                     {
@@ -541,6 +544,7 @@ namespace GetXSequences
                             corners = csc;
                         }
                     }
+                    //*/
 
                     //DateTime t0 = DateTime.Now;
 
@@ -575,7 +579,8 @@ namespace GetXSequences
                 {
                     Console.Write("Solving corners... ");
 
-                    MoveTrack path = xalgorithms.Solve(cube.Corners, 12);
+                    MoveTrack path = xalgorithms.Solve(cube.Corners, total);
+                    //MoveTrack path = xalgorithms.Solve(cube.Corners, 12);
                     if (path == null)
                     {
                         path = cube_solution.SolveCube(cube, max_depth);
