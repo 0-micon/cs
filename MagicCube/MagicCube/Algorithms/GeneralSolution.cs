@@ -68,6 +68,7 @@ namespace MagicCube
         public void ForAllSolutions(K start_key, int max_depth, int reserved, int growth_rate, Func<K, IEnumerable<K>> next,
             Func<IEnumerable<int>, IEnumerable<int>, bool> on_solved)
         {
+            bool ok = false;
             var l_rings = new GeneralSolution<K>();
             l_rings.PrecomputeMoves(start_key, max_depth, reserved, growth_rate, next);
 
@@ -78,6 +79,7 @@ namespace MagicCube
                 {
                     foreach (K c in this[r].Intersection(l_rings[l]))
                     {
+                        ok = true;
                         if (on_solved(l_rings.PathTo(c, l, next), PathTo(c, r, next)))
                         {
                             return;
@@ -85,6 +87,13 @@ namespace MagicCube
                     }
                 }
             }
+
+            /*//
+            if (ok)
+            {
+                return;
+            }
+            //*/
 
             ///*//
             var last = l_rings.Last();

@@ -472,7 +472,7 @@ namespace GetXSequences
             //*/
 #else
             int max_count = 0;
-            var long_algs = new SaltireAlgorithms();
+            //var long_algs = new SaltireAlgorithms();
             while (true)
             {
             Loop_start:
@@ -495,10 +495,10 @@ namespace GetXSequences
 
                 MoveTrack total = null;
                 //total = algorithms.Solve(cube.Key, FastCube.Identity, 50, c => c._cube.CountSolvedCubelets);
-                if (total == null)
-                {
-                    total = new MoveTrack();
-                }
+                //if (total == null)
+                //{
+                //    total = new MoveTrack();
+                //}
 
                 /*//
                 // Solve for max elements
@@ -528,14 +528,51 @@ namespace GetXSequences
                 // 4. Solve middles
                 while (solved_middles < Cross.CUBELET_NUM)
                 {
-                    Console.Write("Solving middles... ");
+                    //Console.Write("Solving middles... ");
 
-                    MoveTrack path = null;
-                    path = middle_solution.SolveCube(cube.Middles, max_depth);
+                    Predicate<MoveTrack> on_solved = (midd_path) =>
+                    {
+                        bool happy = false;
+                        MoveTrack corn_path = xalgorithms.Solve(cube.Corners.PlayForward(midd_path), midd_path);
+
+                        if (corn_path != null)
+                        {
+                            MoveTrack full_path = midd_path + corn_path;
+                            if (total == null || full_path.Count < total.Count)
+                            {
+                                total = full_path;
+                                Console.WriteLine($"{total.Count}:{total}\n\t({midd_path.Count}.{corn_path.Count})");
+                            }
+
+                            if (total.Count < 26)
+                            {
+                                happy = true;
+                            }
+
+                            if (midd_path.Count > 12)
+                            {
+                                happy = true;
+                            }
+
+                            if (midd_path.Count >= 12 && total.Count < 30)
+                            {
+                                happy = true;
+                            }
+
+                            if (midd_path.Count >= 11 && total.Count < 28)
+                            {
+                                happy = true;
+                            }
+                        }
+                        return happy;
+                    };
+
+                    middle_solution.SolveCube(cube.Middles, max_depth, on_solved);
+                    MoveTrack path = total;
 
                     /*//
                     int corners = 0;
-                    foreach(MoveTrack p in middle_solution.AllSolutions(cube.Middles, max_depth-1))
+                    foreach(MoveTrack p in middle_solution.AllSolutions(cube.Middles, max_depth))
                     {
                         int csc = cube.Corners.PlayForward(p).CountSolvedCubelets;
                         if (path == null || corners < csc || (corners == csc && path.Count > p.Count))
@@ -559,9 +596,9 @@ namespace GetXSequences
 
                     if (path != null)
                     {
-                        Console.WriteLine($"done! {path.Count}: {path}");
+                        //Console.WriteLine($"done! {path.Count}: {path}");
                         cube = cube.PlayForward(path);
-                        total += path;
+                        //total += path;
                         solved_middles = cube.Middles.CountSolvedCubelets;
                         solved_corners = cube.Corners.CountSolvedCubelets;
                     }
@@ -607,20 +644,21 @@ namespace GetXSequences
                     total += path;
                     solved_middles = cube.Middles.CountSolvedCubelets;
                     solved_corners = cube.Corners.CountSolvedCubelets;
-
-                    if (max_count < total.Count)
-                    {
-                        max_count = total.Count;
-                        long_algs.Tracks.Clear();
-                    }
-
-                    if (max_count == total.Count)
-                    {
-                        long_algs.Add(path);
-                    }
                 }
 
-                Console.WriteLine($"Cube (2): {cube}");
+                //Console.WriteLine($"Cube (2): {cube}");
+
+                if (max_count < total.Count)
+                {
+                    max_count = total.Count;
+                    //long_algs.Tracks.Clear();
+                }
+
+                //if (max_count == total.Count)
+                //{
+                //    long_algs.Add(path);
+                //}
+
                 Console.WriteLine($"Total {total.Count} ({max_count}): {total}");
 
                 TimeSpan delta = DateTime.Now - time;
@@ -637,7 +675,7 @@ namespace GetXSequences
                //}
             }
 
-            long_algs.Save("_long_sequences.txt");
+            //long_algs.Save("_long_sequences.txt");
 #endif            
         }
     }

@@ -10,7 +10,7 @@ namespace MagicCube
     {
         public MoveTrack PathTo(TCube cube, int count) => new MoveTrack(PathTo(cube, count, Faces.NextCubes));
 
-        public MoveTrack SolveCube(TCube src, int depth)
+        public MoveTrack SolveCube(TCube src, int depth, Predicate<MoveTrack> on_solved = null)
         {
             var ring = new List<TCube>();
             ring.Add(src);
@@ -34,7 +34,11 @@ namespace MagicCube
                         int pos = this.FindRow(dst_cube);
                         if (pos >= 0)
                         {
-                            return l_rings.PathTo(dst_cube, l_rings.Count).Reverse + PathTo(dst_cube, pos);
+                            MoveTrack solution = l_rings.PathTo(dst_cube, l_rings.Count).Reverse + PathTo(dst_cube, pos);
+                            if (on_solved == null || on_solved(solution))
+                            {
+                                return solution;
+                            }
                         }
                         else if (next_ring != null && l_rings.FindRow(dst_cube) < 0)
                         {
