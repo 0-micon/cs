@@ -70,6 +70,54 @@ namespace MagicCube
 
         public static IEnumerable<ulong> NextKeys(ulong src) => Faces.NextKeys<ulong, Cross>(src, x => x, x => x);
 
+        public static IEnumerable<Cross> NextCubes(Cross src)
+        {
+            Cross[] keys = new Cross[Faces.Count * 3];
+
+            // Front
+            Cross dst = src;
+            dst.RotateFace(F0, R1, F1, L0); keys[ 0] = dst;
+            dst.RotateFace(F0, R1, F1, L0); keys[ 1] = dst;
+            dst.RotateFace(F0, R1, F1, L0); keys[ 2] = dst;
+
+            // Up
+            dst = src;
+            dst.RotateFace(U0, F0, U1, B1); keys[ 3] = dst;
+            dst.RotateFace(U0, F0, U1, B1); keys[ 4] = dst;
+            dst.RotateFace(U0, F0, U1, B1); keys[ 5] = dst;
+
+            // Right
+            dst = src;
+            dst.RotateFace(R0, D1, R1, U0); keys[ 6] = dst;
+            dst.RotateFace(R0, D1, R1, U0); keys[ 7] = dst;
+            dst.RotateFace(R0, D1, R1, U0); keys[ 8] = dst;
+
+            // Back
+            dst = src;
+            dst.RotateFace(B0, R0, B1, L1); keys[ 9] = dst;
+            dst.RotateFace(B0, R0, B1, L1); keys[10] = dst;
+            dst.RotateFace(B0, R0, B1, L1); keys[11] = dst;
+
+            // Down
+            dst = src;
+            dst.RotateFace(D0, F1, D1, B0); keys[12] = dst;
+            dst.RotateFace(D0, F1, D1, B0); keys[13] = dst;
+            dst.RotateFace(D0, F1, D1, B0); keys[14] = dst;
+
+            // Left
+            dst = src;
+            dst.RotateFace(L0, D0, L1, U1); keys[15] = dst;
+            dst.RotateFace(L0, D0, L1, U1); keys[16] = dst;
+            dst.RotateFace(L0, D0, L1, U1); keys[17] = dst;
+
+            //foreach(var pair in Utils.Index(Faces.NextKeys<ulong, Cross>(src, x => x, x => x)))
+            //{
+            //    Debug.Assert(keys[pair.Key] == pair.Value);
+            //}
+
+            return keys;
+        }
+
         public Cross(ulong key)
         {
             _key = key;
@@ -220,6 +268,25 @@ namespace MagicCube
             uint r = 2 * r_face + (face_type ^ 1);
             uint d = 2 * face + 1;
             uint l = 2 * l_face + (face_type);
+
+            uint u_index = _key[u];
+            uint r_index = _key[r];
+            uint d_index = _key[d];
+            uint l_index = _key[l];
+
+            // Up -> Right -> Down -> Left ->
+            _key[r] = Rotate_180(u_index);
+            _key[d] = Rotate_180(r_index);
+            _key[l] = Rotate_180(d_index);
+            _key[u] = Rotate_180(l_index);
+        }
+
+        public void RotateFace(uint u, uint r, uint d, uint l)
+        {
+            //uint u = F0;
+            //uint r = R1;
+            //uint d = F1;
+            //uint l = L0;
 
             uint u_index = _key[u];
             uint r_index = _key[r];

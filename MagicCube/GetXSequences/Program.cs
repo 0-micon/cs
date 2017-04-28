@@ -238,7 +238,7 @@ namespace GetXSequences
 
 #if GET_SHORT_XSEQUENCES
 #else
-            var middle_solution = new CubeGeneralSolution<Cross>();
+            var middle_solution = new CrossSolution(); //new CubeGeneralSolution<Cross>();
             foreach (var ring in cube_solution)
             {
                 var middles = new List<Cross>(from k in ring select k.Middles);
@@ -567,8 +567,26 @@ namespace GetXSequences
                         return happy;
                     };
 
-                    middle_solution.SolveCube(cube.Middles, max_depth, on_solved);
+                    //middle_solution.SolveCube(cube.Middles, max_depth, on_solved);
+
+                    foreach(MoveTrack midd_tr in middle_solution.AllSolutions(cube.Middles, max_depth))
+                    {
+                        MoveTrack corn_tr = xalgorithms.Solve(cube.Corners.PlayForward(midd_tr), midd_tr);
+
+                        if (corn_tr != null)
+                        {
+                            MoveTrack full_path = midd_tr + corn_tr;
+                            if (total == null || full_path.Count < total.Count)
+                            {
+                                total = full_path;
+                                Console.WriteLine($"{total.Count}:{total}\n\t({midd_tr.Count}.{corn_tr.Count})");
+                            }
+                        }
+                    }
+
                     MoveTrack path = total;
+
+                    //Cross.NextKeys(cube.Middles);
 
                     /*//
                     int corners = 0;

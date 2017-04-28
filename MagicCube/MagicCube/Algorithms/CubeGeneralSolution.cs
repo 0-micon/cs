@@ -76,4 +76,24 @@ namespace MagicCube
             return solutions;
         }
     }
+
+    public class CrossSolution : CubeGeneralSolution<Cross>
+    {
+        public new IEnumerable<MoveTrack> AllSolutions(Cross cube, int depth)
+        {
+            var solutions = new HashSet<MoveTrack>();
+
+            Func<IEnumerable<int>, IEnumerable<int>, bool> on_solved = (l_path, r_path) =>
+            {
+                var a = new MoveTrack(l_path);
+                var b = new MoveTrack(r_path);
+                solutions.Add(a.Reverse + b);
+                return false;
+            };
+
+            ForAllSolutions(cube, depth, 18, 13, Cross.NextCubes, on_solved);
+
+            return solutions;
+        }
+    }
 }
